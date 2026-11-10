@@ -1,0 +1,286 @@
+/* Bindung -- ein Stylesheet, von Hand geschrieben.
+   Farben stehen NUR als Variablen in den :root-Bloecken (hell und dunkel);
+   alles andere benutzt var(--...). docs/design_conventions.yaml, tests/test_design.py. */
+
+:root {
+  --grund: #f2f2f5;
+  --seitenleiste: #e8e8ed;
+  --flaeche: #ffffff;
+  --flaeche-leise: #f7f7fa;
+  --text: #1d1d1f;
+  --text-leise: #6b6b72;
+  --linie: #d6d6dc;
+  --akzent: #3b78c4;
+  --akzent-text: #ffffff;
+  --akzent-leise: #dfe9f6;
+  --aufmerksamkeit: #c0562f;
+  --erkaltet: #4a7fa8;
+  --woche: #5e9a6c;
+  --fehler: #b3372c;
+  --fehler-grund: #fbe9e6;
+  --fokus: #3b78c4;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --grund: #1b1b1e;
+    --seitenleiste: #232327;
+    --flaeche: #2a2a2e;
+    --flaeche-leise: #242428;
+    --text: #f2f2f6;
+    --text-leise: #9d9da6;
+    --linie: #3b3b41;
+    --akzent: #5d9be3;
+    --akzent-text: #101216;
+    --akzent-leise: #2b3a50;
+    --aufmerksamkeit: #e0825c;
+    --erkaltet: #6fa3c9;
+    --woche: #7bb88a;
+    --fehler: #f08a7f;
+    --fehler-grund: #3d2623;
+    --fokus: #5d9be3;
+  }
+}
+
+:root {
+  --schrift: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --ziel: 44px;
+  --radius: 10px;
+  --abstand: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--text);
+  font: 1rem/1.45 var(--schrift);
+}
+
+h1, h2, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+
+a { color: var(--akzent); }
+
+:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+
+.nur-lesegeraet {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- Bedienelemente */
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ziel);
+  padding: 0 var(--abstand);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+  color: var(--text);
+  cursor: pointer;
+}
+.knopf:hover:not(:disabled) { background: var(--flaeche-leise); }
+.knopf:disabled { color: var(--text-leise); cursor: default; }
+
+.knopf-primaer {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: var(--akzent-text);
+}
+.knopf-primaer:hover:not(:disabled) { background: var(--akzent); filter: brightness(1.08); }
+
+.knopf-text {
+  padding: 0 12px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--akzent);
+  justify-content: flex-start;
+}
+.knopf-text:disabled { color: var(--text-leise); }
+.knopf-text:hover:not(:disabled) { background: var(--akzent-leise); }
+
+input[type="text"], input[type="password"], input[type="search"], input[type="email"],
+select, textarea {
+  width: 100%;
+  min-height: var(--ziel);
+  padding: 0 12px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+}
+textarea { padding: 10px 12px; }
+
+.feld { display: flex; flex-direction: column; gap: 6px; }
+.feld > label { font-size: 0.875rem; color: var(--text-leise); }
+
+.leer { color: var(--text-leise); padding: var(--abstand) 4px; }
+.leer-klein { padding: 4px 12px; font-size: 0.9375rem; }
+
+/* --------------------------------------------------------------- Drei Spalten */
+
+.app {
+  display: grid;
+  grid-template-columns: 250px minmax(320px, 400px) minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+}
+
+.seitenleiste, .liste, .personenseite { overflow-y: auto; min-width: 0; }
+
+.seitenleiste {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--abstand) 10px;
+  background: var(--seitenleiste);
+  border-right: 1px solid var(--linie);
+}
+
+.liste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand);
+  padding: var(--abstand);
+  background: var(--grund);
+  border-right: 1px solid var(--linie);
+}
+
+.personenseite {
+  padding: var(--abstand) 24px;
+  background: var(--flaeche);
+}
+
+/* -------------------------------------------------------------- Seitenleiste */
+
+.eintraege { display: flex; flex-direction: column; gap: 2px; }
+
+.eintrag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: var(--ziel);
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+.eintrag:hover { background: var(--akzent-leise); }
+.eintrag-aktiv { background: var(--akzent); color: var(--akzent-text); }
+.eintrag-aktiv:hover { background: var(--akzent); }
+
+.zahl { font-variant-numeric: tabular-nums; opacity: 0.7; }
+
+.abschnitt {
+  margin-top: var(--abstand);
+  padding: 0 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-leise);
+}
+
+.seitenleiste-fuss {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: auto;
+  padding-top: var(--abstand);
+  border-top: 1px solid var(--linie);
+}
+.nutzername { padding: 8px 12px 0; font-weight: 600; }
+
+/* ------------------------------------------------------------------- Liste */
+
+.karten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+.karte {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: var(--ziel);
+  min-width: 0;
+  padding: 10px 8px 10px 10px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+  text-align: left;
+  cursor: pointer;
+}
+.karte:hover { background: var(--flaeche-leise); }
+.karte-zahl { font-size: 1.75rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.karte-name {
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: var(--text-leise);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+.karte-aufmerksamkeit .karte-zahl { color: var(--aufmerksamkeit); }
+.karte-erkaltet .karte-zahl { color: var(--erkaltet); }
+.karte-woche .karte-zahl { color: var(--woche); }
+
+.werkzeuge { display: flex; flex-direction: column; gap: 8px; }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
+.knopfreihe .knopf { flex: 1 1 auto; }
+
+/* ---------------------------------------------------------------- Anmeldung */
+
+.seite-anmeldung {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--abstand);
+}
+
+.anmeldung {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand);
+  padding: 28px 24px;
+  border: 1px solid var(--linie);
+  border-radius: 14px;
+  background: var(--flaeche);
+}
+.anmeldung-titel { font-size: 1.75rem; font-weight: 600; }
+.anmeldung-text { color: var(--text-leise); }
+.formular { display: flex; flex-direction: column; gap: var(--abstand); }
+
+.meldung { padding: 10px 12px; border-radius: 8px; }
+.meldung-fehler { background: var(--fehler-grund); color: var(--fehler); }
+
+/* ---------------------------------------------------------- Schmale Fenster */
+
+@media (max-width: 767px) {
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+  .seitenleiste, .liste, .personenseite { overflow-y: visible; }
+  .seitenleiste, .liste { border-right: 0; border-bottom: 1px solid var(--linie); }
+  .personenseite { padding: var(--abstand); }
+  .seitenleiste-fuss { margin-top: var(--abstand); }
+}

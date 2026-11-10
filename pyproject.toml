@@ -1,0 +1,95 @@
+[project]
+name = "bindung"
+# Die Nummer steht in bindung/__init__.py (__version__), nur dort.
+dynamic = ["version"]
+description = "Bindung: den Kontakt zu den Menschen halten, die einem wichtig sind"
+# Nicht-kommerziell, keine Aenderungen (LICENSE.md). Kein SPDX-Kuerzel
+# existiert dafuer, deshalb LicenseRef.
+license = "LicenseRef-PolyForm-Strict-1.0.0"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.12",
+    "pyyaml>=6.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",   # FastAPI-Formulare (Anmeldung)
+    "pywebpush>=2.0",            # Push mit VAPID; erst ab WP5 benutzt
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6", "httpx>=0.27"]  # httpx: FastAPI TestClient
+
+[project.scripts]
+bindung = "bindung.cli:app"
+
+[build-system]
+requires = ["setuptools>=77"]      # license als Ausdruck (PEP 639)
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "bindung.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["bindung*"]
+
+# Was NEBEN dem Python-Code ins Paket muss: ohne diese Liste fehlen Schema,
+# Vorlagen und Stylesheet im installierten Paket.
+[tool.setuptools.package-data]
+"bindung" = ["schema.sql"]
+"bindung.web" = ["vorlagen/*.html", "statisch/*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+# Starlettes Testclient meldet, dass er lieber ein anderes HTTP-Paket haette; das
+# ist eine Mitteilung an Starlette-Nutzer, keine an uns.
+filterwarnings = ["ignore:Using `httpx` with"]
+
+[tool.ruff]
+line-length = 100
+
+# Dieselbe ausgeschriebene Auswahl wie in finctl: ein Ruff-Update soll die
+# Zahl der Funde nicht aendern, ohne dass sich Code geaendert hat.
+# `tests/test_lint.py` haelt den Stand auf null.
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes: unbenutzte Namen, tote Importe
+    "I",        # Importreihenfolge
+    "N",        # Namen nach PEP 8
+    "UP",       # Schreibweisen, die 3.12 einfacher kann
+    "B",        # bugbear: die Fallen, die keinen Fehler werfen
+    "A",        # Namen, die eingebaute ueberdecken
+    "C4",       # comprehensions
+    "SIM",      # vermeidbare Umwege
+    "RET",      # return-Wege
+    "ISC",      # implizit verkettete Strings -- faengt das fehlende Komma
+    "PIE",
+    "RUF",
+]
+ignore = [
+    # Die Texte sind deutsch und gesetzt: Gedankenstrich, typografische
+    # Anfuehrung, Nicht-Umbruch-Leerzeichen. Das ist Absicht, kein Tippfehler.
+    "RUF001", "RUF002", "RUF003",
+    # Ausnahmen heissen hier auf Deutsch `...Fehler`, nicht `...Error`: der
+    # Code ist deutsch, und ein einziger englischer Name in einer Meldekette
+    # waere der Bruch, nicht die Regel.
+    "N818",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+# Typer und FastAPI lesen die Signatur: der Aufruf im Vorgabewert IST die
+# Deklaration des Parameters. Ein Modul-Singleton daraus zu machen wuerde die
+# Deklaration von der Stelle trennen, an der sie gilt.
+extend-immutable-calls = [
+    "typer.Option", "typer.Argument",
+    "fastapi.Query", "fastapi.Form", "fastapi.Body", "fastapi.Depends", "fastapi.File",
+    "Query", "Form", "Body", "Depends", "File",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# SIM115: Tests duerfen ein Tempverzeichnis offen halten, solange der Test
+# laeuft. C408: `dict(...)` als Schluesselwortbeutel, der gleich als
+# `**beutel` weitergereicht wird.
+"tests/*" = ["SIM115", "C408"]

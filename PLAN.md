@@ -311,3 +311,30 @@ planned).
 - **Browser dictation first.** No model to install, works on iPhone, and the
   user's Handy app with Parakeet types into any field anyway. The interface
   leaves room for a server-side model.
+
+Small decisions taken while building WP0, where the plan was silent:
+
+- **Sessions store a hash, not the token.** `sitzung.token_hash` holds the
+  SHA-256 of the cookie token, so a leaked database file does not hand out
+  logins. The cookie is re-sent on every authenticated response so its
+  30 days follow the renewed expiry in the database.
+- **Failed-login delay lives in process memory**, per lower-cased user name
+  (unknown names count too): 1, 2, 4 … up to 300 seconds, answered with
+  `429`. A correct password during the delay is also refused. A restart
+  clears it; there is no table for it. Revisit if the server ever runs with
+  several worker processes.
+- **Password minimum: 8 characters**, enforced in `auth.py` (CLI and later
+  settings page).
+- **Partial dates** (`angehoeriger.geburtstag`, `stichtag.datum`) are one text
+  column in ISO 8601 form: `YYYY-MM-DD`, or `--MM-DD` without a year. One
+  column instead of month/day/year keeps "optional year" a format question,
+  not a schema one.
+- **Extra column** `digest_protokoll.hinweis_weggeklickt_am`: the in-app
+  Hinweis (§10) is dismissible once per day and needs a place to remember it;
+  adding it now spares WP5 a migration. `nutzer.name` is unique ignoring case;
+  `tag.name` is unique per user ignoring case.
+- **Narrow screens in WP0 only stack** the three panes, sidebar first. The
+  sidebar → list → person navigation with a back arrow (§7) comes with the
+  person pane in WP1.
+- **`/einstellungen`** is linked from the sidebar but the page itself belongs
+  to WP4/WP5/WP6; until then the link ends on the server's 404.

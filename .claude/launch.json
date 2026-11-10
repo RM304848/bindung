@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bindung",
+      "runtimeExecutable": ".venv/bin/bindung",
+      "runtimeArgs": [
+        "serve", "--port", "8785"
+      ],
+      "port": 8785
+    }
+  ]
+}

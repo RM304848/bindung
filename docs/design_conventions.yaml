@@ -1,0 +1,122 @@
+# Wie die Oberflaeche aussieht und sich verhaelt -- an einer Stelle.
+#
+# VOR JEDER AENDERUNG an bindung/web/vorlagen oder statisch/stil.css hier
+# nachschlagen. Eine neue Seite, ein neues Feld, ein neuer Hinweis: erst
+# nachsehen, wie es die anderen tun, dann bauen. Wer eine neue Konvention
+# einfuehrt, traegt sie hier ein -- sonst ist sie beim naechsten Mal wieder
+# eine Ausnahme.
+#
+# Jede Regel hat einen Grund. Wo sie sich maschinell pruefen laesst, steht die
+# Pruefung dabei, und tests/test_design.py fuehrt sie aus. `ausnahmen` sind
+# bekannte Altlasten, keine Erlaubnis: sie stehen unter `offen` und werden
+# weniger, nicht mehr.
+
+regeln:
+
+  # ------------------------------------------------------------ Farben
+
+  - id: farben-nur-als-variablen
+    regel: >
+      Farben stehen im Stylesheet nur als Variablen in den `:root`-Bloecken
+      (`--grund`, `--text`, `--akzent` ...). Jede andere Regel schreibt
+      `var(--...)`, keine Hex-, rgb()- oder hsl()-Farbe.
+    warum: >
+      Hell und dunkel sind zwei Belegungen derselben Namen. Eine Farbe, die
+      ausserhalb steht, bleibt im anderen Thema stehen -- weisser Text auf
+      weissem Grund, ohne dass ein Test rot wird.
+    pruefung:
+      art: css_farben_nur_in_wurzel
+
+  - id: hell-und-dunkel-gleich-belegt
+    regel: >
+      Der helle und der dunkle `:root`-Block (`prefers-color-scheme: dark`)
+      definieren dieselben Farbvariablen, und jede benutzte `var(--...)` ist
+      irgendwo definiert.
+    warum: >
+      Eine Variable, die nur hell existiert, faellt im dunklen Thema auf den
+      Browser-Vorgabewert zurueck; eine Tippfehler-Variable macht still gar
+      nichts.
+    pruefung:
+      art: paletten_gleich
+
+  - id: keine-inline-stile
+    regel: >
+      Vorlagen haben kein `style="..."`, keinen `<style>`-Block und keine
+      Farbwerte. Aussehen steht in stil.css.
+    warum: >
+      Ein Inline-Stil umgeht die Palette und damit das dunkle Thema, und er
+      laesst sich nicht an einer Stelle aendern.
+    pruefung:
+      art: vorlagen_verbieten
+      muster: ['\sstyle\s*=', '<style', '#[0-9a-fA-F]{6}\b', '#[0-9a-fA-F]{3}\b(?![-\w])',
+               '\brgba?\(', '\bhsla?\(']
+      ausnahmen: []
+
+  # ------------------------------------------------------------ Eingaben
+
+  - id: jedes-feld-hat-eine-beschriftung
+    regel: >
+      Jedes Eingabefeld (`input` ausser `hidden`, `select`, `textarea`) hat ein
+      `<label for="...">`, einen umschliessenden `<label>` oder ein
+      `aria-label`. Ist die Beschriftung sichtbar ueberfluessig (Suchfeld),
+      steht sie als `nur-lesegeraet`.
+    warum: >
+      Ohne Beschriftung liest ein Bildschirmleser nur "Eingabefeld", und auf
+      dem Telefon verschwindet der Platzhalter beim Tippen.
+    pruefung:
+      art: felder_mit_beschriftung
+
+  # -------------------------------------------------------------- Sprache
+
+  - id: nur-deutsch
+    regel: >
+      Alles, was der Nutzer liest -- Text, Platzhalter, `aria-label`, `title`
+      --, ist deutsch und benutzt die Begriffe aus CONTEXT.md. Die Seite
+      traegt `lang="de"`.
+    warum: >
+      Zwei Sprachen in einer Oberflaeche lesen sich wie ein Fehler, und die
+      Begriffe aus CONTEXT.md sind der Grund, warum Code und Oberflaeche
+      dasselbe meinen. Geprueft wird gegen eine Liste englischer Knopfwoerter.
+    pruefung:
+      art: nur_deutsch
+      verboten: [Save, Cancel, Delete, Remove, Settings, Login, Log in, Logout, Log out,
+                 Sign in, Sign out, Password, Username, Search, Add, Edit, Submit, Close,
+                 Loading, Error, Home, Contacts, Contact, Back, Next]
+      ausnahmen: []
+
+  - id: seite-ist-deutsch-ausgezeichnet
+    regel: Jede Seite beginnt mit `<html lang="de">` und hat den Viewport `width=device-width`.
+    warum: >
+      Silbentrennung, Vorlesen und die Schrift der Zeichen haengen an `lang`;
+      ohne Viewport rendert das Telefon eine verkleinerte Desktop-Seite.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/basis.html
+      muster: ['<html lang="de">', 'width=device-width']
+
+  # ------------------------------------------------------------ Bedienung
+
+  - id: beruehrziele-44
+    regel: >
+      Knoepfe, Eintraege, Karten und Eingabefelder sind mindestens 44 px hoch
+      (`min-height: var(--ziel)`, `--ziel: 44px`).
+    warum: >
+      Die App wird auf dem iPhone benutzt, mit dem Daumen, im Gehen. Kleinere
+      Ziele trifft man nicht, und ein falscher Tipp auf "Kontakt eintragen"
+      speichert Unsinn.
+    pruefung:
+      art: beruehrziele
+      selektoren: ['.knopf', '.eintrag', '.karte', 'input[type="text"]', 'select', 'textarea']
+
+  - id: kein-cdn
+    regel: >
+      Weder Vorlagen noch Stylesheet laden etwas aus dem Netz. HTMX liegt in
+      `statisch/`.
+    warum: >
+      Die Daten bleiben auf dem eigenen Server; ein Skript von fremder Adresse
+      sieht jede Seite mit, und die App soll ohne Internet laufen.
+    pruefung:
+      art: vorlagen_verbieten
+      auch_css: true
+      muster: ['https?://', 'src="//', 'href="//']
+      ausnahmen: []
