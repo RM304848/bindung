@@ -1,0 +1,20 @@
+# Daten kommen nie ins Repository. Sie liegen im Datenordner
+# (`bindung ort`), ~/Library/Application Support/Bindung.
+/daten/
+*.db
+*.db-wal
+*.db-shm
+vapid.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Werkzeuge
+.DS_Store
