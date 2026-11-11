@@ -1,4 +1,4 @@
-{# Eine Person in der Liste. Der Kreis ist der Knopf „Kontakt eintragen“, die Zeile waehlt die Person aus. Links der Kreis in der Farbe des Zustands, rechts die Plakette. #}
+{# Eine Person in der Liste. Der Kreis ist der Knopf „Kontakt eintragen“, die Zeile waehlt die Person aus. Links der Kreis in der Farbe des Zustands, rechts die Plakette des Zustands und, wenn ein Stichtag im Vorlauf liegt, darunter die zweite. #}
 {% set p = z.person %}
 <li class="zeilenpunkt">
   <button type="button" class="kreis-knopf" hx-get="/personen/{{ p.id }}/kontakt/neu" hx-target="#personenseite" hx-swap="outerHTML" aria-label="Kontakt eintragen: {{ p.name }}"><span class="kreis{% if z.plakette %} kreis-{{ z.plakette.ton }}{% endif %}" aria-hidden="true"></span></button>
@@ -8,6 +8,11 @@
       {% if p.firma %}<span class="zeile-firma">{{ p.firma }}</span>{% endif %}
       {% if z.notiz %}<span class="zeile-notiz">{{ z.notiz|erste_zeile }}</span>{% endif %}
     </span>
-    {% if z.plakette %}<span class="plakette plakette-{{ z.plakette.ton }}">{{ z.plakette.text }}</span>{% endif %}
+    {% if z.plakette or z.stichtag %}
+    <span class="zeile-plaketten">
+      {% if z.plakette %}<span class="plakette plakette-{{ z.plakette.ton }}">{{ z.plakette.text }}</span>{% endif %}
+      {% if z.stichtag %}<span class="plakette plakette-stichtag">{{ z.stichtag.plakette_text }}</span>{% endif %}
+    </span>
+    {% endif %}
   </a>
 </li>

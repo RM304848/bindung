@@ -15,7 +15,7 @@ from pathlib import Path
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
-from bindung import faelligkeit
+from bindung import angehoerige, faelligkeit, stichtage
 
 PAKET = Path(__file__).resolve().parent
 VORLAGEN = PAKET / "vorlagen"
@@ -56,6 +56,8 @@ TEMPLATES.env.filters["telefonnummer"] = _telefonnummer
 TEMPLATES.env.filters["datum_de"] = _datum_de
 TEMPLATES.env.filters["vor_datum"] = _vor_datum
 TEMPLATES.env.filters["zustand_text"] = faelligkeit.zustand_text
+TEMPLATES.env.filters["rolle_wort"] = angehoerige.rolle_wort
+TEMPLATES.env.filters["stichtag_de"] = stichtage.text_de
 
 #: Pfade, die ohne Sitzung erreichbar sind. `/kalender/` ist die Kalenderadresse
 #: mit ihrem eigenen Geheimnis in der URL (WP4).

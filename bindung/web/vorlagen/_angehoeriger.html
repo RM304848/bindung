@@ -1,0 +1,39 @@
+{# Ein Angehöriger. Ist er verknüpft und heißt wie die Person, ist sein Name der Link zu ihr; sonst steht „In der App“ darunter. „Bearbeiten“ tauscht genau diese Zeile gegen ein Formular, „Verknüpfen“ klappt die Auswahl auf. #}
+<li class="posten" id="angehoeriger-{{ a.id }}">
+  {% set gleich = a.verknuepfte_person_id and a.name == a.verknuepft_name %}
+  <div class="posten-kopf">
+    {% if gleich %}
+    <a class="posten-name" href="{{ ansicht.mit(person=a.verknuepfte_person_id).url() }}" hx-get="/personen/{{ a.verknuepfte_person_id }}" hx-target="#personenseite" hx-swap="outerHTML">{{ a.name }}</a>
+    {% else %}
+    <span class="posten-name">{{ a.name }}</span>
+    {% endif %}
+    <span class="posten-art">{{ a|rolle_wort }}</span>
+    {% if a.geburtstag %}<span class="hilfe">Geburtstag {{ a.geburtstag|stichtag_de }}</span>{% endif %}
+    {% if gleich and a.verknuepft_archiviert %}<span class="hilfe">(im Archiv)</span>{% endif %}
+  </div>
+  {% if a.verknuepfte_person_id and not gleich %}
+  <p class="posten-zeile">In der App: <a href="{{ ansicht.mit(person=a.verknuepfte_person_id).url() }}" hx-get="/personen/{{ a.verknuepfte_person_id }}" hx-target="#personenseite" hx-swap="outerHTML">{{ a.verknuepft_name }}</a>{% if a.verknuepft_archiviert %} <span class="hilfe">(im Archiv)</span>{% endif %}</p>
+  {% endif %}
+  <div class="posten-aktionen">
+    <button type="button" class="knopf knopf-text" hx-get="/angehoerige/{{ a.id }}/bearbeiten" hx-target="#angehoeriger-{{ a.id }}" hx-swap="outerHTML">Bearbeiten</button>
+    {% if a.verknuepfte_person_id %}
+    <button type="button" class="knopf knopf-text" hx-post="/angehoerige/{{ a.id }}/entknuepfen" hx-target="#angehoerige" hx-swap="outerHTML" hx-confirm="Die Verknüpfung mit {{ a.verknuepft_name }} lösen? Der Eintrag bei {{ a.verknuepft_name }} wird dabei entfernt.">Verknüpfung lösen</button>
+    {% endif %}
+    <button type="button" class="knopf knopf-text knopf-gefahr" hx-post="/angehoerige/{{ a.id }}/loeschen" hx-target="#angehoerige" hx-swap="outerHTML" hx-confirm="{{ a.name }} aus den Angehörigen löschen?{% if a.verknuepfte_person_id %} Der Eintrag bei {{ a.verknuepft_name }} wird mit gelöscht.{% endif %}{% if a.geburtstag %} Der Geburtstag verschwindet aus den Stichtagen.{% endif %}">Löschen</button>
+  </div>
+  {% if not a.verknuepfte_person_id %}
+  <details class="hinzufuegen">
+    <summary class="knopf knopf-text">Verknüpfen</summary>
+    <form class="posten-formular" hx-post="/angehoerige/{{ a.id }}/verknuepfen" hx-target="#angehoerige" hx-swap="outerHTML">
+      <div class="feld">
+        <label for="verknuepfen-suche-{{ a.id }}">Person in der App suchen</label>
+        <input type="search" id="verknuepfen-suche-{{ a.id }}" name="suche" data-ohne-enter autocomplete="off" placeholder="Name der Person" hx-get="/personen/{{ person.id }}/kandidaten?ziel={{ a.id }}" hx-trigger="input changed delay:250ms" hx-target="#kandidaten-{{ a.id }}" hx-swap="outerHTML">
+        <div id="kandidaten-{{ a.id }}" class="kandidaten"><p class="hilfe">Tippe einen Namen, um eine Person zu finden.</p></div>
+      </div>
+      <div class="knopfreihe">
+        <button type="submit" class="knopf knopf-primaer">Verknüpfen</button>
+      </div>
+    </form>
+  </details>
+  {% endif %}
+</li>

@@ -313,7 +313,7 @@ def _kontakte(con, pid):
 
 @pytest.mark.parametrize(("auswahl", "datum"), [
     ("diesen_monat", "2026-10-27"),        # heute minus 15
-    ("vor_monaten", "2026-07-14"),         # minus 120
+    ("vor_monaten", "2026-08-13"),         # minus 90
     ("ueber_ein_jahr", "2025-10-07"),      # minus 400
 ])
 def test_mehrere_legt_eine_schaetzung_an(con, nid, stichtag, auswahl, datum):
@@ -324,6 +324,21 @@ def test_mehrere_legt_eine_schaetzung_an(con, nid, stichtag, auswahl, datum):
         kontakte = _kontakte(con, pid)
         assert [(k["datum"], k["art"], k["notiz"]) for k in kontakte] == [
             (datum, "schaetzung", None)]
+
+
+def test_vor_ein_paar_monaten_startet_ueberfaellig_nicht_erkaltet(con, nid, stichtag):
+    """90 Tage: mehr als das Intervall (56), weniger als die Kaeltegrenze (112)."""
+    from bindung import faelligkeit
+
+    (pid,) = personen.mehrere_hinzufuegen(con, nid, "Anna Beispiel",
+                                          grober_kontakt="vor_monaten")
+    heute = personen.heute(con, nid)
+    assert faelligkeit.bindungen(con, nid, heute)[pid].zustand == faelligkeit.UEBERFAELLIG
+    (pid2,) = personen.mehrere_hinzufuegen(con, nid, "Ben Muster",
+                                           grober_kontakt="ueber_ein_jahr")
+    assert faelligkeit.bindungen(con, nid, heute)[pid2].zustand == faelligkeit.ERKALTET
+    (pid3,) = personen.mehrere_hinzufuegen(con, nid, "Cem Probe", grober_kontakt="diesen_monat")
+    assert faelligkeit.bindungen(con, nid, heute)[pid3].zustand == faelligkeit.OK
 
 
 def test_mehrere_unbekannt_legt_keinen_kontakt_an(con, nid):

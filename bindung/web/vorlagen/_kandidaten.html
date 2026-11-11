@@ -1,0 +1,15 @@
+{# Die Treffer der Suche „In der App“: Optionsfelder im Formular, das die Suche enthält. `ziel` ist „neu“ oder die Nummer des Eintrags. #}
+<div id="kandidaten-{{ ziel }}" class="kandidaten" aria-live="polite">
+  {% if not suche %}
+  <p class="hilfe">Tippe einen Namen, um eine Person zu finden.</p>
+  {% elif treffer %}
+  <div class="optionen">
+    {% for p in treffer %}
+    <label class="option"><input type="radio" name="verknuepfte_person_id" value="{{ p.id }}"><span>{{ p.name }}{% if p.firma %} <span class="hilfe">{{ p.firma }}</span>{% endif %}</span></label>
+    {% endfor %}
+  </div>
+  {% if mehr %}<p class="hilfe">Es gibt weitere Treffer. Tippe mehr vom Namen.</p>{% endif %}
+  {% else %}
+  <p class="hilfe">Niemand gefunden für „{{ suche }}“.</p>
+  {% endif %}
+</div>

@@ -6,3 +6,29 @@
   {% endfor %}
 </div>
 {% endmacro %}
+
+{# Ein Datum mit oder ohne Jahr: Tag, Monat, Jahr (optional). `praefix` macht die Kennungen eindeutig, `werte` hat tag, monat, jahr als Text. #}
+{% macro datumsfelder(praefix, werte, monate, legende, jahr_hilfe="leer") %}
+<fieldset class="gruppe datumsfelder">
+  <legend>{{ legende }}</legend>
+  <div class="datumsfelder-reihe">
+    <div class="feld">
+      <label for="{{ praefix }}-tag">Tag</label>
+      <input type="number" id="{{ praefix }}-tag" name="tag" value="{{ werte.tag }}" min="1" max="31" inputmode="numeric">
+    </div>
+    <div class="feld">
+      <label for="{{ praefix }}-monat">Monat</label>
+      <select id="{{ praefix }}-monat" name="monat">
+        <option value="">–</option>
+        {% for name in monate %}
+        <option value="{{ loop.index }}"{% if werte.monat|string == loop.index|string %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="feld">
+      <label for="{{ praefix }}-jahr">Jahr</label>
+      <input type="number" id="{{ praefix }}-jahr" name="jahr" value="{{ werte.jahr }}" min="1900" inputmode="numeric" placeholder="{{ jahr_hilfe }}">
+    </div>
+  </div>
+</fieldset>
+{% endmacro %}

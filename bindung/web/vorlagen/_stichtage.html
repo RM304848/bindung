@@ -1,0 +1,42 @@
+{# Stichtage der Person. Jede Änderung zeichnet den ganzen Abschnitt neu; „Hinzufügen“ ist ein aufklappbares Formular. #}
+{% from "_makros.html" import datumsfelder %}
+<section id="stichtage" class="personenabschnitt" aria-label="Stichtage"{% if oob_stichtage %} hx-swap-oob="true"{% endif %}>
+  <h3 class="zwischentitel">Stichtage</h3>
+  {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+  {% if stichtage %}
+  <ul class="posten-liste">
+    {% for s in stichtage %}
+    {% include "_stichtag.html" %}
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="leer leer-klein">Noch kein Stichtag. Geburtstage und Jahrestage erscheinen {{ nutzer['vorgabe_vorlauf_tage'] }} Tage vorher auf „Diese Woche“.</p>
+  {% endif %}
+
+  {% set w = neu_werte or {"art": "geburtstag"} %}
+  <details class="hinzufuegen"{% if neu_offen %} open{% endif %}>
+    <summary class="knopf knopf-text">Stichtag hinzufügen</summary>
+    <form class="posten-formular" hx-post="/personen/{{ person.id }}/stichtage" hx-target="#stichtage" hx-swap="outerHTML">
+      <fieldset class="gruppe">
+        <legend>Art</legend>
+        <div class="segmente">
+          {% for schluessel, wort in stichtag_arten.items() %}
+          <label class="segment"><input type="radio" name="art" value="{{ schluessel }}"{% if w.art == schluessel %} checked{% endif %}><span>{{ wort }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <div class="feld">
+        <label for="stichtag-neu-bezeichnung">Bezeichnung</label>
+        <input type="text" id="stichtag-neu-bezeichnung" name="bezeichnung" value="{{ w.bezeichnung }}" maxlength="100" placeholder="leer: Geburtstag oder Jahrestag" autocomplete="off">
+      </div>
+      {{ datumsfelder("stichtag-neu", w, monate, "Datum") }}
+      <div class="feld">
+        <label for="stichtag-neu-vorlauf">Vorlauf in Tagen</label>
+        <input type="number" id="stichtag-neu-vorlauf" name="vorlauf_tage" value="{{ w.vorlauf_tage }}" min="0" max="365" inputmode="numeric" placeholder="{{ nutzer['vorgabe_vorlauf_tage'] }} (Vorgabe)">
+      </div>
+      <div class="knopfreihe">
+        <button type="submit" class="knopf knopf-primaer">Hinzufügen</button>
+      </div>
+    </form>
+  </details>
+</section>

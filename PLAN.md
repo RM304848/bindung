@@ -121,7 +121,7 @@ Rules the model enforces:
   the family entry, so a child's birthday shows up for the parent.
 - A **rough last contact** ("diesen Monat", "vor ein paar Monaten", "über ein
   Jahr her", "unbekannt") is stored as a Kontakt of kind `schaetzung` with an
-  approximate date (today −15, −120, −400 days) and no note, so the due logic
+  approximate date (today −15, −90, −400 days) and no note, so the due logic
   needs no special case. "unbekannt" stores nothing.
 
 ## 6. Due logic
@@ -383,12 +383,15 @@ Small decisions taken while building WP2, where the plan was silent:
   for the first Kontakt. A next date in the past with a recent contact makes the
   person `ueberfaellig`; `erkaltet` is judged on the last contact only, so an
   override never hides a cold bond.
-- **Rough contact meets the defaults.** "Vor ein paar Monaten" is 120 days, the
-  cold limit at the default interval of 56 days is 112, so such a batch is
-  `erkaltet` at once; "Diesen Monat" (15) is `ok`, "Über ein Jahr her" (400) is
-  `erkaltet`. This follows from §5 and §6 and is intended: a rough "months ago"
-  *is* a bond that went cold. A per-person interval of 90 or more makes it
-  `ueberfaellig` instead.
+- **Rough contact meets the defaults.** "Vor ein paar Monaten" was 120 days in
+  the first cut; the cold limit at the default interval of 56 days is 112, so
+  such a batch was `erkaltet` at once. Changed in WP3 on review to **90 days**:
+  a quick-add batch with "a few months ago" now starts as `ueberfaellig`
+  (90 > 56 and 90 ≤ 112), a bond to call soon, not a bond already lost.
+  "Diesen Monat" (15) is `ok`, "Über ein Jahr her" (400) is `erkaltet`. The
+  approximate dates already stored in a database stay as they were (no
+  migration; a rough contact is only a starting point and the next real Kontakt
+  replaces it).
 - **Row badge ("Plakette").** `unbekannt` → "noch kein Kontakt"; `erkaltet` →
   "erkaltet"; `ueberfaellig` → "überfällig seit N Tagen"; `bald` → "fällig heute
   / morgen / in N Tagen" (more useful than "vor 6 Wochen" for someone about to be
@@ -446,3 +449,66 @@ Small decisions taken while building WP2, where the plan was silent:
 - **Hook for WP3.** `ansicht.stichtag_personen()` returns the people with a
   Stichtag in its lead window (empty until WP3); `faelligkeit.karten_nummern()`
   already adds them to "Diese Woche" without changing anyone's state.
+
+Small decisions taken while building WP3, where the plan was silent (and one change
+the review asked for, recorded with WP2 above: "a few months ago" is now 90 days):
+
+- **Dates.** A Stichtag or a family birthday is entered in three fields (day,
+  month as a name, optional year) and stored as `YYYY-MM-DD` or `--MM-DD`. The
+  year must be 1900 or later and not in the future; 29 February is valid without
+  a year. Shown as "24. März" or "24. März 1986".
+- **Next occurrence.** The next day on or after today on which the day and month
+  come round; a leap day falls on 28 February in a common year. The age is the
+  year of that next occurrence minus the birth year, shown as "wird 40" for a
+  birthday and "10 Jahre" for the others; nothing is shown without a year, or
+  when the difference is below 1.
+- **Lead window.** A Stichtag is in its window when its next occurrence is today
+  or at most `vorlauf_tage` days away (the date's own value, else the user default
+  of 7). `vorlauf_tage = 0` means "only on the day". The value is 0 to 365. An
+  empty label falls back to the word of the kind ("Geburtstag", "Jahrestag");
+  `sonstiges` needs a name.
+- **Badge.** A row shows one Stichtag badge: the nearest one in its window. Text
+  is kind plus time ("Geburtstag in 4 Tagen", "Jahrestag heute"); a family
+  member's birthday carries the name ("Geburtstag Mia in 3 Tagen") so the parent
+  can tell whose day it is, and a `sonstiges` Stichtag uses its own label. The
+  badge sits under the state badge, in a small frame in the `--woche` colour; the
+  state badge is unchanged. Archived people have neither badge nor card entry,
+  but their Stichtage stay listed on their page.
+- **Family birthdays** use the default lead time and are edited only through the
+  family entry (a direct change or delete of that Stichtag is refused with a
+  message). A linked person's own birthday is a separate Stichtag of that person;
+  the counterpart entry never receives the birthday, so nothing is duplicated and
+  the family-entry birthday stays the parent's Stichtag. A person with both shows
+  up for both days; that is fine for v1.
+- **Name of an entry** is its own field: empty when linking, it takes the other
+  person's name at that moment; later renames of the person do not change it. The
+  page always shows the linked person's live name as the link ("In der App: ...",
+  or the name itself as the link when both are equal).
+- **Linking rules.** A person cannot be linked to themselves; an entry that is
+  already linked (to anybody) is refused until "Verknüpfung lösen"; two entries
+  of one person may point to the same other person (a sibling who is also a
+  business partner gets two counterparts). The counterpart's free text is copied
+  for `sonstiges`; for the other roles the free text is dropped, also when the
+  role is changed later. The inverse role and the name of a counterpart are
+  edited on its own side and never touch the original.
+- **Unlinking and deleting** follow §5 literally: the entry where the user acts
+  stays as a plain entry (on unlink) or goes (on delete), the other side is removed
+  together with its birthday Stichtag. This holds from either side (the counterpart
+  is not "second class"), so the confirmation names what disappears on the other
+  page.
+- **Picker "In der App".** A search field plus up to eight results as radio
+  options, over the user's active people (name, company, city, tag; the same
+  search as the list); no text, no results. Enter in the field does not submit the
+  form. The model also accepts an archived person as the link target; the page
+  never offers one.
+- **Page behaviour.** "Hinzufügen" is a `<details>` form that is closed until
+  needed or until it holds a rejected input. Every change redraws both sections
+  (the birthday of a family member is a Stichtag) plus row, cards and sidebar
+  through `ansicht.familie_teile`. A rejected input in an entry's own form answers
+  422 and redraws that form with the message; any other rejection redraws the
+  section with the message on top. A person or entry of another user is a 404, also
+  as link target.
+- **One query for the lead window.** `kontext_bauen` reads `stichtage.im_vorlauf`
+  once and derives both the card set and the row badges from it;
+  `ansicht.stichtag_personen` keeps its signature as the single-purpose view of the
+  same list.

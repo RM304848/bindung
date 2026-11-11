@@ -19,7 +19,7 @@ FELDER = ("name", "firma", "rolle", "telefon", "email", "ort", "herkunft", "prof
           "intervall_tage", "naechster_termin")
 
 #: Grobe Angabe zum letzten Kontakt -> Tage vor heute (PLAN.md, Abschnitt 5).
-GROBER_KONTAKT = {"diesen_monat": 15, "vor_monaten": 120, "ueber_ein_jahr": 400}
+GROBER_KONTAKT = {"diesen_monat": 15, "vor_monaten": 90, "ueber_ein_jahr": 400}
 UNBEKANNT = "unbekannt"
 
 FILTER_OHNE_KONTAKT = "ohne_kontakt"

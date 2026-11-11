@@ -30,6 +30,14 @@
     if (ereignis.key === "Escape") { blattSchliessen(); }
   });
 
+  // Das Suchfeld der Auswahl „In der App“ sitzt in einem Formular; Enter soll dort nicht
+  // speichern, sondern nur die Suche in Ruhe lassen.
+  document.addEventListener("keydown", function (ereignis) {
+    if (ereignis.key === "Enter" && ereignis.target.matches("[data-ohne-enter]")) {
+      ereignis.preventDefault();
+    }
+  });
+
   // Der Server sagt mit HX-Trigger {"spalte": ...}, wohin die Antwort fuehrt.
   document.addEventListener("spalte", function (ereignis) {
     zeigen(ereignis.detail.value);

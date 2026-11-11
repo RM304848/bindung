@@ -109,6 +109,7 @@ regeln:
       selektoren: ['.knopf', '.eintrag', '.karte', '.zeile', '.kreis-knopf', '.zurueck',
                    '.option', '.chip-wahl span', '.segment span', '.kontaktlinks a', 'input[type="text"]',
                    'input[type="tel"]', 'input[type="date"]', 'input[type="number"]',
+                   'input[type="search"]',
                    'select', 'textarea']
 
   - id: kein-cdn
@@ -129,7 +130,8 @@ regeln:
   - id: teile-tragen-ihre-kennung
     regel: >
       Jeder Teil, den HTMX tauscht (Seitenleiste, Liste, Karten, Listenkoerper,
-      Personenseite, Tag-Auswahl, Kontaktlinks, Speicherstatus, Faelligkeit),
+      Personenseite, Tag-Auswahl, Kontaktlinks, Speicherstatus, Faelligkeit,
+      Angehoerige, Stichtage),
       beginnt mit
       einem Element, das seine eigene `id` traegt und bei Bedarf
       `hx-swap-oob="true"` bekommt (je Teil eine eigene Variable `oob_...`,
@@ -146,7 +148,9 @@ regeln:
                 bindung/web/vorlagen/_kontaktlinks.html,
                 bindung/web/vorlagen/_speicherstatus.html,
                 bindung/web/vorlagen/_karten.html,
-                bindung/web/vorlagen/_faelligkeit.html]
+                bindung/web/vorlagen/_faelligkeit.html,
+                bindung/web/vorlagen/_angehoerige.html,
+                bindung/web/vorlagen/_stichtage.html]
       muster: ['\bid="[a-z-]+"', 'hx-swap-oob="true"']
 
   - id: speichern-beim-verlassen
@@ -293,3 +297,81 @@ regeln:
       art: datei_enthaelt
       datei: bindung/web/statisch/stil.css
       muster: ['container-type: inline-size', '@container \(max-width', 'hyphens: none']
+
+  # ------------------------------------------- Angehoerige und Stichtage
+
+  - id: abschnitte-der-personenseite-sind-gleich-gebaut
+    regel: >
+      Angehoerige und Stichtage sind Abschnitte der Personenseite
+      (`<section class="personenabschnitt">` mit Zwischentitel, einer Liste von
+      Posten und einem aufklappbaren Formular `<details class="hinzufuegen">`).
+      Hinzufuegen ist ein Formular, das zu ist, bis man es braucht; Bearbeiten
+      tauscht einen Posten gegen ein Formular an Ort und Stelle; Loeschen und
+      Verknuepfung loesen fragen vorher (`hx-confirm`) und nennen, was mit
+      verschwindet. Jede Aenderung zeichnet beide Abschnitte neu.
+    warum: >
+      Die Personenseite soll wie ein Blatt Papier lesbar bleiben: was
+      eingetragen ist, steht da, und das Eintragen nimmt keinen Platz weg, bis man
+      es will. Beide Abschnitte haengen aneinander (der Geburtstag eines Kindes
+      ist ein Stichtag der Eltern), deshalb darf keiner veraltet stehen
+      bleiben. Dass Loeschen mehr als eine Zeile trifft (Gegenstueck, Stichtag),
+      sieht man dem Knopf nicht an, also sagt es die Rueckfrage.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/_angehoerige.html, bindung/web/vorlagen/_stichtage.html]
+      muster: ['<section id="[a-z]+" class="personenabschnitt"', '<details class="hinzufuegen"',
+               'class="posten-liste"']
+
+  - id: datum-in-drei-feldern
+    regel: >
+      Ein Datum, dessen Jahr fehlen darf (Geburtstag, Stichtag), steht in drei
+      Feldern Tag, Monat (Auswahl mit Namen) und Jahr (leer erlaubt), gemeinsam
+      in `<fieldset class="gruppe datumsfelder">` mit einer `<legend>`; das
+      Makro `datumsfelder` in `_makros.html` baut sie. Angezeigt wird es
+      ausgeschrieben: „24. März“, „24. März 1986“.
+    warum: >
+      Das Datumsfeld des Browsers kennt kein Datum ohne Jahr, und „--03-24“
+      tippt niemand. Drei Felder erzwingen nichts, was man nicht weiss, und der
+      Monat mit Namen verhindert den Dreher zwischen Tag und Monat.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/_makros.html]
+      muster: ['macro datumsfelder', '<fieldset class="gruppe datumsfelder">',
+               'name="tag"', 'name="monat"', 'name="jahr"']
+
+  - id: verknuepfen-ist-eine-suche-mit-optionsfeldern
+    regel: >
+      Eine Person aus der App auszuwaehlen ist ein Suchfeld
+      (`type="search"`, `data-ohne-enter`) und darunter die Treffer als
+      Optionsfelder (`_kandidaten.html`), hoechstens acht, nie die ganze Liste;
+      ohne Suchtext steht ein Hinweis statt Treffern. Das Suchfeld liegt im
+      Formular, Enter schickt es nicht ab.
+    warum: >
+      Es gibt Hunderte Personen; ein Auswahlmenue mit allen waere auf dem
+      Telefon unbenutzbar. Optionsfelder sind echte Bedienelemente (Tastatur,
+      Bildschirmleser), und Enter im Suchfeld soll die Suche beenden, nicht
+      einen halb ausgefuellten Angehoerigen speichern.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/_kandidaten.html, bindung/web/vorlagen/_angehoerige.html,
+                bindung/web/statisch/bindung.js]
+      muster: ['type="radio" name="verknuepfte_person_id"|data-ohne-enter',
+               'Tippe einen Namen|data-ohne-enter']
+
+  - id: zweite-plakette-gehoert-dem-stichtag
+    regel: >
+      Liegt ein Stichtag im Vorlauf, hat die Zeile eine zweite Plakette
+      (`plakette-stichtag`) unter der des Zustands, als kleiner Rahmen in der
+      Farbe von „Diese Woche“ (`--woche`). Die Plakette des Zustands bleibt, wie
+      sie ist. Der Text nennt Art und Zeit: „Geburtstag in 4 Tagen“, „Jahrestag
+      heute“, beim Geburtstag eines Angehoerigen mit dessen Namen.
+    warum: >
+      Ein Stichtag aendert den Zustand nicht (PLAN.md, Abschnitt 6): wer ueberfaellig
+      ist und morgen Geburtstag hat, ist beides. Zwei Plaketten sagen das ehrlich,
+      und der Rahmen unterscheidet sie vom Wort des Zustands, das ohne Rahmen
+      steht. Die Farbe ist die der Karte, auf die der Stichtag die Person stellt.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/statisch/stil.css, bindung/web/vorlagen/_zeile.html]
+      muster: ['\.plakette-stichtag \{[^}]*var\(--woche\)|plakette plakette-stichtag',
+               'zeile-plaketten']

@@ -536,6 +536,49 @@ summary::-webkit-details-marker { display: none; }
 }
 .segment input:focus-visible + span { outline: 2px solid var(--fokus); outline-offset: 2px; }
 
+/* ------------------------------------------------ Angehoerige und Stichtage */
+
+/* Zwei Abschnitte unter „Zuletzt besprochen“, gleich gebaut: Titel, Posten, ein
+   aufklappbares Formular zum Hinzufuegen. */
+.personenabschnitt { display: flex; flex-direction: column; gap: 8px; }
+.posten-liste { display: flex; flex-direction: column; }
+.posten {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--linie);
+}
+.posten-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.posten-name { font-weight: 600; overflow-wrap: anywhere; }
+a.posten-name { color: var(--text); text-decoration-color: var(--linie); }
+.posten-art { color: var(--akzent); }
+.posten-zeile { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.posten-aktionen { display: flex; flex-wrap: wrap; gap: 4px; margin-left: -12px; }
+.posten-formular { display: flex; flex-direction: column; gap: 12px; }
+
+/* Ein Stichtag im Vorlauf traegt die Farbe der Karte „Diese Woche“. */
+.stichtag-naechster { font-variant-numeric: tabular-nums; color: var(--text-leise); }
+.stichtag-nah { color: var(--woche); font-weight: 600; }
+
+.hinzufuegen { display: flex; flex-direction: column; gap: 8px; }
+.hinzufuegen[open] { padding-bottom: 8px; }
+.hinzufuegen > summary { margin-left: -12px; cursor: pointer; }
+.hinzufuegen > .posten-formular { padding: 4px 0 0; }
+
+.datumsfelder-reihe { display: grid; grid-template-columns: 1fr 2fr 1.2fr; gap: 8px; }
+.kandidaten { display: flex; flex-direction: column; gap: 4px; }
+
+/* Die zweite Plakette einer Zeile: ein Stichtag im Vorlauf, in der Farbe von „Diese Woche“. */
+.zeile-plaketten { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 11rem; }
+.zeile-plaketten .plakette { max-width: none; }
+.plakette-stichtag {
+  padding: 1px 10px;
+  border: 1px solid var(--woche);
+  border-radius: var(--radius);
+  color: var(--woche);
+}
+
 /* ---------------------------------------------------------- Schmale Fenster */
 
 /* Unter 768 px ist genau eine Spalte offen: Seitenleiste, Liste oder Person

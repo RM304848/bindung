@@ -1,0 +1,20 @@
+{# Ein Stichtag. Der Geburtstag eines Angehörigen hat keine Knöpfe: er gehört dem Eintrag bei „Angehörige“. #}
+<li class="posten" id="stichtag-{{ s.id }}">
+  <div class="posten-kopf">
+    <span class="posten-name">{{ s.bezeichnung }}</span>
+    <span class="posten-art">{{ s.datum|stichtag_de }}</span>
+  </div>
+  <p class="posten-zeile">
+    <span class="hilfe">{{ stichtag_arten[s.art] }}{% if s.jahre_text %} · {{ s.jahre_text }}{% endif %}</span>
+    <span class="stichtag-naechster{% if s.im_vorlauf %} stichtag-nah{% endif %}">{{ s.tage_text }}</span>
+    {% if s.vorlauf_eigen is not none %}<span class="hilfe">Vorlauf {{ s.vorlauf_eigen }} {% if s.vorlauf_eigen == 1 %}Tag{% else %}Tage{% endif %}</span>{% endif %}
+  </p>
+  {% if s.angehoeriger_id %}
+  <p class="hilfe">Gehört zu einem Angehörigen. Ändere ihn dort.</p>
+  {% else %}
+  <div class="posten-aktionen">
+    <button type="button" class="knopf knopf-text" hx-get="/stichtage/{{ s.id }}/bearbeiten" hx-target="#stichtag-{{ s.id }}" hx-swap="outerHTML">Bearbeiten</button>
+    <button type="button" class="knopf knopf-text knopf-gefahr" hx-post="/stichtage/{{ s.id }}/loeschen" hx-target="#stichtage" hx-swap="outerHTML" hx-confirm="Den Stichtag „{{ s.bezeichnung }}“ löschen?">Löschen</button>
+  </div>
+  {% endif %}
+</li>

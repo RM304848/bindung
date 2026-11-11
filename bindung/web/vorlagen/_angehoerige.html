@@ -1,0 +1,49 @@
+{# Angehörige der Person. Jede Änderung zeichnet den ganzen Abschnitt neu; „Hinzufügen“ ist ein aufklappbares Formular. #}
+{% from "_makros.html" import datumsfelder %}
+<section id="angehoerige" class="personenabschnitt" aria-label="Angehörige"{% if oob_angehoerige %} hx-swap-oob="true"{% endif %}>
+  <h3 class="zwischentitel">Angehörige</h3>
+  {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+  {% if angehoerige %}
+  <ul class="posten-liste">
+    {% for a in angehoerige %}
+    {% include "_angehoeriger.html" %}
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="leer leer-klein">Noch niemand eingetragen. Partner, Kinder, Eltern: so weißt du beim Anruf, nach wem du fragst.</p>
+  {% endif %}
+
+  {% set w = neu_werte or {"rolle": "partner"} %}
+  <details class="hinzufuegen"{% if neu_offen %} open{% endif %}>
+    <summary class="knopf knopf-text">Angehörigen hinzufügen</summary>
+    <form class="posten-formular" hx-post="/personen/{{ person.id }}/angehoerige" hx-target="#angehoerige" hx-swap="outerHTML">
+      <div class="felder">
+        <div class="feld">
+          <label for="angehoeriger-neu-name">Name</label>
+          <input type="text" id="angehoeriger-neu-name" name="name" value="{{ w.name }}" maxlength="200" autocomplete="off">
+        </div>
+        <div class="feld">
+          <label for="angehoeriger-neu-rolle">Rolle</label>
+          <select id="angehoeriger-neu-rolle" name="rolle">
+            {% for schluessel, wort in rollen.items() %}
+            <option value="{{ schluessel }}"{% if w.rolle == schluessel %} selected{% endif %}>{{ wort }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="feld feld-breit">
+          <label for="angehoeriger-neu-rolle-text">Bei „Sonstiges“: was ist die Person für sie?</label>
+          <input type="text" id="angehoeriger-neu-rolle-text" name="rolle_text" value="{{ w.rolle_text }}" maxlength="100" placeholder="zum Beispiel Patenkind" autocomplete="off">
+        </div>
+      </div>
+      {{ datumsfelder("angehoeriger-neu", w, monate, "Geburtstag (optional)") }}
+      <div class="feld">
+        <label for="angehoeriger-neu-suche">In der App: Person suchen (optional)</label>
+        <input type="search" id="angehoeriger-neu-suche" name="suche" data-ohne-enter autocomplete="off" placeholder="Name der Person in Bindung" hx-get="/personen/{{ person.id }}/kandidaten?ziel=neu" hx-trigger="input changed delay:250ms" hx-target="#kandidaten-neu" hx-swap="outerHTML">
+        <div id="kandidaten-neu" class="kandidaten"><p class="hilfe">Ist der Angehörige auch eine Person in der App, verknüpfst du ihn hier. Bei der anderen Person entsteht dann das Gegenstück.</p></div>
+      </div>
+      <div class="knopfreihe">
+        <button type="submit" class="knopf knopf-primaer">Hinzufügen</button>
+      </div>
+    </form>
+  </details>
+</section>

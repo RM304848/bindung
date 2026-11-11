@@ -1,0 +1,28 @@
+{# Ein Stichtag zum Bearbeiten, an Ort und Stelle. #}
+{% from "_makros.html" import datumsfelder %}
+<li class="posten posten-bearbeiten" id="stichtag-{{ s.id }}">
+  <form class="posten-formular" hx-post="/stichtage/{{ s.id }}" hx-target="#stichtage" hx-swap="outerHTML">
+    {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+    <fieldset class="gruppe">
+      <legend>Art</legend>
+      <div class="segmente">
+        {% for schluessel, wort in stichtag_arten.items() %}
+        <label class="segment"><input type="radio" name="art" value="{{ schluessel }}"{% if werte.art == schluessel %} checked{% endif %}><span>{{ wort }}</span></label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div class="feld">
+      <label for="stichtag-bezeichnung-{{ s.id }}">Bezeichnung</label>
+      <input type="text" id="stichtag-bezeichnung-{{ s.id }}" name="bezeichnung" value="{{ werte.bezeichnung }}" maxlength="100" autocomplete="off">
+    </div>
+    {{ datumsfelder("stichtag-" ~ s.id, werte, monate, "Datum") }}
+    <div class="feld">
+      <label for="stichtag-vorlauf-{{ s.id }}">Vorlauf in Tagen</label>
+      <input type="number" id="stichtag-vorlauf-{{ s.id }}" name="vorlauf_tage" value="{{ werte.vorlauf_tage }}" min="0" max="365" inputmode="numeric" placeholder="{{ nutzer['vorgabe_vorlauf_tage'] }} (Vorgabe)">
+    </div>
+    <div class="knopfreihe">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <button type="button" class="knopf" hx-get="/stichtage/{{ s.id }}" hx-target="#stichtag-{{ s.id }}" hx-swap="outerHTML">Abbrechen</button>
+    </div>
+  </form>
+</li>

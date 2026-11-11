@@ -25,7 +25,9 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   für alle und eine grobe Angabe, wann ihr zuletzt gesprochen habt: „Diesen
   Monat“, „Vor ein paar Monaten“, „Über ein Jahr her“ oder „Unbekannt“. So
   kommen die ersten Leute in einer Sitzung in die App; doppelte Namen und leere
-  Zeilen werden übersprungen.
+  Zeilen werden übersprungen. „Vor ein paar Monaten“ meint rund drei Monate:
+  Die Leute starten als „überfällig“, nicht schon als „erkaltet“ – du meldest
+  dich bald bei ihnen, statt sie als verloren zu führen.
 - **Noch kein Kontakt und Archiv.** „Noch kein Kontakt“ zeigt, wen du noch gar
   nicht eingetragen hast. „Archivieren“ nimmt eine Person aus allen Listen,
   im „Archiv“ holst du sie mit „Wiederherstellen“ zurück.
@@ -59,6 +61,33 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 - **Fällig am.** Unter „Intervall in Tagen“ und „Nächster Termin“ zeigt die
   Personenseite Zustand, letzten Kontakt und „Fällig am“. Der nächste Termin
   ersetzt das Intervall ein Mal.
+- **Angehörige.** Auf der Personenseite steht unter „Zuletzt besprochen“ der
+  Abschnitt „Angehörige“: Name, Rolle (Partner/in, Kind, Elternteil,
+  Geschwister oder „Sonstiges“ mit eigenem Wort, zum Beispiel Patenkind) und
+  auf Wunsch der Geburtstag. Mit „Angehörigen hinzufügen“ trägst du jemanden
+  ein; „Bearbeiten“ ändert den Eintrag an Ort und Stelle, „Löschen“ fragt vorher
+  nach.
+- **Angehörige mit einer Person in der App verknüpfen.** Ist ein Angehöriger
+  selbst eine Person in Bindung, wählst du sie beim Hinzufügen unter „In der
+  App“ oder später mit „Verknüpfen“ aus (Suche nach dem Namen). Bei der anderen
+  Person entsteht dann der Eintrag mit der umgekehrten Rolle: Ist Ben für Anna
+  ein Kind, ist Anna bei Ben ein Elternteil. Diese Rolle lässt sich bei Ben
+  getrennt ändern. Der Name führt per Klick zur anderen Personenseite.
+  „Verknüpfung lösen“ und „Löschen“ entfernen auch den Eintrag auf der anderen
+  Seite; die Rückfrage sagt vorher, was verschwindet.
+- **Stichtage.** Unter den Angehörigen steht „Stichtage“: Geburtstage,
+  Jahrestage oder benannte Tage, mit oder ohne Jahr („24. März“, „24. März
+  1986“). Zu jedem steht, wann er das nächste Mal ist („in 12 Tagen“, „heute“),
+  und, wenn das Jahr bekannt ist, wie alt oder wie viele Jahre („wird 40“, „10
+  Jahre“). Mit „Stichtag hinzufügen“ legst du einen an; der „Vorlauf in Tagen“
+  ersetzt für diesen Tag deine Vorgabe von 7 Tagen. Der Geburtstag eines
+  Angehörigen erscheint hier von selbst und wird bei den Angehörigen
+  geändert.
+- **Stichtage in der Liste.** Liegt ein Stichtag im Vorlauf, steht die Person
+  unter „Diese Woche“, und ihre Zeile bekommt eine zweite, grün gerahmte
+  Plakette neben dem Zustand: „Geburtstag in 4 Tagen“, „Jahrestag heute“. Ihr
+  Zustand (zum Beispiel „überfällig“) bleibt dabei, wie er ist. Alles ändert
+  sich sofort, ohne dass die Seite neu lädt.
 
 - **Anmeldung.** Bindung ist eine Web-App mit eigener Anmeldung: jeder Nutzer
   sieht nur seine eigenen Einträge. Angelegt werden Nutzer auf dem Server mit

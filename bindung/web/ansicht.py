@@ -25,7 +25,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
-from bindung import faelligkeit, kontakte, personen
+from bindung import angehoerige, faelligkeit, kontakte, personen, stichtage
 from bindung.web import basis
 
 _FILTER = (personen.FILTER_OHNE_KONTAKT, personen.FILTER_ARCHIV)
@@ -122,20 +122,21 @@ class Zeile:
     bindung: faelligkeit.Bindung | None
     plakette: faelligkeit.Plakette | None
     notiz: str
+    #: Der naechste Stichtag im Vorlauf: die zweite Plakette der Zeile.
+    stichtag: stichtage.Vorkommen | None = None
 
 
 def stichtag_personen(con, nutzer_id: int, heute: dt.date) -> set[int]:
     """Personen mit einem Stichtag im Vorlauf -- sie stehen auf der Karte „Diese Woche“.
 
-    HAKEN fuer WP3: Stichtage gibt es noch nicht, die Menge ist leer. Mit WP3
-    liefert diese eine Funktion die Nummern; Karten, Zaehler und Filter ziehen
-    sie ohne weitere Aenderung mit.
+    Ein Stichtag aendert den Zustand der Person nicht (PLAN.md, Abschnitt 6);
+    `faelligkeit.karten_nummern` stellt sie nur zusaetzlich auf die Karte.
     """
-    return set()
+    return {v.person_id for v in stichtage.im_vorlauf(con, nutzer_id, heute)}
 
 
 def _zeilen(con, nutzer_id: int, ansicht: Ansicht, bindungen: dict,
-            karten: dict[str, set[int]]) -> list[Zeile]:
+            karten: dict[str, set[int]], vorlauf: dict[int, stichtage.Vorkommen]) -> list[Zeile]:
     heute = personen.heute(con, nutzer_id)
     archiv = ansicht.filter == personen.FILTER_ARCHIV
     gefunden = personen.liste(
@@ -155,7 +156,8 @@ def _zeilen(con, nutzer_id: int, ansicht: Ansicht, bindungen: dict,
             # Was zuletzt besprochen wurde; die Profilnotiz nur, wo es noch keinen echten
             # Kontakt gibt (eine Schaetzung hat nie eine Notiz).
             notizen.get(person["id"], "") if person["id"] in mit_kontakt
-            else (person["profilnotiz"] or "")))
+            else (person["profilnotiz"] or ""),
+            None if archiv else vorlauf.get(person["id"])))
     return zeilen
 
 
@@ -168,7 +170,8 @@ def kontext_bauen(request: Request, ansicht: Ansicht) -> dict:
     titel = {personen.FILTER_OHNE_KONTAKT: "Noch kein Kontakt",
              personen.FILTER_ARCHIV: "Archiv"}.get(ansicht.filter or "")
     bindungen = faelligkeit.bindungen(con, nutzer_id, heute)
-    karten = faelligkeit.karten_nummern(bindungen, stichtag_personen(con, nutzer_id, heute))
+    vorlauf = stichtage.je_person(stichtage.im_vorlauf(con, nutzer_id, heute))
+    karten = faelligkeit.karten_nummern(bindungen, set(vorlauf))
     return {
         "nutzer": nutzer,
         "ansicht": ansicht,
@@ -179,7 +182,7 @@ def kontext_bauen(request: Request, ansicht: Ansicht) -> dict:
         "tag": tag,
         "titel": titel or (tag["name"] if tag else "Alle"),
         "karten": {name: len(nummern) for name, nummern in karten.items()},
-        "zeilen": _zeilen(con, nutzer_id, ansicht, bindungen, karten),
+        "zeilen": _zeilen(con, nutzer_id, ansicht, bindungen, karten, vorlauf),
     }
 
 
@@ -201,6 +204,11 @@ def person_daten(request: Request, person) -> dict:
         "arten": kontakte.ARTEN,
         "art_namen": kontakte.ART_NAMEN,
         "gewaehlt": personen.tags_der_person(con, nutzer_id, person["id"]),
+        "angehoerige": angehoerige.liste(con, nutzer_id, person["id"]),
+        "rollen": angehoerige.ROLLEN,
+        "stichtage": stichtage.liste(con, nutzer_id, person["id"], heute),
+        "stichtag_arten": stichtage.ARTEN,
+        "monate": stichtage.MONATE,
     }
 
 
@@ -217,6 +225,24 @@ def faelligkeit_teil(request: Request, kontext: dict, person) -> str:
     """Zustand, letzter Kontakt und Faellig am der Person -- nach jeder Aenderung neu."""
     daten = person_daten(request, person)
     return teil_rendern("_faelligkeit.html", kontext, **daten, oob_faelligkeit=True)
+
+
+def familie_teile(request: Request, kontext: dict, person, *, haupt: str, **mehr) -> list[str]:
+    """Angehoerige und Stichtage der Person, neu gezeichnet.
+
+    Beide haengen aneinander (der Geburtstag eines Angehoerigen ist ein Stichtag),
+    deshalb kommen sie immer zusammen. `haupt` (`angehoerige` oder `stichtage`)
+    ist der Teil, der ins Ziel der Anfrage geht; der andere tauscht sich per
+    `hx-swap-oob`. `mehr` (Meldung, Formularwerte) geht nur an den Hauptteil.
+    """
+    daten = person_daten(request, person)
+    teile = []
+    # Der Hauptteil zuerst: HTMX tauscht den ersten Teil ins Ziel, die uebrigen per oob.
+    for name in sorted(("angehoerige", "stichtage"), key=lambda n: n != haupt):
+        oob = {f"oob_{name}": name != haupt}
+        teile.append(teil_rendern(f"_{name}.html", kontext, **daten, **oob,
+                                  **(mehr if name == haupt else {})))
+    return teile
 
 
 def aktualisierung(kontext: dict, *, seitenleiste: bool = True, liste: bool = True) -> list[str]:

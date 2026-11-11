@@ -45,6 +45,10 @@
 
   {% include "_verlauf.html" %}
 
+  {% include "_angehoerige.html" %}
+
+  {% include "_stichtage.html" %}
+
   <form class="stamm" hx-post="/personen/{{ person.id }}" hx-trigger="change, submit" hx-swap="none" hx-sync="this:queue last">
     <div class="felder">
       <div class="feld">

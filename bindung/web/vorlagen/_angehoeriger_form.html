@@ -1,0 +1,31 @@
+{# Ein Angehöriger zum Bearbeiten, an Ort und Stelle. Das Gegenstück bei der anderen Person bleibt unberührt. #}
+{% from "_makros.html" import datumsfelder %}
+<li class="posten posten-bearbeiten" id="angehoeriger-{{ a.id }}">
+  <form class="posten-formular" hx-post="/angehoerige/{{ a.id }}" hx-target="#angehoerige" hx-swap="outerHTML">
+    {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+    <div class="felder">
+      <div class="feld">
+        <label for="angehoeriger-name-{{ a.id }}">Name</label>
+        <input type="text" id="angehoeriger-name-{{ a.id }}" name="name" value="{{ werte.name }}" maxlength="200" autocomplete="off" required>
+      </div>
+      <div class="feld">
+        <label for="angehoeriger-rolle-{{ a.id }}">Rolle</label>
+        <select id="angehoeriger-rolle-{{ a.id }}" name="rolle">
+          {% for schluessel, wort in rollen.items() %}
+          <option value="{{ schluessel }}"{% if werte.rolle == schluessel %} selected{% endif %}>{{ wort }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="feld feld-breit">
+        <label for="angehoeriger-rolle-text-{{ a.id }}">Bei „Sonstiges“: was ist die Person für sie?</label>
+        <input type="text" id="angehoeriger-rolle-text-{{ a.id }}" name="rolle_text" value="{{ werte.rolle_text }}" maxlength="100" autocomplete="off">
+      </div>
+    </div>
+    {{ datumsfelder("angehoeriger-" ~ a.id, werte, monate, "Geburtstag (optional)") }}
+    {% if a.verknuepfte_person_id %}<p class="hilfe">Die Rolle bei {{ a.verknuepft_name }} ändert sich dadurch nicht; dort bearbeitest du sie getrennt.</p>{% endif %}
+    <div class="knopfreihe">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <button type="button" class="knopf" hx-get="/angehoerige/{{ a.id }}" hx-target="#angehoeriger-{{ a.id }}" hx-swap="outerHTML">Abbrechen</button>
+    </div>
+  </form>
+</li>
