@@ -1,0 +1,56 @@
+{% from "_makros.html" import tagwahl %}
+<form class="blatt" hx-post="/personen" hx-target="#personenseite" hx-swap="outerHTML">
+  <header class="kopfleiste">
+    <button type="button" class="zurueck" data-zeige="liste" aria-label="Zurück zur Liste">‹ Zurück</button>
+    <h2 class="blatt-titel">Person hinzufügen</h2>
+  </header>
+  {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+  <div class="felder">
+    <div class="feld feld-breit">
+      <label for="neu-name">Name</label>
+      <input type="text" id="neu-name" name="name" value="{{ werte.name or '' }}" maxlength="200" autocomplete="off" autofocus required>
+    </div>
+    <div class="feld">
+      <label for="neu-firma">Firma</label>
+      <input type="text" id="neu-firma" name="firma" value="{{ werte.firma or '' }}" maxlength="200" autocomplete="off">
+    </div>
+    <div class="feld">
+      <label for="neu-rolle">Rolle</label>
+      <input type="text" id="neu-rolle" name="rolle" value="{{ werte.rolle or '' }}" maxlength="200" autocomplete="off">
+    </div>
+    <div class="feld">
+      <label for="neu-telefon">Telefon</label>
+      <input type="tel" id="neu-telefon" name="telefon" value="{{ werte.telefon or '' }}" maxlength="60" autocomplete="off">
+    </div>
+    <div class="feld">
+      <label for="neu-email">E-Mail</label>
+      <input type="email" id="neu-email" name="email" value="{{ werte.email or '' }}" maxlength="200" autocomplete="off">
+    </div>
+    <div class="feld">
+      <label for="neu-ort">Ort</label>
+      <input type="text" id="neu-ort" name="ort" value="{{ werte.ort or '' }}" maxlength="200" autocomplete="off">
+    </div>
+    <div class="feld">
+      <label for="neu-herkunft">Herkunft</label>
+      <input type="text" id="neu-herkunft" name="herkunft" value="{{ werte.herkunft or '' }}" maxlength="500" placeholder="Wie habt ihr euch kennengelernt?" autocomplete="off">
+    </div>
+    <div class="feld feld-breit">
+      <label for="neu-profilnotiz">Profilnotiz</label>
+      <textarea id="neu-profilnotiz" name="profilnotiz" data-diktat rows="4">{{ werte.profilnotiz or '' }}</textarea>
+    </div>
+  </div>
+  {% if tags %}
+  <fieldset class="gruppe">
+    <legend>Tags</legend>
+    {{ tagwahl(tags, gewaehlt) }}
+  </fieldset>
+  {% endif %}
+  <div class="feld">
+    <label for="neu-neuer-tag">Neuer Tag (optional)</label>
+    <input type="text" id="neu-neuer-tag" name="neuer_tag" value="{{ werte.neuer_tag or '' }}" maxlength="60" autocomplete="off">
+  </div>
+  <div class="knopfreihe">
+    <button type="submit" class="knopf knopf-primaer">Anlegen</button>
+    <button type="button" class="knopf" data-zeige="liste" hx-get="/personen/leer" hx-target="#personenseite" hx-swap="outerHTML">Abbrechen</button>
+  </div>
+</form>

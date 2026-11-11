@@ -1,0 +1,5 @@
+<p id="kontaktlinks" class="kontaktlinks"{% if oob_links %} hx-swap-oob="true"{% endif %}>
+  {% if person.telefon %}<a href="tel:{{ person.telefon|telefonnummer }}">{{ person.telefon }}</a>{% endif %}
+  {% if person.email %}<a href="mailto:{{ person.email }}">{{ person.email }}</a>{% endif %}
+  {% if person.ort %}<span>{{ person.ort }}</span>{% endif %}
+</p>

@@ -1,0 +1,42 @@
+{# Seitenleiste: Alle, Noch kein Kontakt, Archiv, je Tag ein Eintrag. Wird bei Aenderungen per hx-swap-oob neu gezeichnet. #}
+{% macro eintrag(name, ziel, anzahl, aktiv) %}
+<li><a class="eintrag{% if aktiv %} eintrag-aktiv{% endif %}" href="{{ ziel.url() }}" hx-get="{{ ziel.url('/liste') }}" hx-target="#liste" hx-swap="outerHTML"{% if aktiv %} aria-current="page"{% endif %}><span class="eintrag-name">{{ name }}</span><span class="zahl">{{ anzahl }}</span></a></li>
+{% endmacro %}
+<nav id="seitenleiste" class="seitenleiste" aria-label="Seitenleiste"{% if oob_seitenleiste %} hx-swap-oob="true"{% endif %}>
+  <ul class="eintraege">
+    {{ eintrag("Alle", neue_ansicht(), zaehler.alle, not ansicht.tag and not ansicht.filter) }}
+    {{ eintrag("Noch kein Kontakt", neue_ansicht(filter="ohne_kontakt"), zaehler.ohne_kontakt, ansicht.filter == "ohne_kontakt") }}
+    {{ eintrag("Archiv", neue_ansicht(filter="archiv"), zaehler.archiv, ansicht.filter == "archiv") }}
+  </ul>
+
+  <h2 class="abschnitt">Tags</h2>
+  {% if tags %}
+  <ul class="eintraege">
+    {% for t in tags %}
+    {{ eintrag(t.name, neue_ansicht(tag=t.id), t.anzahl, ansicht.tag == t.id and not ansicht.filter) }}
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="leer leer-klein">Noch keine Tags.</p>
+  {% endif %}
+
+  <details class="tag-neu">
+    <summary class="knopf knopf-text">Tag hinzufügen</summary>
+    <form class="tag-neu-formular" hx-post="/tags" hx-swap="none">
+      <div class="feld">
+        <label for="tag-name">Name des Tags</label>
+        <input type="text" id="tag-name" name="name" maxlength="60" autocomplete="off" required>
+      </div>
+      <button type="submit" class="knopf knopf-primaer">Hinzufügen</button>
+    </form>
+    <div id="seitenleistenmeldung" aria-live="polite"></div>
+  </details>
+
+  <div class="seitenleiste-fuss">
+    <span class="nutzername">{{ nutzer["name"] }}</span>
+    <a class="eintrag" href="/einstellungen"><span class="eintrag-name">Einstellungen</span></a>
+    <form method="post" action="/abmelden">
+      <button type="submit" class="knopf knopf-text">Abmelden</button>
+    </form>
+  </div>
+</nav>

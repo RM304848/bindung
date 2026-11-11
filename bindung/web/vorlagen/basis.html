@@ -4,10 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
-  <meta name="htmx-config" content='{"allowEval": false, "allowScriptTags": false}'>
+  <meta name="htmx-config" content='{"allowEval": false, "allowScriptTags": false, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "422", "swap": true}, {"code": "[45]..", "swap": false, "error": true}]}'>
   <title>{% block titel %}Bindung{% endblock %}</title>
   <link rel="stylesheet" href="/statisch/stil.css">
   <script src="/statisch/htmx.min.js" defer></script>
+  <script src="/statisch/bindung.js" defer></script>
 </head>
 <body class="{% block koerper %}{% endblock %}">
 {% block inhalt %}{% endblock %}

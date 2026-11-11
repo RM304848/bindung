@@ -1,0 +1,36 @@
+<div id="listenkoerper" class="listenkoerper"{% if oob_listenkoerper %} hx-swap-oob="true"{% endif %}>
+  {% if tag %}
+  <details class="tag-verwalten">
+    <summary class="knopf knopf-text">Tag bearbeiten</summary>
+    <form class="tag-verwalten-formular" hx-post="/tags/{{ tag.id }}" hx-swap="none">
+      <div class="feld">
+        <label for="tag-umbenennen">Neuer Name</label>
+        <input type="text" id="tag-umbenennen" name="name" value="{{ tag.name }}" maxlength="60" autocomplete="off" required>
+      </div>
+      <button type="submit" class="knopf">Umbenennen</button>
+    </form>
+    <form hx-post="/tags/{{ tag.id }}/loeschen" hx-swap="none" hx-confirm="Den Tag „{{ tag.name }}“ löschen? Die Personen bleiben erhalten.">
+      <button type="submit" class="knopf knopf-gefahr">Tag löschen</button>
+    </form>
+  </details>
+  {% endif %}
+  <div id="listenmeldung" aria-live="polite"></div>
+
+  {% if personen %}
+  <ul class="zeilen">
+    {% for p in personen %}
+    {% include "_zeile.html" %}
+    {% endfor %}
+  </ul>
+  {% elif ansicht.suche %}
+  <p class="leer">Niemand gefunden für „{{ ansicht.suche }}“.</p>
+  {% elif ansicht.filter == "archiv" %}
+  <p class="leer">Das Archiv ist leer. Wer dir nicht mehr wichtig ist, geht dorthin und kann zurückgeholt werden.</p>
+  {% elif ansicht.filter == "ohne_kontakt" %}
+  <p class="leer">Zu allen ist ein Kontakt eingetragen.</p>
+  {% elif tag %}
+  <p class="leer">Diesem Tag ist noch niemand zugeordnet. Wähle ihn auf der Personenseite aus.</p>
+  {% else %}
+  <p class="leer">Noch keine Personen. Mit „Person hinzufügen“ oder „Mehrere hinzufügen“ legst du die ersten an.</p>
+  {% endif %}
+</div>

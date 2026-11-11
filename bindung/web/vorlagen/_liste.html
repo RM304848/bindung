@@ -1,0 +1,40 @@
+{# Liste: Kopf, Karten, Suche, Knoepfe und die Personen. Die Suche steht ausserhalb von #listenkoerper, damit Tippen nie ihr Feld ersetzt. #}
+<section id="liste" class="liste" aria-label="Liste"{% if oob_liste %} hx-swap-oob="true"{% endif %}>
+  <header class="kopfleiste">
+    <button type="button" class="zurueck" data-zeige="seitenleiste" aria-label="Zurück zur Seitenleiste">‹ Zurück</button>
+    {% include "_listentitel.html" %}
+  </header>
+
+  <div class="karten">
+    <button type="button" class="karte karte-aufmerksamkeit">
+      <span class="karte-zahl">0</span>
+      <span class="karte-name">Braucht Aufmerksamkeit</span>
+    </button>
+    <button type="button" class="karte karte-erkaltet">
+      <span class="karte-zahl">0</span>
+      <span class="karte-name">Erkaltet</span>
+    </button>
+    <button type="button" class="karte karte-woche">
+      <span class="karte-zahl">0</span>
+      <span class="karte-name">Diese Woche</span>
+    </button>
+  </div>
+
+  <div class="werkzeuge">
+    <form class="suche" role="search" hx-get="/liste/suche" hx-trigger="input delay:300ms, submit" hx-target="#listenkoerper" hx-swap="outerHTML">
+      {% if ansicht.tag %}<input type="hidden" name="tag" value="{{ ansicht.tag }}">{% endif %}
+      {% if ansicht.filter %}<input type="hidden" name="filter" value="{{ ansicht.filter }}">{% endif %}
+      {% if ansicht.person %}<input type="hidden" name="person" value="{{ ansicht.person }}">{% endif %}
+      <div class="feld feld-suche">
+        <label for="suche" class="nur-lesegeraet">Suche</label>
+        <input type="search" id="suche" name="suche" value="{{ ansicht.suche }}" placeholder="Suchen" autocomplete="off">
+      </div>
+    </form>
+    <div class="knopfreihe">
+      <button type="button" class="knopf knopf-primaer" hx-get="/personen/neu" hx-target="#personenseite" hx-swap="outerHTML">Person hinzufügen</button>
+      <button type="button" class="knopf" hx-get="/personen/mehrere" hx-target="#personenseite" hx-swap="outerHTML">Mehrere hinzufügen</button>
+    </div>
+  </div>
+
+  {% include "_listenkoerper.html" %}
+</section>

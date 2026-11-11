@@ -338,3 +338,38 @@ Small decisions taken while building WP0, where the plan was silent:
   person pane in WP1.
 - **`/einstellungen`** is linked from the sidebar but the page itself belongs
   to WP4/WP5/WP6; until then the link ends on the server's 404.
+
+Small decisions taken while building WP1, where the plan was silent:
+
+- **View state lives in the URL**: `/?tag=3&filter=archiv&suche=anna&person=5`.
+  The server writes it (`HX-Push-Url` when the user navigates, `HX-Replace-Url`
+  while searching or saving), so reload and the back button show the same
+  thing. Parts for HTMX (`/liste`, `/personen/<id>` ...) redirect to the full
+  page when opened without HTMX. Mutations learn the open view from
+  `HX-Current-URL`; a tag or person in it that is not the user's is dropped
+  silently, while a foreign id in a path or in `GET /?tag=` / `?person=` is a 404.
+- **Phone layout**: `data-ansicht` on `.app` (`seitenleiste`, `liste`, `person`)
+  shows one column below 768 px. The page opens on the sidebar (as Apple
+  Reminders does on the iPhone); the server tells the browser the column to show
+  after every partial answer (`HX-Trigger: {"spalte": ...}`), the back arrows
+  are plain `data-zeige` buttons in `bindung.js`.
+- **Inline editing** is one form per person that posts on `change` and returns
+  only out-of-band parts (status "Gespeichert", contact links, list rows); an
+  invalid value answers 422 and replaces the page with the stored state plus the
+  message. The form reads raw form data because FastAPI turns an empty optional
+  form value into `None`, which would make clearing a field impossible.
+- **Search and sorting happen in Python** (`casefold`), not in SQL: SQLite's
+  `LIKE`/`NOCASE` only fold ASCII, and a search for "ärztin" must find "Ärztin".
+  Tag names are unique per user by the same rule (`Ärzte` = `ärzte`). Lists are
+  short enough (hundreds) for this to cost nothing.
+- **Tag counts and archived people**: a tag's count and "Alle" count only active
+  people; the archive has its own count. A search inside a list stays inside that
+  list (tag or archive).
+- **"Mehrere hinzufügen"** skips only names repeated inside the block, not names
+  that already exist in the app; two different people may share a name. It also
+  accepts one optional new tag name for the whole batch. Tags may be created in
+  the "Person hinzufügen" form the same way.
+- **Tag management** (rename, delete) sits behind "Tag bearbeiten" in the list of
+  the tag itself; deleting asks for confirmation and returns to "Alle".
+- **Cards stay at 0** in WP1 (they are buttons without a filter yet); WP2 fills
+  them and gives the circle in a row its meaning.

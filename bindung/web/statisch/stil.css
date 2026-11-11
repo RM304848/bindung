@@ -62,7 +62,8 @@ body {
   font: 1rem/1.45 var(--schrift);
 }
 
-h1, h2, p, ul { margin: 0; padding: 0; }
+h1, h2, h3, p, ul, fieldset, legend { margin: 0; padding: 0; }
+fieldset { border: 0; min-width: 0; }
 ul { list-style: none; }
 
 a { color: var(--akzent); }
@@ -116,7 +117,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf-text:hover:not(:disabled) { background: var(--akzent-leise); }
 
 input[type="text"], input[type="password"], input[type="search"], input[type="email"],
-select, textarea {
+input[type="tel"], input[type="date"], input[type="number"], select, textarea {
   width: 100%;
   min-height: var(--ziel);
   padding: 0 12px;
@@ -271,16 +272,158 @@ textarea { padding: 10px 12px; }
 .meldung { padding: 10px 12px; border-radius: 8px; }
 .meldung-fehler { background: var(--fehler-grund); color: var(--fehler); }
 
+/* --------------------------------------------------- Kopf einer Spalte, Zurueck */
+
+.kopfleiste { display: flex; align-items: center; gap: 8px; min-height: var(--ziel); }
+.kopfleiste > :last-child { margin-left: auto; }
+.kopfleiste > .listentitel, .kopfleiste > .blatt-titel { margin-left: 0; }
+
+/* Auf dem Desktop sind alle drei Spalten da; der Pfeil gehoert dem Telefon. */
+.zurueck {
+  display: none;
+  align-items: center;
+  min-height: var(--ziel);
+  padding: 0 12px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--akzent);
+  cursor: pointer;
+}
+
+.listentitel, .blatt-titel { font-size: 1.25rem; font-weight: 600; }
+
+.speicherstatus { font-size: 0.8125rem; color: var(--text-leise); }
+
+/* ------------------------------------------------------------ Liste: Personen */
+
+.listenkoerper { display: flex; flex-direction: column; gap: 8px; }
+.zeilen { display: flex; flex-direction: column; gap: 2px; }
+
+.zeile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--ziel);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+.zeile:hover { background: var(--flaeche); }
+.zeile-ausgewaehlt, .zeile-ausgewaehlt:hover { background: var(--akzent-leise); }
+
+.kreis {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--linie);
+  border-radius: 50%;
+}
+
+.zeile-text { display: flex; flex-direction: column; min-width: 0; }
+.zeile-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zeile-firma, .zeile-notiz {
+  font-size: 0.875rem;
+  color: var(--text-leise);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-verwalten, .tag-neu { display: flex; flex-direction: column; gap: 8px; }
+.tag-verwalten-formular, .tag-neu-formular, .tag-neu-zeile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 12px;
+}
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+.knopf-gefahr { color: var(--fehler); }
+
+/* ------------------------------------------------------------- Personenseite */
+
+.person, .blatt { display: flex; flex-direction: column; gap: var(--abstand); max-width: 720px; }
+
+.stamm { display: flex; flex-direction: column; gap: var(--abstand); }
+.person-kopf { display: flex; flex-direction: column; gap: 8px; }
+.person-kopf-zeile { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+
+/* Inline bearbeiten: die Felder sehen ruhig aus und zeigen erst beim Anfassen den Rand. */
+.stamm input, .stamm textarea { border-color: transparent; background: var(--flaeche-leise); }
+.stamm input:hover, .stamm textarea:hover { border-color: var(--linie); }
+.stamm input:focus, .stamm textarea:focus { border-color: var(--fokus); background: var(--flaeche); }
+.stamm .eingabe-gross { font-size: 1.5rem; font-weight: 600; min-height: 52px; }
+
+.kontaktlinks { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--text-leise); }
+.kontaktlinks:not(:has(*)) { display: none; }
+.kontaktlinks a, .kontaktlinks span { display: inline-flex; align-items: center; min-height: var(--ziel); }
+
+.felder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.feld-breit { grid-column: 1 / -1; }
+
+.hinweis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--akzent-leise);
+}
+
+.zwischentitel { font-size: 0.875rem; font-weight: 600; color: var(--text-leise); }
+.personentags { display: flex; flex-direction: column; gap: 8px; }
+.person-fuss { padding-top: var(--abstand); border-top: 1px solid var(--linie); }
+
+/* ------------------------------------------------------------ Chips, Blaetter */
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip-wahl { position: relative; display: inline-flex; cursor: pointer; }
+.chip-wahl input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.chip-wahl span {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ziel);
+  padding: 0 16px;
+  border: 1px solid var(--linie);
+  border-radius: 999px;
+  background: var(--flaeche);
+}
+.chip-wahl input:checked + span {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: var(--akzent-text);
+}
+.chip-wahl input:focus-visible + span { outline: 2px solid var(--fokus); outline-offset: 2px; }
+
+.gruppe { display: flex; flex-direction: column; gap: 8px; }
+.gruppe > legend { margin-bottom: 8px; font-size: 0.875rem; color: var(--text-leise); }
+.optionen { display: flex; flex-direction: column; gap: 2px; }
+.option { display: flex; align-items: center; gap: 10px; min-height: var(--ziel); cursor: pointer; }
+.hilfe { font-size: 0.8125rem; color: var(--text-leise); }
+
 /* ---------------------------------------------------------- Schmale Fenster */
 
+/* Unter 768 px ist genau eine Spalte offen: Seitenleiste, Liste oder Person
+   (data-ansicht am .app, gesetzt vom Server und von bindung.js). */
 @media (max-width: 767px) {
-  .app {
-    display: flex;
-    flex-direction: column;
-    height: auto;
+  .app { display: block; height: auto; }
+  .seitenleiste, .liste, .personenseite {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-y: visible;
+    border-right: 0;
   }
-  .seitenleiste, .liste, .personenseite { overflow-y: visible; }
-  .seitenleiste, .liste { border-right: 0; border-bottom: 1px solid var(--linie); }
   .personenseite { padding: var(--abstand); }
-  .seitenleiste-fuss { margin-top: var(--abstand); }
+  .app[data-ansicht="seitenleiste"] > .liste,
+  .app[data-ansicht="seitenleiste"] > .personenseite,
+  .app[data-ansicht="liste"] > .seitenleiste,
+  .app[data-ansicht="liste"] > .personenseite,
+  .app[data-ansicht="person"] > .seitenleiste,
+  .app[data-ansicht="person"] > .liste { display: none; }
+  .zurueck { display: inline-flex; }
+  .felder, .person-kopf-zeile { grid-template-columns: minmax(0, 1fr); }
 }

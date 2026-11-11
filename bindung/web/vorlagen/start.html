@@ -2,61 +2,9 @@
 {% block titel %}Bindung{% endblock %}
 {% block koerper %}seite-start{% endblock %}
 {% block inhalt %}
-<div class="app">
-
-  <nav class="seitenleiste" aria-label="Seitenleiste">
-    <ul class="eintraege">
-      <li><a class="eintrag eintrag-aktiv" href="/" aria-current="page"><span>Alle</span><span class="zahl">0</span></a></li>
-      <li><a class="eintrag" href="/"><span>Noch kein Kontakt</span><span class="zahl">0</span></a></li>
-      <li><a class="eintrag" href="/"><span>Archiv</span><span class="zahl">0</span></a></li>
-    </ul>
-
-    <h2 class="abschnitt">Tags</h2>
-    <p class="leer leer-klein">Noch keine Tags.</p>
-    <button type="button" class="knopf knopf-text" disabled>Tag hinzufügen</button>
-
-    <div class="seitenleiste-fuss">
-      <span class="nutzername">{{ nutzer["name"] }}</span>
-      <a class="eintrag" href="/einstellungen">Einstellungen</a>
-      <form method="post" action="/abmelden">
-        <button type="submit" class="knopf knopf-text">Abmelden</button>
-      </form>
-    </div>
-  </nav>
-
-  <section class="liste" aria-label="Liste">
-    <div class="karten">
-      <button type="button" class="karte karte-aufmerksamkeit">
-        <span class="karte-zahl">0</span>
-        <span class="karte-name">Braucht Aufmerksamkeit</span>
-      </button>
-      <button type="button" class="karte karte-erkaltet">
-        <span class="karte-zahl">0</span>
-        <span class="karte-name">Erkaltet</span>
-      </button>
-      <button type="button" class="karte karte-woche">
-        <span class="karte-zahl">0</span>
-        <span class="karte-name">Diese Woche</span>
-      </button>
-    </div>
-
-    <div class="werkzeuge">
-      <div class="feld feld-suche">
-        <label for="suche" class="nur-lesegeraet">Suche</label>
-        <input type="search" id="suche" name="suche" placeholder="Suchen" autocomplete="off">
-      </div>
-      <div class="knopfreihe">
-        <button type="button" class="knopf knopf-primaer">Person hinzufügen</button>
-        <button type="button" class="knopf">Mehrere hinzufügen</button>
-      </div>
-    </div>
-
-    <p class="leer">Noch keine Personen. Mit „Person hinzufügen“ oder „Mehrere hinzufügen“ legst du die ersten an.</p>
-  </section>
-
-  <section class="personenseite" aria-label="Personenseite">
-    <p class="leer">Wähle eine Person aus der Liste. Hier siehst du, worüber ihr zuletzt gesprochen habt.</p>
-  </section>
-
+<div class="app" id="app" data-ansicht="{{ spalte }}">
+  {% include "_seitenleiste.html" %}
+  {% include "_liste.html" %}
+  {{ pane|safe }}
 </div>
 {% endblock %}

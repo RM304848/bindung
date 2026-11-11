@@ -48,12 +48,13 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 | `bindung/pfade.py` | die eine Wurzel und alle Pfade daraus |
 | `bindung/db.py`, `schema.sql` | Verbindung (`verbinden()` ist der einzige Weg), Schema, Migrationen |
 | `bindung/auth.py` | Nutzer, scrypt-Passwoerter, Sitzungen, Fehlversuche, Cookie-Optionen |
+| `bindung/personen.py` | Personen und Tags als Funktionen auf der Verbindung (Suche, Archiv, "Mehrere hinzufuegen") |
 | `bindung/cli.py` | Typer: `serve`, `ort`, `nutzer anlegen/passwort/liste` |
 | `bindung/web/server.py` | App, Tuer (Sitzungspruefung), Anmeldung und Abmeldung |
 | `bindung/web/basis.py` | Vorlagen, Verbindung und Nutzer der Anfrage, offene Pfade |
-| `bindung/web/routen/` | je Seitengruppe ein Router (`start.py`) |
-| `bindung/web/vorlagen/` | Jinja-Vorlagen (`basis`, `anmeldung`, `start`) |
-| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js` |
+| `bindung/web/routen/` | je Seitengruppe ein Router (`personen.py`: Seite, Liste, Personenseite, Tags) |
+| `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_kontaktlinks` ...) |
+| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon) |
 | `docs/design_conventions.yaml` | Regeln fuer die Oberflaeche, mit Grund; `tests/test_design.py` prueft sie |
 
 ## Tests

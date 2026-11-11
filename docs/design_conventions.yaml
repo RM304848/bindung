@@ -106,7 +106,10 @@ regeln:
       speichert Unsinn.
     pruefung:
       art: beruehrziele
-      selektoren: ['.knopf', '.eintrag', '.karte', 'input[type="text"]', 'select', 'textarea']
+      selektoren: ['.knopf', '.eintrag', '.karte', '.zeile', '.zurueck', '.option',
+                   '.chip-wahl span', '.kontaktlinks a', 'input[type="text"]',
+                   'input[type="tel"]', 'input[type="date"]', 'input[type="number"]',
+                   'select', 'textarea']
 
   - id: kein-cdn
     regel: >
@@ -120,3 +123,70 @@ regeln:
       auch_css: true
       muster: ['https?://', 'src="//', 'href="//']
       ausnahmen: []
+
+  # --------------------------------------------------------- Teilaktualisierung
+
+  - id: teile-tragen-ihre-kennung
+    regel: >
+      Jeder Teil, den HTMX tauscht (Seitenleiste, Liste, Listenkoerper,
+      Personenseite, Tag-Auswahl, Kontaktlinks, Speicherstatus), beginnt mit
+      einem Element, das seine eigene `id` traegt und bei Bedarf
+      `hx-swap-oob="true"` bekommt (je Teil eine eigene Variable `oob_...`,
+      nie eine gemeinsame, weil Teile ineinander eingebunden werden).
+    warum: >
+      Eine Antwort tauscht mehrere Spalten auf einmal. Ohne feste `id` weiss
+      HTMX nicht, was gemeint ist, und eine gemeinsame `oob`-Variable wuerde
+      beim Einbinden auch die inneren Teile ausserhalb tauschen.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/_seitenleiste.html, bindung/web/vorlagen/_liste.html,
+                bindung/web/vorlagen/_listenkoerper.html, bindung/web/vorlagen/_pane.html,
+                bindung/web/vorlagen/_personentags.html,
+                bindung/web/vorlagen/_kontaktlinks.html,
+                bindung/web/vorlagen/_speicherstatus.html]
+      muster: ['\bid="[a-z-]+"', 'hx-swap-oob="true"']
+
+  - id: speichern-beim-verlassen
+    regel: >
+      Felder der Personenseite haben keinen Speichern-Knopf: das Formular
+      speichert bei `change` (Verlassen des Feldes, Enter) und meldet
+      „Gespeichert“. Ein abgelehnter Wert kommt als 422 mit Meldung und ersetzt
+      die Seite durch den gespeicherten Stand (`HX-Retarget`).
+    warum: >
+      „Alles bearbeitet sich inline“ (PLAN.md, Abschnitt 7): nach dem Telefonat
+      Notiz tippen, Feld verlassen, fertig. Ein Knopf, den man vergisst,
+      verliert die Notiz.
+
+  - id: textfelder-tragen-den-diktat-haken
+    regel: Jedes `<textarea>` traegt das Attribut `data-diktat`.
+    warum: >
+      WP6 haengt den Mikrofonknopf an diesen Haken; fehlt er, ist ein
+      Notizfeld still ohne Diktat, und keiner merkt es.
+    pruefung:
+      art: textarea_mit_attribut
+      attribut: data-diktat
+
+  - id: auf-dem-telefon-eine-spalte
+    regel: >
+      Unter 768 px ist genau eine Spalte offen: `data-ansicht` am `.app`
+      (`seitenleiste`, `liste`, `person`) bestimmt sie. Der Server schreibt sie
+      beim Laden und schickt bei jeder Teilantwort `HX-Trigger: {"spalte": ...}`;
+      `bindung.js` setzt sie. Jede Spalte ausser der ersten hat einen
+      Zurueck-Pfeil (`data-zeige`).
+    warum: >
+      Drei Spalten passen nicht auf ein Telefon, und untereinander gestapelt
+      wuerde man auf der Suche nach der Person scrollen. So wie Erinnerungen
+      auf dem iPhone: eine Ebene, ein Pfeil zurueck.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/stil.css
+      muster: ['max-width: 767px', '\.app\[data-ansicht="person"\]', 'display: none']
+
+  - id: chips-sind-kontrollkaestchen
+    regel: >
+      Tags zum An- und Abwaehlen sind `<label class="chip-wahl">` um ein
+      Kontrollkaestchen und einen `<span>`; die Optik haengt am
+      `input:checked + span`.
+    warum: >
+      Ein echtes Kontrollkaestchen funktioniert mit Tastatur, Bildschirmleser
+      und ohne Skript; das Label macht den ganzen Chip zum 44-px-Ziel.

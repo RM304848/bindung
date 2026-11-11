@@ -86,7 +86,7 @@ def test_nach_der_anmeldung_sieht_man_die_drei_spalten(angemeldet):
     for beschriftung in ("Alle", "Noch kein Kontakt", "Archiv", "Tags", "Tag hinzufügen",
                          "Einstellungen", "Beispiel"):
         assert beschriftung in text, beschriftung
-    assert re.search(r"<button[^>]*disabled[^>]*>Tag hinzufügen</button>", text)
+    assert re.search(r"<summary[^>]*>Tag hinzufügen</summary>", text)
     # Liste: drei Karten mit 0
     for karte in ("Braucht Aufmerksamkeit", "Erkaltet", "Diese Woche"):
         assert re.search(rf'karte-zahl">0</span>\s*<span class="karte-name">{karte}<', text), karte

@@ -1,0 +1,11 @@
+{# Eine Person in der Liste. Der Kreis wird in WP2 zum Knopf „Kontakt eintragen“. #}
+<li class="zeilenpunkt">
+  <a class="zeile{% if ansicht.person == p.id %} zeile-ausgewaehlt{% endif %}" href="{{ ansicht.mit(person=p.id).url() }}" hx-get="/personen/{{ p.id }}" hx-target="#personenseite" hx-swap="outerHTML"{% if ansicht.person == p.id %} aria-current="true"{% endif %}>
+    <span class="kreis" aria-hidden="true"></span>
+    <span class="zeile-text">
+      <span class="zeile-name">{{ p.name }}</span>
+      {% if p.firma %}<span class="zeile-firma">{{ p.firma }}</span>{% endif %}
+      {% if p.profilnotiz %}<span class="zeile-notiz">{{ p.profilnotiz|erste_zeile }}</span>{% endif %}
+    </span>
+  </a>
+</li>

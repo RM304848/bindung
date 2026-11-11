@@ -1,0 +1,12 @@
+{# Die Personenseite: leer, eine Person, oder ein Formular als Blatt. #}
+<section id="personenseite" class="personenseite" aria-label="Personenseite"{% if oob_pane %} hx-swap-oob="true"{% endif %}>
+  {% if modus == "neu" %}
+    {% include "_person_form.html" %}
+  {% elif modus == "mehrere" %}
+    {% include "_mehrere.html" %}
+  {% elif person %}
+    {% include "_personenseite.html" %}
+  {% else %}
+  <p class="leer">Wähle eine Person aus der Liste. Hier siehst du, worüber ihr zuletzt gesprochen habt.</p>
+  {% endif %}
+</section>

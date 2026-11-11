@@ -1,0 +1,8 @@
+{# Tags als Chips zum An- und Abwaehlen: ein Kontrollkaestchen im Label, die Optik am Span. #}
+{% macro tagwahl(tags, gewaehlt) %}
+<div class="chips">
+  {% for t in tags %}
+  <label class="chip-wahl"><input type="checkbox" name="tag_id" value="{{ t.id }}"{% if t.id in gewaehlt %} checked{% endif %}><span>{{ t.name }}</span></label>
+  {% endfor %}
+</div>
+{% endmacro %}

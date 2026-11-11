@@ -7,6 +7,7 @@ Router, damit die Richtung der Abhaengigkeiten eindeutig bleibt
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from pathlib import Path
 
@@ -18,6 +19,23 @@ VORLAGEN = PAKET / "vorlagen"
 STATISCH = PAKET / "statisch"
 
 TEMPLATES = Jinja2Templates(directory=str(VORLAGEN))
+
+
+def _erste_zeile(text: str | None) -> str:
+    """Die erste nicht leere Zeile eines Freitexts."""
+    for zeile in (text or "").splitlines():
+        if zeile.strip():
+            return zeile.strip()
+    return ""
+
+
+def _telefonnummer(text: str | None) -> str:
+    """Eine Nummer fuer `tel:`: Ziffern und ein fuehrendes Plus, sonst nichts."""
+    return re.sub(r"(?!^\+)\D", "", (text or "").strip())
+
+
+TEMPLATES.env.filters["erste_zeile"] = _erste_zeile
+TEMPLATES.env.filters["telefonnummer"] = _telefonnummer
 
 #: Pfade, die ohne Sitzung erreichbar sind. `/kalender/` ist die Kalenderadresse
 #: mit ihrem eigenen Geheimnis in der URL (WP4).

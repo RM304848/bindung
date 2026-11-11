@@ -21,7 +21,8 @@ CSS = WURZEL / "bindung" / "web" / "statisch" / "stil.css"
 REGELN = yaml.safe_load(KONVENTIONEN.read_text(encoding="utf-8"))["regeln"]
 
 BEKANNT = {"css_farben_nur_in_wurzel", "paletten_gleich", "vorlagen_verbieten",
-           "felder_mit_beschriftung", "nur_deutsch", "datei_enthaelt", "beruehrziele"}
+           "felder_mit_beschriftung", "nur_deutsch", "datei_enthaelt", "beruehrziele",
+           "textarea_mit_attribut"}
 
 
 def _mit(art: str) -> list[dict]:
@@ -68,7 +69,8 @@ def test_every_exception_is_listed_as_open():
 
 
 def test_there_are_templates_and_a_stylesheet_to_check():
-    assert {v.name for v in _vorlagen()} >= {"basis.html", "anmeldung.html", "start.html"}
+    assert {v.name for v in _vorlagen()} >= {"basis.html", "anmeldung.html", "start.html",
+                                             "_personenseite.html", "_liste.html"}
     assert CSS.exists()
 
 
@@ -210,14 +212,24 @@ def test_visible_text_is_german(regel, vorlage):
     assert not funde, f"{regel['id']}: {vorlage.name}: {funde}"
 
 
+@pytest.mark.parametrize("regel", _mit("textarea_mit_attribut"), ids=_ids)
+@pytest.mark.parametrize("vorlage", _vorlagen(), ids=lambda v: v.name)
+def test_every_textarea_carries_the_hook(regel, vorlage):
+    attribut = regel["pruefung"]["attribut"]
+    ohne = [f.get("name") for f in _lesen(vorlage).felder
+            if f["_tag"] == "textarea" and attribut not in f]
+    assert not ohne, f"{regel['id']}: {vorlage.name}: ohne {attribut}: {ohne}"
+
+
 # ------------------------------------------------------------- Dateien, Ziele
 
 @pytest.mark.parametrize("regel", _mit("datei_enthaelt"), ids=_ids)
 def test_file_contains_what_the_convention_requires(regel):
     p = regel["pruefung"]
-    text = (WURZEL / p["datei"]).read_text(encoding="utf-8")
-    fehlt = [m for m in p["muster"] if not re.search(m, text)]
-    assert not fehlt, f"{regel['id']}: {p['datei']} fehlt: {fehlt}"
+    for datei in p.get("dateien") or [p["datei"]]:
+        text = (WURZEL / datei).read_text(encoding="utf-8")
+        fehlt = [m for m in p["muster"] if not re.search(m, text)]
+        assert not fehlt, f"{regel['id']}: {datei} fehlt: {fehlt}"
 
 
 def _regeln_des_stylesheets() -> list[tuple[list[str], str]]:

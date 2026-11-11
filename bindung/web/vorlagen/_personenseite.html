@@ -1,0 +1,77 @@
+{# Eine Person. Alle Felder stehen in einem Formular und speichern beim Verlassen eines Feldes. #}
+<article class="person">
+  <header class="kopfleiste">
+    <button type="button" class="zurueck" data-zeige="liste" aria-label="Zurück zur Liste">‹ Zurück</button>
+    {% include "_speicherstatus.html" %}
+  </header>
+
+  {% if person.archiviert_am %}
+  <div class="hinweis">
+    <p>Diese Person liegt im Archiv.</p>
+    <form hx-post="/personen/{{ person.id }}/wiederherstellen" hx-target="#personenseite" hx-swap="outerHTML">
+      <button type="submit" class="knopf">Wiederherstellen</button>
+    </form>
+  </div>
+  {% endif %}
+  {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+
+  <form class="stamm" hx-post="/personen/{{ person.id }}" hx-trigger="change, submit" hx-swap="none" hx-sync="this:queue last">
+    <div class="person-kopf">
+      <div class="feld">
+        <label for="name" class="nur-lesegeraet">Name</label>
+        <input type="text" id="name" name="name" class="eingabe-gross" value="{{ person.name }}" maxlength="200" placeholder="Name" required>
+      </div>
+      <div class="person-kopf-zeile">
+        <div class="feld">
+          <label for="firma" class="nur-lesegeraet">Firma</label>
+          <input type="text" id="firma" name="firma" value="{{ person.firma or '' }}" maxlength="200" placeholder="Firma">
+        </div>
+        <div class="feld">
+          <label for="rolle" class="nur-lesegeraet">Rolle</label>
+          <input type="text" id="rolle" name="rolle" value="{{ person.rolle or '' }}" maxlength="200" placeholder="Rolle">
+        </div>
+      </div>
+    </div>
+
+    {% include "_kontaktlinks.html" %}
+
+    <div class="felder">
+      <div class="feld">
+        <label for="telefon">Telefon</label>
+        <input type="tel" id="telefon" name="telefon" value="{{ person.telefon or '' }}" maxlength="60" autocomplete="off">
+      </div>
+      <div class="feld">
+        <label for="email">E-Mail</label>
+        <input type="email" id="email" name="email" value="{{ person.email or '' }}" maxlength="200" autocomplete="off">
+      </div>
+      <div class="feld">
+        <label for="ort">Ort</label>
+        <input type="text" id="ort" name="ort" value="{{ person.ort or '' }}" maxlength="200" autocomplete="off">
+      </div>
+      <div class="feld">
+        <label for="herkunft">Herkunft</label>
+        <input type="text" id="herkunft" name="herkunft" value="{{ person.herkunft or '' }}" maxlength="500" placeholder="Wie habt ihr euch kennengelernt?" autocomplete="off">
+      </div>
+      <div class="feld feld-breit">
+        <label for="profilnotiz">Profilnotiz</label>
+        <textarea id="profilnotiz" name="profilnotiz" data-diktat rows="5" placeholder="Wer ist die Person, was mag sie, was sollte man wissen?">{{ person.profilnotiz or '' }}</textarea>
+      </div>
+      <div class="feld">
+        <label for="intervall_tage">Intervall in Tagen</label>
+        <input type="number" id="intervall_tage" name="intervall_tage" value="{{ person.intervall_tage or '' }}" min="1" max="3650" inputmode="numeric" placeholder="{{ nutzer['vorgabe_intervall_tage'] }} (Vorgabe)">
+      </div>
+      <div class="feld">
+        <label for="naechster_termin">Nächster Termin</label>
+        <input type="date" id="naechster_termin" name="naechster_termin" value="{{ person.naechster_termin or '' }}">
+      </div>
+    </div>
+  </form>
+
+  {% include "_personentags.html" %}
+
+  {% if not person.archiviert_am %}
+  <form class="person-fuss" hx-post="/personen/{{ person.id }}/archivieren" hx-target="#personenseite" hx-swap="outerHTML">
+    <button type="submit" class="knopf">Archivieren</button>
+  </form>
+  {% endif %}
+</article>

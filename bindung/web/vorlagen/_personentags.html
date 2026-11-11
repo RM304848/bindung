@@ -1,0 +1,18 @@
+{# Die Tags einer Person als Chips: ein Tipp wählt an oder ab, ein Feld legt einen neuen Tag an. #}
+{% from "_makros.html" import tagwahl %}
+<section id="personentags" class="personentags" aria-label="Tags"{% if oob_tags %} hx-swap-oob="true"{% endif %}>
+  <h3 class="zwischentitel">Tags</h3>
+  {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+  {% if tags %}
+  <form hx-post="/personen/{{ person.id }}/tags" hx-trigger="change" hx-target="#personentags" hx-swap="outerHTML" hx-sync="this:queue last">
+    {{ tagwahl(tags, gewaehlt) }}
+  </form>
+  {% endif %}
+  <form class="tag-neu-zeile" hx-post="/personen/{{ person.id }}/tags/neu" hx-target="#personentags" hx-swap="outerHTML">
+    <div class="feld">
+      <label for="person-neuer-tag">Neuer Tag</label>
+      <input type="text" id="person-neuer-tag" name="neuer_tag" maxlength="60" autocomplete="off" required>
+    </div>
+    <button type="submit" class="knopf">Hinzufügen</button>
+  </form>
+</section>

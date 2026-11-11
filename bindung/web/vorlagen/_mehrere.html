@@ -1,0 +1,37 @@
+{% from "_makros.html" import tagwahl %}
+<form class="blatt" hx-post="/personen/mehrere" hx-target="#personenseite" hx-swap="outerHTML">
+  <header class="kopfleiste">
+    <button type="button" class="zurueck" data-zeige="liste" aria-label="Zurück zur Liste">‹ Zurück</button>
+    <h2 class="blatt-titel">Mehrere hinzufügen</h2>
+  </header>
+  {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+  <div class="feld">
+    <label for="mehrere-namen">Namen, einer pro Zeile</label>
+    <textarea id="mehrere-namen" name="namen" data-diktat rows="8" placeholder="Anna Beispiel&#10;Ben Muster; Firma Muster" autofocus required>{{ werte.namen or '' }}</textarea>
+    <p class="hilfe">Mit Semikolon kommt die Firma dazu: „Name; Firma“.</p>
+  </div>
+  {% if tags %}
+  <fieldset class="gruppe">
+    <legend>Tags für alle</legend>
+    {{ tagwahl(tags, gewaehlt) }}
+  </fieldset>
+  {% endif %}
+  <div class="feld">
+    <label for="mehrere-neuer-tag">Neuer Tag für alle (optional)</label>
+    <input type="text" id="mehrere-neuer-tag" name="neuer_tag" value="{{ werte.neuer_tag or '' }}" maxlength="60" autocomplete="off">
+  </div>
+  <fieldset class="gruppe">
+    <legend>Letzter Kontakt, grob</legend>
+    {% set auswahl = werte.letzter_kontakt or "unbekannt" %}
+    <div class="optionen">
+      <label class="option"><input type="radio" name="letzter_kontakt" value="diesen_monat"{% if auswahl == "diesen_monat" %} checked{% endif %}><span>Diesen Monat</span></label>
+      <label class="option"><input type="radio" name="letzter_kontakt" value="vor_monaten"{% if auswahl == "vor_monaten" %} checked{% endif %}><span>Vor ein paar Monaten</span></label>
+      <label class="option"><input type="radio" name="letzter_kontakt" value="ueber_ein_jahr"{% if auswahl == "ueber_ein_jahr" %} checked{% endif %}><span>Über ein Jahr her</span></label>
+      <label class="option"><input type="radio" name="letzter_kontakt" value="unbekannt"{% if auswahl == "unbekannt" %} checked{% endif %}><span>Unbekannt</span></label>
+    </div>
+  </fieldset>
+  <div class="knopfreihe">
+    <button type="submit" class="knopf knopf-primaer">Alle anlegen</button>
+    <button type="button" class="knopf" data-zeige="liste" hx-get="/personen/leer" hx-target="#personenseite" hx-swap="outerHTML">Abbrechen</button>
+  </div>
+</form>
