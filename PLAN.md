@@ -720,3 +720,12 @@ Small decisions taken while building WP6, where the plan was silent:
   fake recognition class defined on `window` before `diktat.js` was re-evaluated against it.
   Safari on iPhone (a second `webkitSpeechRecognition` on the same page, microphone
   permission in an installed web app) is untested.
+
+Found in the review of WP6:
+
+- **Static files carry a content fingerprint.** `basis.statisch('bindung.js')` renders
+  `/statisch/bindung.js?v=<10 hex of sha256>`; `basis.html` uses it for the stylesheet
+  and all scripts. Without it the browser kept the pre-WP6 `bindung.js` and `stil.css`
+  from its cache after the update and showed no mic button, although the code was
+  right. Computed once per process (`functools.cache`); `serve --reload` restarts the
+  process. `/sw.js` keeps its own `no-cache` header, as a service worker must.

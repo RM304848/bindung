@@ -8,8 +8,10 @@ Router, damit die Richtung der Abhaengigkeiten eindeutig bleibt
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import re
 import sqlite3
+from functools import cache
 from pathlib import Path
 
 from fastapi import Request
@@ -22,6 +24,26 @@ VORLAGEN = PAKET / "vorlagen"
 STATISCH = PAKET / "statisch"
 
 TEMPLATES = Jinja2Templates(directory=str(VORLAGEN))
+
+
+@cache
+def statisch_kennung(name: str) -> str:
+    """Ein kurzer Fingerabdruck des Inhalts einer statischen Datei.
+
+    Er haengt als `?v=` an der Adresse: aendert sich die Datei mit einem Update,
+    aendert sich die Adresse, und kein Browser zeigt ein altes Stylesheet oder
+    Skript aus seinem Cache. Je Prozess einmal gelesen; `serve --reload`
+    startet den Prozess neu.
+    """
+    return hashlib.sha256((STATISCH / name).read_bytes()).hexdigest()[:10]
+
+
+def statisch(name: str) -> str:
+    """Die Adresse einer statischen Datei mit Fingerabdruck, fuer die Vorlagen."""
+    return f"/statisch/{name}?v={statisch_kennung(name)}"
+
+
+TEMPLATES.env.globals["statisch"] = statisch
 
 
 def _erste_zeile(text: str | None) -> str:

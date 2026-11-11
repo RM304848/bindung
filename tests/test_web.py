@@ -127,3 +127,14 @@ def test_gueltiger_besuch_erneuert_das_cookie(angemeldet):
     antwort = angemeldet.get("/")
     assert antwort.headers["set-cookie"].startswith(f"{auth.COOKIE}=")
     assert "Max-Age=2592000" in antwort.headers["set-cookie"]
+
+
+def test_static_files_carry_a_content_fingerprint(angemeldet):
+    """Nach einem Update darf kein Browser ein altes Skript aus dem Cache zeigen."""
+    import hashlib
+
+    from bindung.web import basis
+    seite = angemeldet.get("/").text
+    for name in ("stil.css", "htmx.min.js", "diktat.js", "bindung.js"):
+        kennung = hashlib.sha256((basis.STATISCH / name).read_bytes()).hexdigest()[:10]
+        assert f"/statisch/{name}?v={kennung}" in seite

@@ -541,6 +541,20 @@ regeln:
       muster: ['\.diktat-knopf\[aria-pressed="true"\] \{ border-color: var\(--aufmerksamkeit\)',
                'diktat-puls', 'prefers-reduced-motion: reduce', 'width: var\(--ziel\)']
 
+  - id: statische-dateien-mit-fingerabdruck
+    regel: >
+      Stylesheet und Skripte werden in `basis.html` nur ueber `{{ statisch('name') }}`
+      eingebunden, nie als nackter Pfad. Die Funktion haengt einen Fingerabdruck des
+      Inhalts an (`?v=`), der sich mit jeder Aenderung der Datei aendert.
+    warum: >
+      Ohne Fingerabdruck zeigt ein Browser nach einem Update noch Tage lang das alte
+      Stylesheet oder Skript aus seinem Cache; beim Review von WP6 fehlte so der
+      Mikrofonknopf, obwohl der Code stimmte.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/basis.html]
+      muster: ["statisch\\('stil\\.css'\\)", "statisch\\('bindung\\.js'\\)"]
+
   - id: diktat-sprache-aus-den-einstellungen
     regel: >
       `diktat.js` wird vor `bindung.js` einmal in `basis.html` geladen. Die Sprache
@@ -553,7 +567,7 @@ regeln:
     pruefung:
       art: datei_enthaelt
       dateien: [bindung/web/vorlagen/basis.html]
-      muster: ['<script src="/statisch/diktat\.js" defer></script>\s*<script src="/statisch/bindung\.js" defer></script>',
+      muster: ['<script src="\{\{ statisch\(.diktat\.js.\) \}\}" defer></script>\s*<script src="\{\{ statisch\(.bindung\.js.\) \}\}" defer></script>',
                'data-diktat-sprache="\{\{ nutzer\.diktat_sprache']
 
   - id: diktat-hinter-einer-schnittstelle

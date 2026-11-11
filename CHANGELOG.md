@@ -7,6 +7,10 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 
 ### Neu
 
+- **Updates kommen sicher an.** Nach einem Update lädt der Browser Aussehen und
+  Skripte der App garantiert neu, statt tagelang eine alte Fassung aus seinem
+  Zwischenspeicher zu zeigen.
+
 - **Personen anlegen und bearbeiten.** Mit „Person hinzufügen“ legst du eine
   Person an: Name, Firma, Rolle, Telefon, E-Mail, Ort, Herkunft und
   Profilnotiz. Auf der Personenseite bearbeitest du alles direkt am Feld; beim

@@ -569,7 +569,7 @@ def test_zurueck_pfeile_fuehren_eine_spalte_nach_links(angemeldet, con, nid):
     assert re.search(r'data-zeige="seitenleiste" aria-label="Zurück zur Seitenleiste">‹ Zurück<',
                      text)
     assert re.search(r'data-zeige="liste" aria-label="Zurück zur Liste">‹ Zurück<', text)
-    assert 'src="/statisch/bindung.js"' in text
+    assert 'src="/statisch/bindung.js?v=' in text
 
 
 def test_der_server_sagt_dem_telefon_welche_spalte_offen_ist(angemeldet, con, nid):

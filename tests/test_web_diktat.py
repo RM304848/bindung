@@ -33,7 +33,7 @@ def sprache(text: str) -> str:
 
 def test_base_page_loads_the_dictation_script_once_before_the_other_script(angemeldet):
     text = angemeldet.get("/").text
-    assert text.count('src="/statisch/diktat.js"') == 1
+    assert text.count('src="/statisch/diktat.js?v=') == 1
     assert text.index("/statisch/diktat.js") < text.index("/statisch/bindung.js")
 
 
