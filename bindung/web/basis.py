@@ -7,12 +7,15 @@ Router, damit die Richtung der Abhaengigkeiten eindeutig bleibt
 
 from __future__ import annotations
 
+import datetime as dt
 import re
 import sqlite3
 from pathlib import Path
 
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
+
+from bindung import faelligkeit
 
 PAKET = Path(__file__).resolve().parent
 VORLAGEN = PAKET / "vorlagen"
@@ -34,8 +37,25 @@ def _telefonnummer(text: str | None) -> str:
     return re.sub(r"(?!^\+)\D", "", (text or "").strip())
 
 
+def _tag(wert: str | dt.date) -> dt.date:
+    return wert if isinstance(wert, dt.date) else dt.date.fromisoformat(wert)
+
+
+def _datum_de(wert: str | dt.date | None) -> str:
+    """Ein ISO-Tag als 24.09.2026."""
+    return _tag(wert).strftime("%d.%m.%Y") if wert else ""
+
+
+def _vor_datum(wert: str | dt.date, heute: dt.date) -> str:
+    """„vor 3 Wochen“ fuer ein Datum, von `heute` aus gesehen."""
+    return faelligkeit.vor_text((heute - _tag(wert)).days)
+
+
 TEMPLATES.env.filters["erste_zeile"] = _erste_zeile
 TEMPLATES.env.filters["telefonnummer"] = _telefonnummer
+TEMPLATES.env.filters["datum_de"] = _datum_de
+TEMPLATES.env.filters["vor_datum"] = _vor_datum
+TEMPLATES.env.filters["zustand_text"] = faelligkeit.zustand_text
 
 #: Pfade, die ohne Sitzung erreichbar sind. `/kalender/` ist die Kalenderadresse
 #: mit ihrem eigenen Geheimnis in der URL (WP4).

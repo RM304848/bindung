@@ -49,12 +49,15 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 | `bindung/db.py`, `schema.sql` | Verbindung (`verbinden()` ist der einzige Weg), Schema, Migrationen |
 | `bindung/auth.py` | Nutzer, scrypt-Passwoerter, Sitzungen, Fehlversuche, Cookie-Optionen |
 | `bindung/personen.py` | Personen und Tags als Funktionen auf der Verbindung (Suche, Archiv, "Mehrere hinzufuegen") |
+| `bindung/kontakte.py` | Kontakte als Funktionen: eintragen (loescht den naechsten Termin, keine Zukunft), aendern, loeschen, Zuletzt besprochen, letzte Notizen |
+| `bindung/faelligkeit.py` | Faelligkeit und Zustand nach PLAN.md 6: reine Regeln (`zustand`, `faellig_am`, `kaelte_grenze`), `bindungen()` rechnet alle Personen in einer Abfrage, Karten, Sortierung, Worte (`vor_text`, `plakette`) |
 | `bindung/cli.py` | Typer: `serve`, `ort`, `nutzer anlegen/passwort/liste` |
 | `bindung/web/server.py` | App, Tuer (Sitzungspruefung), Anmeldung und Abmeldung |
-| `bindung/web/basis.py` | Vorlagen, Verbindung und Nutzer der Anfrage, offene Pfade |
-| `bindung/web/routen/` | je Seitengruppe ein Router (`personen.py`: Seite, Liste, Personenseite, Tags) |
-| `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_kontaktlinks` ...) |
-| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon) |
+| `bindung/web/basis.py` | Vorlagen, Verbindung und Nutzer der Anfrage, offene Pfade, Filter (`datum_de`, `vor_datum`) |
+| `bindung/web/ansicht.py` | die Ansicht in der Adresse (`?tag=&filter=&karte=&suche=&person=`), Kontext fuer Seitenleiste, Karten und Liste, die Teile-Helfer (`antwort`, `aktualisierung`, `spalte_bauen`); Haken `stichtag_personen` fuer WP3 |
+| `bindung/web/routen/` | je Seitengruppe ein Router (`personen.py`: Seite, Liste, Personenseite, Tags; `kontakte.py`: Blatt Kontakt eintragen, Zuletzt besprochen) |
+| `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_karten`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_kontaktlinks`, `_verlauf`, `_kontakt_blatt`, `_faelligkeit` ...) |
+| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen) |
 | `docs/design_conventions.yaml` | Regeln fuer die Oberflaeche, mit Grund; `tests/test_design.py` prueft sie |
 
 ## Tests

@@ -1,0 +1,32 @@
+{# Kontakt eintragen: das Blatt über der Personenseite. Art als Auswahl aus fünf Feldern, Datum (heute), Notiz. #}
+<div class="ueberzug" data-blatt role="dialog" aria-modal="true" aria-labelledby="kontaktblatt-titel">
+  <form class="blatt-fenster" id="kontaktblatt" hx-post="/personen/{{ person.id }}/kontakte" hx-target="#personenseite" hx-swap="outerHTML">
+    <header class="kopfleiste">
+      <div class="blatt-kopf">
+        <h2 id="kontaktblatt-titel" class="blatt-titel">Kontakt eintragen</h2>
+        <p class="hilfe">{{ person.name }}</p>
+      </div>
+    </header>
+    {% if blatt_meldung %}<p class="meldung meldung-fehler" role="alert">{{ blatt_meldung }}</p>{% endif %}
+    <fieldset class="gruppe">
+      <legend>Art</legend>
+      <div class="segmente">
+        {% for schluessel, name in arten.items() %}
+        <label class="segment"><input type="radio" name="art" value="{{ schluessel }}"{% if kontakt_werte.art == schluessel %} checked{% endif %}><span>{{ name }}</span></label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div class="feld">
+      <label for="kontakt-datum">Datum</label>
+      <input type="date" id="kontakt-datum" name="datum" value="{{ kontakt_werte.datum }}" max="{{ heute.isoformat() }}" required>
+    </div>
+    <div class="feld">
+      <label for="kontakt-notiz">Notiz</label>
+      <textarea id="kontakt-notiz" name="notiz" data-diktat rows="6" placeholder="Worüber habt ihr gesprochen?" autofocus>{{ kontakt_werte.notiz }}</textarea>
+    </div>
+    <div class="knopfreihe">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <button type="button" class="knopf" data-schliessen>Abbrechen</button>
+    </div>
+  </form>
+</div>

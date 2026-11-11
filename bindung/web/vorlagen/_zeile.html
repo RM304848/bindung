@@ -1,11 +1,13 @@
-{# Eine Person in der Liste. Der Kreis wird in WP2 zum Knopf „Kontakt eintragen“. #}
+{# Eine Person in der Liste. Der Kreis ist der Knopf „Kontakt eintragen“, die Zeile waehlt die Person aus. Links der Kreis in der Farbe des Zustands, rechts die Plakette. #}
+{% set p = z.person %}
 <li class="zeilenpunkt">
+  <button type="button" class="kreis-knopf" hx-get="/personen/{{ p.id }}/kontakt/neu" hx-target="#personenseite" hx-swap="outerHTML" aria-label="Kontakt eintragen: {{ p.name }}"><span class="kreis{% if z.plakette %} kreis-{{ z.plakette.ton }}{% endif %}" aria-hidden="true"></span></button>
   <a class="zeile{% if ansicht.person == p.id %} zeile-ausgewaehlt{% endif %}" href="{{ ansicht.mit(person=p.id).url() }}" hx-get="/personen/{{ p.id }}" hx-target="#personenseite" hx-swap="outerHTML"{% if ansicht.person == p.id %} aria-current="true"{% endif %}>
-    <span class="kreis" aria-hidden="true"></span>
     <span class="zeile-text">
       <span class="zeile-name">{{ p.name }}</span>
       {% if p.firma %}<span class="zeile-firma">{{ p.firma }}</span>{% endif %}
-      {% if p.profilnotiz %}<span class="zeile-notiz">{{ p.profilnotiz|erste_zeile }}</span>{% endif %}
+      {% if z.notiz %}<span class="zeile-notiz">{{ z.notiz|erste_zeile }}</span>{% endif %}
     </span>
+    {% if z.plakette %}<span class="plakette plakette-{{ z.plakette.ton }}">{{ z.plakette.text }}</span>{% endif %}
   </a>
 </li>

@@ -16,14 +16,20 @@
   {% endif %}
   <div id="listenmeldung" aria-live="polite"></div>
 
-  {% if personen %}
+  {% if zeilen %}
   <ul class="zeilen">
-    {% for p in personen %}
+    {% for z in zeilen %}
     {% include "_zeile.html" %}
     {% endfor %}
   </ul>
   {% elif ansicht.suche %}
   <p class="leer">Niemand gefunden für „{{ ansicht.suche }}“.</p>
+  {% elif ansicht.karte == "aufmerksamkeit" %}
+  <p class="leer">Niemand braucht gerade Aufmerksamkeit.</p>
+  {% elif ansicht.karte == "erkaltet" %}
+  <p class="leer">Keine Bindung ist erkaltet.</p>
+  {% elif ansicht.karte == "woche" %}
+  <p class="leer">In den nächsten sieben Tagen ist niemand fällig.</p>
   {% elif ansicht.filter == "archiv" %}
   <p class="leer">Das Archiv ist leer. Wer dir nicht mehr wichtig ist, geht dorthin und kann zurückgeholt werden.</p>
   {% elif ansicht.filter == "ohne_kontakt" %}

@@ -373,3 +373,76 @@ Small decisions taken while building WP1, where the plan was silent:
   the tag itself; deleting asks for confirmation and returns to "Alle".
 - **Cards stay at 0** in WP1 (they are buttons without a filter yet); WP2 fills
   them and gives the circle in a row its meaning.
+
+Small decisions taken while building WP2, where the plan was silent:
+
+- **Boundaries.** `erkaltet` is strictly more than `min(2 × interval, 180)` days
+  (exactly at the limit is still `ueberfaellig`); `bald` includes "due today"
+  (`faellig_am == heute`), `ueberfaellig` starts the day after. A person with
+  no Kontakt stays `unbekannt` even if a next date is set: the override waits
+  for the first Kontakt. A next date in the past with a recent contact makes the
+  person `ueberfaellig`; `erkaltet` is judged on the last contact only, so an
+  override never hides a cold bond.
+- **Rough contact meets the defaults.** "Vor ein paar Monaten" is 120 days, the
+  cold limit at the default interval of 56 days is 112, so such a batch is
+  `erkaltet` at once; "Diesen Monat" (15) is `ok`, "Über ein Jahr her" (400) is
+  `erkaltet`. This follows from §5 and §6 and is intended: a rough "months ago"
+  *is* a bond that went cold. A per-person interval of 90 or more makes it
+  `ueberfaellig` instead.
+- **Row badge ("Plakette").** `unbekannt` → "noch kein Kontakt"; `erkaltet` →
+  "erkaltet"; `ueberfaellig` → "überfällig seit N Tagen"; `bald` → "fällig heute
+  / morgen / in N Tagen" (more useful than "vor 6 Wochen" for someone about to be
+  due); `ok` → relative time of the last contact. Relative time: 0 days
+  "heute", 1 "gestern", 2–13 "vor N Tagen", 14–59 "vor N Wochen" (`N = days ÷
+  7`), 60–364 "vor N Monaten" (`N = days ÷ 30`), from 365 "vor über einem Jahr".
+  The row circle takes the colour of the state (palette variables of the card it
+  belongs to); the word always stands next to it.
+- **Row text.** The first line of the latest note of a *real* Kontakt; the
+  profile note only while the person has no real Kontakt. A `schaetzung` has no
+  note and does not count as a conversation, so a person with only a rough
+  contact still shows the profile note. A real Kontakt without a note shows no
+  second line.
+- **Kontakt eintragen.** Any day up to and including today in the user's time
+  zone is accepted (back-dating is normal after a busy week); a later day is
+  rejected with a message. The art starts on "Anruf". Logging always clears the
+  next date, even for a back-dated entry. Editing or deleting a Kontakt never
+  touches the next date (it is not restored). A `schaetzung` can only change its
+  date. A deleted last Kontakt returns the person to `unbekannt`.
+- **The sheet** is a `role="dialog"` over the Personenseite (centred on the Mac,
+  bottom sheet on the phone), not a native `<dialog>`: HTMX swaps it in, and
+  closing (Abbrechen, Escape, a click beside it) needs no server because nothing
+  is saved while it is open. The circle in a row selects the person and opens the
+  sheet in one request (`GET /personen/<id>/kontakt/neu`).
+- **Cards are links** (`?karte=aufmerksamkeit|erkaltet|woche`) so the state lives
+  in the URL. A card click is list navigation like the sidebar: it closes the open
+  person, keeps tag and search, drops `filter` (Noch kein Kontakt / Archiv hold
+  nobody that a card could count). Clicking a sidebar entry resets the card. In
+  the Archiv `karte` is ignored. The counts are always over all active people,
+  whatever tag, search or card is open; opening a person or saving keeps the card
+  in the URL. Empty card lists have their own sentence.
+- **Sort order** with a card open follows §6 (erkaltet first, then `faellig_am`,
+  then name); every other list stays by name. Cards, rows and the Personenseite
+  all read the same `faelligkeit.bindungen()` result for the request: one query
+  for all of a user's people, state and sorting in Python (a few hundred people).
+- **Personenseite** now has two forms (name, company, role, contact links; then
+  the other fields) with the button "Kontakt eintragen" and "Zuletzt besprochen"
+  between them, because HTML has no nested forms. Both save on `change` as
+  before. "Fällig am", the state and the last contact sit under Intervall and
+  Nächster Termin and are redrawn (`hx-swap-oob`) after every change that touches
+  them. Archived people show "Im Archiv: keine Erinnerung." instead.
+- **Zuletzt besprochen** edits inline: "Bearbeiten" swaps one entry for a form,
+  save redraws the whole history plus Fällig am, rows, cards and sidebar (a date
+  change can reorder it and change the state); "Löschen" asks first
+  (`hx-confirm`).
+- **Search keeps the open person.** The person is not in the search form (it
+  changes without the form being redrawn), so the search request reads it from
+  `HX-Current-URL`; a person that is not the user's is dropped silently.
+- **Card labels on narrow screens** shrink with a container query on the card
+  row instead of hyphenating; the label text stays.
+- **Code layout.** The helpers every router needs (view in the URL, context for
+  sidebar/cards/list, building parts, answers) moved from `routen/personen.py`
+  to `bindung/web/ansicht.py` so `routen/kontakte.py` does not import another
+  router's private names. No behaviour change.
+- **Hook for WP3.** `ansicht.stichtag_personen()` returns the people with a
+  Stichtag in its lead window (empty until WP3); `faelligkeit.karten_nummern()`
+  already adds them to "Diese Woche" without changing anyone's state.

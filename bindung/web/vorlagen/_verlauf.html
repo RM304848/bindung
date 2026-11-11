@@ -1,0 +1,13 @@
+{# Zuletzt besprochen: die Kontakte der Person, juengster zuerst. #}
+<section id="verlauf" class="verlauf" aria-label="Zuletzt besprochen">
+  <h3 class="zwischentitel">Zuletzt besprochen</h3>
+  {% if verlauf %}
+  <ul class="verlauf-liste">
+    {% for k in verlauf %}
+    {% include "_kontakt_eintrag.html" %}
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="leer leer-klein">Noch nichts eingetragen. Mit „Kontakt eintragen“ hältst du fest, worüber ihr gesprochen habt.</p>
+  {% endif %}
+</section>

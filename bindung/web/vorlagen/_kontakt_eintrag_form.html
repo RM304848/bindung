@@ -1,0 +1,30 @@
+{# Ein Kontakt zum Bearbeiten, an Ort und Stelle. Eine Schätzung hat nur ein Datum. #}
+<li class="verlauf-eintrag verlauf-bearbeiten" id="kontakt-{{ k.id }}">
+  <form class="verlauf-formular" hx-post="/kontakte/{{ k.id }}" hx-target="#verlauf" hx-swap="outerHTML">
+    {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
+    <div class="felder">
+      <div class="feld">
+        <label for="kontakt-datum-{{ k.id }}">{% if k.art == "schaetzung" %}Geschätztes Datum{% else %}Datum{% endif %}</label>
+        <input type="date" id="kontakt-datum-{{ k.id }}" name="datum" value="{{ werte.datum }}" max="{{ heute.isoformat() }}" required>
+      </div>
+      {% if k.art != "schaetzung" %}
+      <div class="feld">
+        <label for="kontakt-art-{{ k.id }}">Art</label>
+        <select id="kontakt-art-{{ k.id }}" name="art">
+          {% for schluessel, name in arten.items() %}
+          <option value="{{ schluessel }}"{% if werte.art == schluessel %} selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="feld feld-breit">
+        <label for="kontakt-notiz-{{ k.id }}">Notiz</label>
+        <textarea id="kontakt-notiz-{{ k.id }}" name="notiz" data-diktat rows="5">{{ werte.notiz }}</textarea>
+      </div>
+      {% endif %}
+    </div>
+    <div class="knopfreihe">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <button type="button" class="knopf" hx-get="/kontakte/{{ k.id }}" hx-target="#kontakt-{{ k.id }}" hx-swap="outerHTML">Abbrechen</button>
+    </div>
+  </form>
+</li>

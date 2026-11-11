@@ -1,0 +1,13 @@
+{# Ein Kontakt in „Zuletzt besprochen“. Bearbeiten tauscht genau diese Zeile gegen ein Formular. #}
+<li class="verlauf-eintrag" id="kontakt-{{ k.id }}">
+  <div class="verlauf-kopf">
+    <span class="verlauf-datum">{{ k.datum|datum_de }}</span>
+    <span class="verlauf-art{% if k.art == 'schaetzung' %} verlauf-art-leise{% endif %}">{{ art_namen[k.art] }}</span>
+    <span class="hilfe">{{ k.datum|vor_datum(heute) }}</span>
+  </div>
+  {% if k.notiz %}<p class="verlauf-notiz">{{ k.notiz }}</p>{% endif %}
+  <div class="verlauf-aktionen">
+    <button type="button" class="knopf knopf-text" hx-get="/kontakte/{{ k.id }}/bearbeiten" hx-target="#kontakt-{{ k.id }}" hx-swap="outerHTML">Bearbeiten</button>
+    <button type="button" class="knopf knopf-text knopf-gefahr" hx-post="/kontakte/{{ k.id }}/loeschen" hx-target="#verlauf" hx-swap="outerHTML" hx-confirm="Den Kontakt vom {{ k.datum|datum_de }} löschen?">Löschen</button>
+  </div>
+</li>

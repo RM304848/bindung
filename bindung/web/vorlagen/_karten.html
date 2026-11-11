@@ -1,0 +1,14 @@
+{# Die drei Karten: Zahl und Filter. Ein Klick filtert die Liste, ein zweiter auf dieselbe Karte hebt den Filter auf. Die Zahlen gelten immer fuer alle aktiven Personen. #}
+{% macro karte(schluessel, name, klasse, ansicht, karten, neue_ansicht) %}
+{% set aktiv = ansicht.karte == schluessel %}
+{% set ziel = neue_ansicht(tag=ansicht.tag, suche=ansicht.suche, karte=None if aktiv else schluessel) %}
+<a class="karte {{ klasse }}{% if aktiv %} karte-aktiv{% endif %}" href="{{ ziel.url() }}" hx-get="{{ ziel.url('/liste') }}" hx-target="#liste" hx-swap="outerHTML"{% if aktiv %} aria-current="true"{% endif %}>
+  <span class="karte-zahl">{{ karten[schluessel] }}</span>
+  <span class="karte-name">{{ name }}</span>
+</a>
+{% endmacro %}
+<div id="karten" class="karten"{% if oob_karten %} hx-swap-oob="true"{% endif %}>
+  {{ karte("aufmerksamkeit", "Braucht Aufmerksamkeit", "karte-aufmerksamkeit", ansicht, karten, neue_ansicht) }}
+  {{ karte("erkaltet", "Erkaltet", "karte-erkaltet", ansicht, karten, neue_ansicht) }}
+  {{ karte("woche", "Diese Woche", "karte-woche", ansicht, karten, neue_ansicht) }}
+</div>

@@ -106,8 +106,8 @@ regeln:
       speichert Unsinn.
     pruefung:
       art: beruehrziele
-      selektoren: ['.knopf', '.eintrag', '.karte', '.zeile', '.zurueck', '.option',
-                   '.chip-wahl span', '.kontaktlinks a', 'input[type="text"]',
+      selektoren: ['.knopf', '.eintrag', '.karte', '.zeile', '.kreis-knopf', '.zurueck',
+                   '.option', '.chip-wahl span', '.segment span', '.kontaktlinks a', 'input[type="text"]',
                    'input[type="tel"]', 'input[type="date"]', 'input[type="number"]',
                    'select', 'textarea']
 
@@ -128,8 +128,9 @@ regeln:
 
   - id: teile-tragen-ihre-kennung
     regel: >
-      Jeder Teil, den HTMX tauscht (Seitenleiste, Liste, Listenkoerper,
-      Personenseite, Tag-Auswahl, Kontaktlinks, Speicherstatus), beginnt mit
+      Jeder Teil, den HTMX tauscht (Seitenleiste, Liste, Karten, Listenkoerper,
+      Personenseite, Tag-Auswahl, Kontaktlinks, Speicherstatus, Faelligkeit),
+      beginnt mit
       einem Element, das seine eigene `id` traegt und bei Bedarf
       `hx-swap-oob="true"` bekommt (je Teil eine eigene Variable `oob_...`,
       nie eine gemeinsame, weil Teile ineinander eingebunden werden).
@@ -143,7 +144,9 @@ regeln:
                 bindung/web/vorlagen/_listenkoerper.html, bindung/web/vorlagen/_pane.html,
                 bindung/web/vorlagen/_personentags.html,
                 bindung/web/vorlagen/_kontaktlinks.html,
-                bindung/web/vorlagen/_speicherstatus.html]
+                bindung/web/vorlagen/_speicherstatus.html,
+                bindung/web/vorlagen/_karten.html,
+                bindung/web/vorlagen/_faelligkeit.html]
       muster: ['\bid="[a-z-]+"', 'hx-swap-oob="true"']
 
   - id: speichern-beim-verlassen
@@ -190,3 +193,103 @@ regeln:
     warum: >
       Ein echtes Kontrollkaestchen funktioniert mit Tastatur, Bildschirmleser
       und ohne Skript; das Label macht den ganzen Chip zum 44-px-Ziel.
+
+  # ------------------------------------------------- Kontakte und Karten
+
+  - id: karten-sind-links-mit-adresse
+    regel: >
+      Eine Karte ist ein `<a class="karte ...">` mit `href` (die Ansicht mit
+      `?karte=...`) und `hx-get` auf `/liste`. Die aktive Karte traegt
+      `karte-aktiv` und `aria-current="true"`; ihr Link fuehrt zur Liste ohne
+      Karte zurueck. Die Karte steht in der Adresse, nicht im Skript.
+    warum: >
+      Der Zustand der Ansicht lebt in der Adresse (Neuladen, Zurueck-Taste,
+      ein Lesezeichen auf „Erkaltet“). Ein Knopf mit verstecktem Zustand haette
+      nichts davon, und ein zweiter Klick auf dieselbe Karte soll sie wieder
+      loesen, wie bei den Filtern in Erinnerungen.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_karten.html
+      muster: ['<a class="karte', 'href="\{\{ ziel\.url\(\) \}\}"',
+               'hx-get="\{\{ ziel\.url\(\x27/liste\x27\) \}\}"', 'karte-aktiv',
+               'aria-current="true"']
+
+  - id: kreis-ist-ein-knopf-neben-der-zeile
+    regel: >
+      Der Kreis vor einer Person ist ein eigener `<button class="kreis-knopf">`
+      neben dem Link der Zeile, nie darin; er oeffnet „Kontakt eintragen“ und
+      traegt ein `aria-label` mit dem Namen. Seine Farbe nennt den Zustand
+      (ueberfaellig, erkaltet, bald), die Plakette rechts nennt ihn mit Worten.
+    warum: >
+      Ein Knopf in einem Link ist ungueltiges HTML und trifft auf dem Telefon
+      mal das eine, mal das andere. Und Farbe allein sagt es Menschen mit
+      Rot-Gruen-Schwaeche nicht; das Wort steht immer dabei.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_zeile.html
+      muster: ['<button type="button" class="kreis-knopf"', 'aria-label="Kontakt eintragen',
+               'plakette plakette-']
+
+  - id: segmente-sind-optionsfelder
+    regel: >
+      Eine Auswahl aus wenigen Moeglichkeiten (Art eines Kontakts) sind
+      `<label class="segment">` um ein Optionsfeld (`type="radio"`) und einen
+      `<span>`; die Optik haengt am `input:checked + span`. Die Gruppe hat ein
+      `<legend>`.
+    warum: >
+      Wie bei den Chips: ein echtes Optionsfeld funktioniert mit Tastatur,
+      Bildschirmleser und ohne Skript, und genau eines ist immer gewaehlt. Ein
+      Auswahlmenue haette fuer fuenf Moeglichkeiten einen Tipp zu viel, den
+      man nach dem Telefonat nicht machen will.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/_kontakt_blatt.html, bindung/web/statisch/stil.css]
+      muster: ['class="segment"|\.segment input:checked \+ span']
+
+  - id: blatt-ueber-der-seite
+    regel: >
+      „Kontakt eintragen“ ist ein Blatt ueber der Personenseite:
+      `<div class="ueberzug" data-blatt role="dialog" aria-modal="true">` mit
+      einem Formular darin; mittig auf dem Mac, am unteren Rand auf dem Telefon.
+      „Abbrechen“ (`data-schliessen`), Escape und ein Klick daneben schliessen
+      es ohne den Server, Speichern tauscht die Personenseite.
+    warum: >
+      Nach einem Anruf soll man die Notiz tippen und sofort weg sein; das Blatt
+      lenkt nicht auf eine andere Seite und laesst die Person dahinter sehen.
+      Nichts ist gespeichert, solange es offen ist, also braucht das Schliessen
+      keine Antwort vom Server.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_kontakt_blatt.html
+      muster: ['class="ueberzug" data-blatt role="dialog" aria-modal="true"',
+               'data-schliessen', '<legend>Art</legend>']
+
+  - id: zustand-hat-eine-farbe-und-ein-wort
+    regel: >
+      Jeder Zustand hat eine Palettenfarbe (`--aufmerksamkeit`, `--erkaltet`,
+      `--woche`, sonst `--text-leise`) und steht immer auch als Wort da
+      (Plakette, Personenseite). Die Farben gehoeren zu den Karten: ueberfaellig
+      = Aufmerksamkeit, erkaltet = Erkaltet, bald = Diese Woche.
+    warum: >
+      Wer die drei Karten kennt, erkennt die Zeilen wieder; und eine Farbe ohne
+      Wort ist nur fuer die lesbar, die sie unterscheiden koennen.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/stil.css
+      muster: ['\.plakette-ueberfaellig \{ color: var\(--aufmerksamkeit\)',
+               '\.plakette-erkaltet \{ color: var\(--erkaltet\)',
+               '\.plakette-bald \{ color: var\(--woche\)']
+
+  - id: kartennamen-brechen-nicht-um-silben
+    regel: >
+      Die Namen der Karten werden nicht getrennt (`hyphens: none`); wird es
+      eng, schrumpft die Schrift (Container-Abfrage auf `.karten`), das Wort
+      bleibt ganz. Umbenennen ist keine Loesung.
+    warum: >
+      „Aufmerksam-keit“ sieht auf 375 px wie ein Fehler aus. Die Breite der
+      Mittelspalte, nicht des Fensters, entscheidet, wie viel Platz ein Name
+      hat, deshalb eine Container-Abfrage.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/stil.css
+      muster: ['container-type: inline-size', '@container \(max-width', 'hyphens: none']

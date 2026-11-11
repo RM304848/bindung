@@ -1,0 +1,15 @@
+{# Zustand, letzter Kontakt und „Fällig am“ der Person. Wird nach jeder Änderung, die sie berührt, neu gezeichnet. #}
+<div id="faelligkeit" class="faelligkeit feld-breit" role="status"{% if oob_faelligkeit %} hx-swap-oob="true"{% endif %}>
+  {% if person.archiviert_am %}
+  <p class="hilfe">Im Archiv: keine Erinnerung.</p>
+  {% else %}
+  <p class="faelligkeit-zeile"><span class="zwischentitel">Zustand</span> <span class="plakette plakette-{{ bindung.zustand }}">{{ bindung.zustand|zustand_text }}</span></p>
+  {% if bindung.letzter_kontakt %}
+  <p class="faelligkeit-zeile"><span class="zwischentitel">Letzter Kontakt</span> {{ bindung.letzter_kontakt|datum_de }} <span class="hilfe">({{ bindung.letzter_kontakt|vor_datum(heute) }})</span></p>
+  <p class="faelligkeit-zeile"><span class="zwischentitel">Fällig am</span> <strong>{{ bindung.faellig_am|datum_de }}</strong> <span class="hilfe">{% if bindung.naechster_termin %}(nächster Termin){% else %}(Intervall {{ bindung.intervall }} Tage){% endif %}</span></p>
+  {% else %}
+  <p class="hilfe">Noch kein Kontakt: fällig wird die Person erst, wenn du einen Kontakt einträgst.</p>
+  {% endif %}
+  <p class="hilfe">Der nächste Termin ersetzt das Intervall ein Mal; ein neuer Kontakt löscht ihn wieder.</p>
+  {% endif %}
+</div>

@@ -19,6 +19,7 @@
   --fehler: #b3372c;
   --fehler-grund: #fbe9e6;
   --fokus: #3b78c4;
+  --abdunklung: rgba(20, 20, 24, 0.4);
   color-scheme: light dark;
 }
 
@@ -40,6 +41,7 @@
     --fehler: #f08a7f;
     --fehler-grund: #3d2623;
     --fokus: #5d9be3;
+    --abdunklung: rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -210,7 +212,16 @@ textarea { padding: 10px 12px; }
 
 /* ------------------------------------------------------------------- Liste */
 
-.karten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+/* Die Karten sind Links (ohne Skript fuehrt der Link auf dieselbe Ansicht). Der
+   Container macht die Schrift der Namen von der Breite der Spalte abhaengig, nicht
+   vom Fenster: so bleibt „Aufmerksamkeit“ auf dem Telefon UND in der schmalen
+   Mittelspalte am Stueck. */
+.karten {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  container-type: inline-size;
+}
 
 .karte {
   display: flex;
@@ -224,21 +235,29 @@ textarea { padding: 10px 12px; }
   border: 1px solid var(--linie);
   border-radius: var(--radius);
   background: var(--flaeche);
+  color: var(--text);
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 .karte:hover { background: var(--flaeche-leise); }
+.karte-aktiv, .karte-aktiv:hover { border-color: var(--akzent); background: var(--akzent-leise); }
 .karte-zahl { font-size: 1.75rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .karte-name {
   font-size: 0.75rem;
   line-height: 1.25;
   color: var(--text-leise);
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  hyphens: none;
+  overflow-wrap: break-word;
 }
 .karte-aufmerksamkeit .karte-zahl { color: var(--aufmerksamkeit); }
 .karte-erkaltet .karte-zahl { color: var(--erkaltet); }
 .karte-woche .karte-zahl { color: var(--woche); }
+
+@container (max-width: 380px) {
+  .karte { padding: 10px 6px 10px 8px; }
+  .karte-name { font-size: 0.6875rem; }
+}
 
 .werkzeuge { display: flex; flex-direction: column; gap: 8px; }
 .knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -276,7 +295,7 @@ textarea { padding: 10px 12px; }
 
 .kopfleiste { display: flex; align-items: center; gap: 8px; min-height: var(--ziel); }
 .kopfleiste > :last-child { margin-left: auto; }
-.kopfleiste > .listentitel, .kopfleiste > .blatt-titel { margin-left: 0; }
+.kopfleiste > .listentitel, .kopfleiste > .blatt-titel, .kopfleiste > .blatt-kopf { margin-left: 0; }
 
 /* Auf dem Desktop sind alle drei Spalten da; der Pfeil gehoert dem Telefon. */
 .zurueck {
@@ -299,12 +318,17 @@ textarea { padding: 10px 12px; }
 .listenkoerper { display: flex; flex-direction: column; gap: 8px; }
 .zeilen { display: flex; flex-direction: column; gap: 2px; }
 
+.zeilenpunkt { display: flex; align-items: center; gap: 2px; }
+
 .zeile {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px;
   min-height: var(--ziel);
-  padding: 8px 12px;
+  min-width: 0;
+  padding: 8px 12px 8px 4px;
   border-radius: var(--radius);
   color: var(--text);
   text-decoration: none;
@@ -312,13 +336,30 @@ textarea { padding: 10px 12px; }
 .zeile:hover { background: var(--flaeche); }
 .zeile-ausgewaehlt, .zeile-ausgewaehlt:hover { background: var(--akzent-leise); }
 
-.kreis {
+/* Der Kreis ist der Knopf „Kontakt eintragen“: das Ziel ist 44 px, der Kreis darin 22 px. */
+.kreis-knopf {
   flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--ziel);
+  min-height: var(--ziel);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.kreis-knopf:hover .kreis { background: var(--akzent-leise); border-color: var(--akzent); }
+
+.kreis {
   width: 22px;
   height: 22px;
   border: 2px solid var(--linie);
   border-radius: 50%;
 }
+.kreis-ueberfaellig { border-color: var(--aufmerksamkeit); }
+.kreis-erkaltet { border-color: var(--erkaltet); }
+.kreis-bald { border-color: var(--woche); }
 
 .zeile-text { display: flex; flex-direction: column; min-width: 0; }
 .zeile-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -329,6 +370,22 @@ textarea { padding: 10px 12px; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Die Plakette: Zustand als Wort, in der Farbe der Karte, zu der die Person gehoert. */
+.plakette {
+  flex: none;
+  max-width: 9rem;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  text-align: right;
+  color: var(--text-leise);
+}
+.plakette-ueberfaellig { color: var(--aufmerksamkeit); }
+.plakette-erkaltet { color: var(--erkaltet); }
+.plakette-bald { color: var(--woche); }
+.plakette-unbekannt { color: var(--text-leise); font-style: italic; }
+.faelligkeit .plakette { max-width: none; text-align: left; font-size: 0.9375rem; font-weight: 600; }
+.faelligkeit .plakette-ok { color: var(--text); }
 
 .tag-verwalten, .tag-neu { display: flex; flex-direction: column; gap: 8px; }
 .tag-verwalten-formular, .tag-neu-formular, .tag-neu-zeile {
@@ -405,6 +462,80 @@ summary::-webkit-details-marker { display: none; }
 .option { display: flex; align-items: center; gap: 10px; min-height: var(--ziel); cursor: pointer; }
 .hilfe { font-size: 0.8125rem; color: var(--text-leise); }
 
+/* ------------------------------------------------- Kontakte: Blatt, Zuletzt besprochen */
+
+.knopf-gross { min-height: 52px; font-weight: 600; width: 100%; }
+.kontakt-aktion { display: flex; }
+
+.faelligkeit { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; border-top: 1px solid var(--linie); }
+.faelligkeit-zeile { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.faelligkeit-zeile .zwischentitel { min-width: 8rem; }
+
+.verlauf { display: flex; flex-direction: column; gap: 8px; }
+.verlauf-liste { display: flex; flex-direction: column; }
+.verlauf-eintrag {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--linie);
+}
+.verlauf-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.verlauf-datum { font-weight: 600; font-variant-numeric: tabular-nums; }
+.verlauf-art { color: var(--akzent); }
+.verlauf-art-leise { color: var(--text-leise); font-style: italic; }
+.verlauf-notiz { white-space: pre-wrap; overflow-wrap: anywhere; }
+.verlauf-aktionen { display: flex; gap: 4px; margin-left: -12px; }
+.verlauf-formular { display: flex; flex-direction: column; gap: 12px; }
+
+/* Das Blatt liegt ueber der ganzen Seite: mittig auf dem Mac, am unteren Rand auf dem Telefon. */
+.ueberzug {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--abstand);
+  background: var(--abdunklung);
+}
+.blatt-fenster {
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand);
+  width: 100%;
+  max-width: 520px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--linie);
+  border-radius: 14px;
+  background: var(--flaeche);
+}
+.blatt-kopf { display: flex; flex-direction: column; }
+
+/* Die Art als Auswahl aus fuenf Feldern: echte Optionsfelder, die Optik am Span. */
+.segmente { display: flex; flex-wrap: wrap; gap: 8px; }
+.segment { position: relative; display: inline-flex; flex: 1 1 auto; cursor: pointer; }
+.segment input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.segment span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--ziel);
+  padding: 0 12px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+}
+.segment input:checked + span {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: var(--akzent-text);
+}
+.segment input:focus-visible + span { outline: 2px solid var(--fokus); outline-offset: 2px; }
+
 /* ---------------------------------------------------------- Schmale Fenster */
 
 /* Unter 768 px ist genau eine Spalte offen: Seitenleiste, Liste oder Person
@@ -426,4 +557,13 @@ summary::-webkit-details-marker { display: none; }
   .app[data-ansicht="person"] > .liste { display: none; }
   .zurueck { display: inline-flex; }
   .felder, .person-kopf-zeile { grid-template-columns: minmax(0, 1fr); }
+  .ueberzug { align-items: flex-end; padding: 0; }
+  .blatt-fenster {
+    max-width: none;
+    max-height: 92vh;
+    max-height: 92dvh;
+    padding: 20px var(--abstand) max(20px, env(safe-area-inset-bottom));
+    border-radius: 14px 14px 0 0;
+    border-bottom: 0;
+  }
 }

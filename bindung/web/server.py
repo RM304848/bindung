@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from bindung import auth, db
 from bindung.web import basis
-from bindung.web.routen import personen
+from bindung.web.routen import kontakte, personen
 
 app = FastAPI(title="Bindung", docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/statisch", StaticFiles(directory=str(basis.STATISCH)), name="statisch")
@@ -89,3 +89,4 @@ def abmelden(request: Request):
 
 
 app.include_router(personen.router)
+app.include_router(kontakte.router)

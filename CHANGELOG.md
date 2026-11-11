@@ -33,6 +33,32 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   oder Person, mit „‹ Zurück“ zur vorigen. Die Adresse im Browser merkt sich
   Filter, Suche und die offene Person; Neuladen und die Zurück-Taste führen
   an dieselbe Stelle.
+- **Kontakt eintragen.** Nach einem Gespräch tippst du in der Liste auf den
+  Kreis vor der Person oder auf der Personenseite auf „Kontakt eintragen“. Es
+  öffnet sich ein Blatt: die Art (Anruf, Nachricht, E-Mail, Treffen,
+  Sonstiges), das Datum (heute vorbelegt, nie in der Zukunft) und eine Notiz.
+  Mit „Speichern“ stehen Zeile, Zähler und Karten sofort richtig da, ohne dass
+  die Seite neu lädt. Ein „Nächster Termin“, den du gesetzt hattest, ist damit
+  erledigt und wird gelöscht.
+- **Zuletzt besprochen.** Die Personenseite zeigt alle Kontakte, den jüngsten
+  zuerst, mit Datum, Art und Notiz – das, was du vor dem nächsten Anruf liest.
+  Eine grobe Angabe aus „Mehrere hinzufügen“ erscheint als „Schätzung“. Mit
+  „Bearbeiten“ korrigierst du einen Eintrag an Ort und Stelle, „Löschen“
+  fragt vorher nach.
+- **Wer sich melden sollte.** Jede Person hat einen Zustand: „noch kein
+  Kontakt“, „vor 3 Wochen“, „fällig in 4 Tagen“, „überfällig seit 12 Tagen“
+  oder „erkaltet“. Er steht rechts in der Zeile und färbt den Kreis; der
+  Zeilentext zeigt die erste Zeile der letzten Notiz (die Profilnotiz nur,
+  solange es noch kein Gespräch gibt). Erkaltet ist, wer länger als das
+  Doppelte seines Intervalls, höchstens aber 180 Tage, nicht gesprochen wurde.
+- **Karten filtern.** Ein Klick auf „Braucht Aufmerksamkeit“, „Erkaltet“ oder
+  „Diese Woche“ filtert die Liste, mit den Erkalteten zuerst, dann nach
+  Fälligkeit. Ein zweiter Klick auf dieselbe Karte hebt den Filter auf. Die
+  Zahlen zählen immer alle aktiven Personen; der Filter wirkt zusammen mit
+  Tag und Suche und steht in der Adresse.
+- **Fällig am.** Unter „Intervall in Tagen“ und „Nächster Termin“ zeigt die
+  Personenseite Zustand, letzten Kontakt und „Fällig am“. Der nächste Termin
+  ersetzt das Intervall ein Mal.
 
 - **Anmeldung.** Bindung ist eine Web-App mit eigener Anmeldung: jeder Nutzer
   sieht nur seine eigenen Einträge. Angelegt werden Nutzer auf dem Server mit
@@ -47,8 +73,7 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   in der Mitte die Liste mit den drei Karten „Braucht Aufmerksamkeit“,
   „Erkaltet“ und „Diese Woche“ sowie der Suche, rechts die Personenseite. Auf
   dem Telefon stehen die drei Bereiche untereinander, die Seitenleiste zuerst.
-  Hell und Dunkel folgen der Einstellung des Geräts. Die Karten zeigen noch 0:
-  Kontakte und Fälligkeit kommen in der nächsten Version.
+  Hell und Dunkel folgen der Einstellung des Geräts.
 - **Datenordner.** Alles, was du einträgst, liegt in einem einzigen Ordner
   (auf dem Mac `~/Library/Application Support/Bindung`). `bindung ort` zeigt,
   wo er ist; mit der Umgebungsvariable `BINDUNG_DATEN` lässt er sich umstellen.
@@ -57,3 +82,10 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   `BINDUNG_HOST` und `BINDUNG_PORT` (oder `--host` und `--port`) lässt sich
   Adresse und Port ändern; steht ein Server mit TLS davor, sorgt
   `BINDUNG_SICHER=1` dafür, dass das Anmelde-Cookie nur verschlüsselt geschickt wird.
+
+### Behoben
+
+- Die Suche behält die offene Person: nach dem Suchen und Neuladen ist sie
+  noch da.
+- „Braucht Aufmerksamkeit“ auf den Karten bricht auf dem Telefon nicht mehr
+  mitten im Wort um.

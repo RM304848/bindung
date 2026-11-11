@@ -1,4 +1,4 @@
-{# Eine Person. Alle Felder stehen in einem Formular und speichern beim Verlassen eines Feldes. #}
+{# Eine Person. Die Felder stehen in zwei Formularen (Kopf, Rest) um „Zuletzt besprochen“ herum und speichern beim Verlassen eines Feldes. #}
 <article class="person">
   <header class="kopfleiste">
     <button type="button" class="zurueck" data-zeige="liste" aria-label="Zurück zur Liste">‹ Zurück</button>
@@ -35,6 +35,17 @@
 
     {% include "_kontaktlinks.html" %}
 
+  </form>
+
+  {% if not person.archiviert_am %}
+  <div class="kontakt-aktion">
+    <button type="button" class="knopf knopf-primaer knopf-gross" hx-get="/personen/{{ person.id }}/kontakt/neu" hx-target="#personenseite" hx-swap="outerHTML">Kontakt eintragen</button>
+  </div>
+  {% endif %}
+
+  {% include "_verlauf.html" %}
+
+  <form class="stamm" hx-post="/personen/{{ person.id }}" hx-trigger="change, submit" hx-swap="none" hx-sync="this:queue last">
     <div class="felder">
       <div class="feld">
         <label for="telefon">Telefon</label>
@@ -64,6 +75,7 @@
         <label for="naechster_termin">Nächster Termin</label>
         <input type="date" id="naechster_termin" name="naechster_termin" value="{{ person.naechster_termin or '' }}">
       </div>
+      {% include "_faelligkeit.html" %}
     </div>
   </form>
 
@@ -74,4 +86,6 @@
     <button type="submit" class="knopf">Archivieren</button>
   </form>
   {% endif %}
+
+  {% if blatt %}{% include "_kontakt_blatt.html" %}{% endif %}
 </article>

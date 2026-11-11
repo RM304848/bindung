@@ -1,30 +1,17 @@
-{# Liste: Kopf, Karten, Suche, Knoepfe und die Personen. Die Suche steht ausserhalb von #listenkoerper, damit Tippen nie ihr Feld ersetzt. #}
+{# Liste: Kopf, Karten, Suche, Knoepfe und die Personen. Die Suche steht ausserhalb von #listenkoerper, damit Tippen nie ihr Feld ersetzt. Die offene Person steht nicht im Formular, sondern in der Adresse der Seite (HX-Current-URL). #}
 <section id="liste" class="liste" aria-label="Liste"{% if oob_liste %} hx-swap-oob="true"{% endif %}>
   <header class="kopfleiste">
     <button type="button" class="zurueck" data-zeige="seitenleiste" aria-label="Zurück zur Seitenleiste">‹ Zurück</button>
     {% include "_listentitel.html" %}
   </header>
 
-  <div class="karten">
-    <button type="button" class="karte karte-aufmerksamkeit">
-      <span class="karte-zahl">0</span>
-      <span class="karte-name">Braucht Aufmerksamkeit</span>
-    </button>
-    <button type="button" class="karte karte-erkaltet">
-      <span class="karte-zahl">0</span>
-      <span class="karte-name">Erkaltet</span>
-    </button>
-    <button type="button" class="karte karte-woche">
-      <span class="karte-zahl">0</span>
-      <span class="karte-name">Diese Woche</span>
-    </button>
-  </div>
+  {% include "_karten.html" %}
 
   <div class="werkzeuge">
     <form class="suche" role="search" hx-get="/liste/suche" hx-trigger="input delay:300ms, submit" hx-target="#listenkoerper" hx-swap="outerHTML">
       {% if ansicht.tag %}<input type="hidden" name="tag" value="{{ ansicht.tag }}">{% endif %}
       {% if ansicht.filter %}<input type="hidden" name="filter" value="{{ ansicht.filter }}">{% endif %}
-      {% if ansicht.person %}<input type="hidden" name="person" value="{{ ansicht.person }}">{% endif %}
+      {% if ansicht.karte %}<input type="hidden" name="karte" value="{{ ansicht.karte }}">{% endif %}
       <div class="feld feld-suche">
         <label for="suche" class="nur-lesegeraet">Suche</label>
         <input type="search" id="suche" name="suche" value="{{ ansicht.suche }}" placeholder="Suchen" autocomplete="off">
