@@ -98,16 +98,48 @@ def nutzer_anlegen(con: sqlite3.Connection, name: str, passwort: str) -> int:
     return zeile.lastrowid
 
 
-def passwort_setzen(con: sqlite3.Connection, name: str, passwort: str) -> None:
-    """Setzt ein neues Passwort; alle Sitzungen des Nutzers enden."""
+def passwort_setzen(con: sqlite3.Connection, name: str, passwort: str, *,
+                    behalte_token: str | None = None) -> None:
+    """Setzt ein neues Passwort; alle Sitzungen des Nutzers enden.
+
+    Mit `behalte_token` bleibt die Sitzung zu diesem Cookie-Token bestehen (die
+    Einstellungen: wer sein Passwort aendert, soll angemeldet bleiben; jede andere
+    Sitzung, auch ein gestohlenes Cookie, endet trotzdem).
+    """
     _passwort_gueltig(passwort)
     zeile = con.execute("SELECT id FROM nutzer WHERE name = ?", (name.strip(),)).fetchone()
     if zeile is None:
         raise AuthFehler(f"Den Nutzer „{name}“ gibt es nicht.")
     con.execute("UPDATE nutzer SET passwort_hash = ? WHERE id = ?",
                 (passwort_hashen(passwort), zeile["id"]))
-    con.execute("DELETE FROM sitzung WHERE nutzer_id = ?", (zeile["id"],))
+    if behalte_token:
+        con.execute("DELETE FROM sitzung WHERE nutzer_id = ? AND token_hash != ?",
+                    (zeile["id"], _token_hash(behalte_token)))
+    else:
+        con.execute("DELETE FROM sitzung WHERE nutzer_id = ?", (zeile["id"],))
     con.commit()
+
+
+def passwort_aendern(con: sqlite3.Connection, nutzer_id: int, aktuell: str, neu: str,
+                     behalte_token: str | None) -> None:
+    """Das Passwort aus den Einstellungen: das alte muss stimmen, die Sitzung bleibt.
+
+    Ein falsches altes Passwort zaehlt wie ein Fehlversuch der Anmeldung (dieselbe
+    wachsende Wartezeit): sonst liesse sich mit einem gestohlenen Cookie das
+    Passwort hier ohne Bremse durchprobieren.
+    """
+    zeile = con.execute("SELECT name, passwort_hash FROM nutzer WHERE id = ?",
+                        (nutzer_id,)).fetchone()
+    if zeile is None:
+        raise AuthFehler("Den Nutzer gibt es nicht.")
+    sekunden = wartezeit(zeile["name"])
+    if sekunden:
+        raise ZuVieleVersuche(sekunden)
+    if not passwort_pruefen(aktuell, zeile["passwort_hash"]):
+        _fehlversuch_merken(zeile["name"])
+        raise AuthFehler("Das aktuelle Passwort stimmt nicht.")
+    _fehlversuche.pop(_schluessel(zeile["name"]), None)
+    passwort_setzen(con, zeile["name"], neu, behalte_token=behalte_token)
 
 
 def nutzer_liste(con: sqlite3.Connection) -> list[sqlite3.Row]:

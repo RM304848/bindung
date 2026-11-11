@@ -1,0 +1,38 @@
+{# Einstellungen: Vorgaben zum Erinnern. `s_erinnern.werte` hat die Werte (gespeichert oder eben abgelehnt). #}
+{% set w = s_erinnern.werte %}
+<section id="einstellung-erinnern" class="einstellung" aria-labelledby="einstellung-erinnern-titel">
+  <h2 id="einstellung-erinnern-titel" class="einstellung-titel">Erinnern</h2>
+  <form class="formular" method="post" action="/einstellungen/erinnern" hx-post="/einstellungen/erinnern" hx-target="#einstellung-erinnern" hx-swap="outerHTML">
+    {% if s_erinnern.meldung %}<p class="meldung meldung-fehler" role="alert">{{ s_erinnern.meldung }}</p>{% endif %}
+    <div class="felder">
+      <div class="feld">
+        <label for="erinnern-intervall">Intervall in Tagen</label>
+        <input type="number" id="erinnern-intervall" name="vorgabe_intervall_tage" value="{{ w.vorgabe_intervall_tage }}" min="{{ grenzen.intervall[0] }}" max="{{ grenzen.intervall[1] }}" inputmode="numeric" required>
+        <p class="hilfe">Gilt für alle Personen ohne eigenes Intervall.</p>
+      </div>
+      <div class="feld">
+        <label for="erinnern-vorlauf">Vorlauf in Tagen</label>
+        <input type="number" id="erinnern-vorlauf" name="vorgabe_vorlauf_tage" value="{{ w.vorgabe_vorlauf_tage }}" min="{{ grenzen.vorlauf[0] }}" max="{{ grenzen.vorlauf[1] }}" inputmode="numeric" required>
+        <p class="hilfe">So viele Tage vorher erscheint ein Stichtag, wenn er keinen eigenen Vorlauf hat.</p>
+      </div>
+      <div class="feld feld-breit">
+        <label for="erinnern-zeitzone">Zeitzone</label>
+        <select id="erinnern-zeitzone" name="zeitzone">
+          {% for zone in s_erinnern.zonen %}
+          <option value="{{ zone }}"{% if zone == w.zeitzone %} selected{% endif %}>{{ zone }}</option>
+          {% endfor %}
+        </select>
+        <p class="hilfe">Danach richtet sich, welcher Tag „heute“ ist.</p>
+      </div>
+      <div class="feld feld-breit">
+        <label for="erinnern-uhrzeit">Uhrzeit der Tagesmeldung</label>
+        <input type="time" id="erinnern-uhrzeit" name="tagesmeldung_zeit" value="{{ w.tagesmeldung_zeit }}" required>
+        <p class="hilfe">Die Tagesmeldung selbst kommt in einer späteren Version; die Uhrzeit wird schon jetzt gespeichert.</p>
+      </div>
+    </div>
+    <div class="einstellung-fuss">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <span class="speicherstatus" role="status">{% if s_erinnern.gespeichert %}Gespeichert{% endif %}</span>
+    </div>
+  </form>
+</section>

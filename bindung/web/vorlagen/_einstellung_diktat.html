@@ -1,0 +1,20 @@
+{# Einstellungen: Sprache des Diktats (WP6 liest sie). #}
+<section id="einstellung-diktat" class="einstellung" aria-labelledby="einstellung-diktat-titel">
+  <h2 id="einstellung-diktat-titel" class="einstellung-titel">Diktat</h2>
+  <form class="formular" method="post" action="/einstellungen/diktat" hx-post="/einstellungen/diktat" hx-target="#einstellung-diktat" hx-swap="outerHTML">
+    {% if s_diktat.meldung %}<p class="meldung meldung-fehler" role="alert">{{ s_diktat.meldung }}</p>{% endif %}
+    <div class="feld">
+      <label for="diktat-sprache">Sprache</label>
+      <select id="diktat-sprache" name="diktat_sprache">
+        {% for kuerzel, wort in s_diktat.sprachen.items() %}
+        <option value="{{ kuerzel }}"{% if kuerzel == s_diktat.sprache %} selected{% endif %}>{{ wort }}</option>
+        {% endfor %}
+      </select>
+      <p class="hilfe">Die Sprache, in der du in Notizfelder sprichst.</p>
+    </div>
+    <div class="einstellung-fuss">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <span class="speicherstatus" role="status">{% if s_diktat.gespeichert %}Gespeichert{% endif %}</span>
+    </div>
+  </form>
+</section>

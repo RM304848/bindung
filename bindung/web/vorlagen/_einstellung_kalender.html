@@ -1,0 +1,27 @@
+{# Einstellungen: die Kalenderadresse zum Abonnieren, zum Herunterladen und zum Neuerzeugen. Die Adressen kommen fertig aus der Route. #}
+<section id="einstellung-kalender" class="einstellung" aria-labelledby="einstellung-kalender-titel">
+  <h2 id="einstellung-kalender-titel" class="einstellung-titel">Kalender</h2>
+  <p class="hilfe">Stichtage und Termine zum Melden erscheinen in deiner Kalender-App. In Apple Kalender wählst du Ablage › Neues Kalenderabonnement, fügst die Adresse ein und stellst die Aktualisierung auf stündlich. Ein Termin „Melden bei“ rückt weiter, sobald du einen Kontakt einträgst.</p>
+  {% if s_kalender.neu %}<p class="speicherstatus" role="status">Neue Adresse erzeugt. Die alte funktioniert nicht mehr.</p>{% endif %}
+  <div class="feld">
+    <label for="kalender-webcal">Kalenderadresse (webcal)</label>
+    <div class="adresszeile">
+      <input type="text" id="kalender-webcal" value="{{ s_kalender.webcal }}" readonly spellcheck="false">
+      <button type="button" class="knopf" data-kopieren="kalender-webcal" aria-live="polite">Kopieren</button>
+    </div>
+  </div>
+  <div class="feld">
+    <label for="kalender-adresse">Kalenderadresse ({{ s_kalender.schema }})</label>
+    <div class="adresszeile">
+      <input type="text" id="kalender-adresse" value="{{ s_kalender.adresse }}" readonly spellcheck="false">
+      <button type="button" class="knopf" data-kopieren="kalender-adresse" aria-live="polite">Kopieren</button>
+    </div>
+  </div>
+  <p class="hilfe">Wer die Adresse kennt, sieht deine Stichtage und wen du anrufen willst. Gib sie nicht weiter.</p>
+  <div class="knopfreihe">
+    <a class="knopf" href="/kalender/herunterladen" download="bindung.ics">Herunterladen</a>
+    <form method="post" action="/einstellungen/kalender/neu" hx-post="/einstellungen/kalender/neu" hx-target="#einstellung-kalender" hx-swap="outerHTML" hx-confirm="Die bisherige Kalenderadresse funktioniert danach nicht mehr. Du musst die neue in jeden Kalender eintragen, der sie abonniert hat. Neu erzeugen?">
+      <button type="submit" class="knopf knopf-gefahr">Adresse neu erzeugen</button>
+    </form>
+  </div>
+</section>

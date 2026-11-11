@@ -1,0 +1,15 @@
+{% extends "basis.html" %}
+{% block titel %}Einstellungen · Bindung{% endblock %}
+{% block koerper %}seite-einstellungen{% endblock %}
+{% block inhalt %}
+<main class="einstellungen">
+  <header class="kopfleiste">
+    <a class="knopf knopf-text" href="/">‹ Zurück</a>
+    <h1 class="listentitel">Einstellungen</h1>
+  </header>
+  {% include "_einstellung_erinnern.html" %}
+  {% include "_einstellung_kalender.html" %}
+  {% include "_einstellung_diktat.html" %}
+  {% include "_einstellung_passwort.html" %}
+</main>
+{% endblock %}

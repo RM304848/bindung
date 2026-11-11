@@ -96,6 +96,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border-radius: var(--radius);
   background: var(--flaeche);
   color: var(--text);
+  text-decoration: none;
   cursor: pointer;
 }
 .knopf:hover:not(:disabled) { background: var(--flaeche-leise); }
@@ -119,7 +120,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf-text:hover:not(:disabled) { background: var(--akzent-leise); }
 
 input[type="text"], input[type="password"], input[type="search"], input[type="email"],
-input[type="tel"], input[type="date"], input[type="number"], select, textarea {
+input[type="tel"], input[type="date"], input[type="number"], input[type="time"], select, textarea {
   width: 100%;
   min-height: var(--ziel);
   padding: 0 12px;
@@ -131,6 +132,7 @@ textarea { padding: 10px 12px; }
 
 .feld { display: flex; flex-direction: column; gap: 6px; }
 .feld > label { font-size: 0.875rem; color: var(--text-leise); }
+input[readonly] { background: var(--flaeche-leise); color: var(--text-leise); }
 
 .leer { color: var(--text-leise); padding: var(--abstand) 4px; }
 .leer-klein { padding: 4px 12px; font-size: 0.9375rem; }
@@ -610,3 +612,35 @@ a.posten-name { color: var(--text); text-decoration-color: var(--linie); }
     border-bottom: 0;
   }
 }
+
+/* ------------------------------------------------------------- Einstellungen */
+
+/* Eine eigene Seite, kein Dreispalter: eine Spalte, die auf dem Telefon die Breite fuellt. */
+.einstellungen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand);
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--abstand);
+  padding-bottom: calc(var(--abstand) + env(safe-area-inset-bottom));
+}
+
+.einstellung {
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand);
+  padding: var(--abstand);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+}
+.einstellung-titel { font-size: 1.0625rem; font-weight: 600; }
+.einstellung-fuss { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+.adresszeile { display: flex; gap: 8px; }
+.adresszeile input { flex: 1 1 auto; min-width: 0; }
+.adresszeile .knopf { flex: 0 0 auto; }
+.einstellung .knopfreihe > form { display: flex; flex: 1 1 auto; }
+.einstellung .knopfreihe > form .knopf { flex: 1 1 auto; }

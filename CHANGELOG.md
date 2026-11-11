@@ -111,6 +111,38 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   `BINDUNG_HOST` und `BINDUNG_PORT` (oder `--host` und `--port`) lässt sich
   Adresse und Port ändern; steht ein Server mit TLS davor, sorgt
   `BINDUNG_SICHER=1` dafür, dass das Anmelde-Cookie nur verschlüsselt geschickt wird.
+- **Einstellungen.** Unten in der Seitenleiste öffnet „Einstellungen“ eine
+  eigene Seite, mit „‹ Zurück“ geht es zurück. Jeder Abschnitt hat seinen
+  eigenen Knopf und meldet „Gespeichert“:
+  - **Erinnern:** dein Intervall in Tagen (Vorgabe für alle Personen ohne
+    eigenes), der Vorlauf für Stichtage, die Zeitzone und die Uhrzeit der
+    Tagesmeldung. Die Tagesmeldung selbst kommt in einer späteren Version; die
+    Uhrzeit wird schon jetzt gespeichert.
+  - **Kalender:** deine Kalenderadresse, siehe unten.
+  - **Diktat:** die Sprache, in der du später in Notizfelder sprechen wirst
+    (Deutsch oder Englisch).
+  - **Passwort ändern:** aktuelles Passwort, dann zweimal das neue. Du bleibst
+    angemeldet; alle anderen Geräte werden abgemeldet.
+- **Kalender abonnieren.** Unter „Einstellungen › Kalender“ stehen zwei
+  Kalenderadressen (webcal und https bzw. http) mit „Kopieren“. In Apple
+  Kalender wählst du Ablage › Neues Kalenderabonnement, fügst die Adresse ein und
+  stellst die Aktualisierung auf stündlich. Im Kalender stehen alle Stichtage
+  deiner Personen als jährlich wiederkehrende Tage („Geburtstag Anna Beispiel“,
+  „Anna Beispiel: Firmenjubiläum“, ein Kindergeburtstag mit dem Namen der Eltern)
+  und je Person, bei der du schon einmal Kontakt eingetragen hast, ein Termin
+  „Melden bei …“ am Tag, an dem du dich melden wolltest, mit einer Erinnerung um
+  9 Uhr und der ersten Zeile der letzten Notiz. Wer überfällig oder erkaltet ist,
+  steht heute im Kalender. Trägst du einen Kontakt ein, rückt der Termin weiter.
+  Archivierte Personen und Personen ohne Kontakt kommen nicht vor. Wer eine Datei
+  statt eines Abos will, nimmt „Herunterladen“.
+- **Adresse neu erzeugen.** Wer die Kalenderadresse kennt, sieht deine
+  Stichtage und wen du anrufen willst. Ist sie in falsche Hände geraten, erzeugst
+  du unter „Einstellungen › Kalender“ eine neue (nach einer Rückfrage); die alte
+  funktioniert dann nicht mehr, und du trägst die neue in deinen Kalendern ein.
+- **Stichtage am 29. Februar** stehen im Kalender nur in Schaltjahren am 29.; wie
+  dein Kalender die anderen Jahre behandelt, entscheidet er selbst. Bei einem
+  bekannten Jahr steht „Geburtsjahr 1986“ bzw. „Seit 2012“ in der Beschreibung,
+  kein Alter: das würde im nächsten Jahr nicht mehr stimmen.
 
 ### Behoben
 

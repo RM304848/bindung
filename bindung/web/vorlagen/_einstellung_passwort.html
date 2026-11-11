@@ -1,0 +1,24 @@
+{# Einstellungen: Passwort ändern. Ein Formular, ein Abschnitt; die Antwort tauscht den Abschnitt (#einstellung-passwort). #}
+<section id="einstellung-passwort" class="einstellung" aria-labelledby="einstellung-passwort-titel">
+  <h2 id="einstellung-passwort-titel" class="einstellung-titel">Passwort ändern</h2>
+  <form class="formular" method="post" action="/einstellungen/passwort" hx-post="/einstellungen/passwort" hx-target="#einstellung-passwort" hx-swap="outerHTML">
+    {% if s_passwort.meldung %}<p class="meldung meldung-fehler" role="alert">{{ s_passwort.meldung }}</p>{% endif %}
+    <div class="feld">
+      <label for="passwort-aktuell">Aktuelles Passwort</label>
+      <input type="password" id="passwort-aktuell" name="aktuell" autocomplete="current-password" required>
+    </div>
+    <div class="feld">
+      <label for="passwort-neu">Neues Passwort</label>
+      <input type="password" id="passwort-neu" name="neu" autocomplete="new-password" minlength="8" required>
+      <p class="hilfe">Mindestens 8 Zeichen. Alle anderen angemeldeten Geräte werden abgemeldet.</p>
+    </div>
+    <div class="feld">
+      <label for="passwort-wiederholung">Neues Passwort wiederholen</label>
+      <input type="password" id="passwort-wiederholung" name="wiederholung" autocomplete="new-password" minlength="8" required>
+    </div>
+    <div class="einstellung-fuss">
+      <button type="submit" class="knopf knopf-primaer">Passwort ändern</button>
+      <span class="speicherstatus" role="status">{% if s_passwort.gespeichert %}Gespeichert{% endif %}</span>
+    </div>
+  </form>
+</section>

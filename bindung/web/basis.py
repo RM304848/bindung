@@ -15,7 +15,7 @@ from pathlib import Path
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
-from bindung import angehoerige, faelligkeit, stichtage
+from bindung import angehoerige, auth, faelligkeit, stichtage
 
 PAKET = Path(__file__).resolve().parent
 VORLAGEN = PAKET / "vorlagen"
@@ -59,15 +59,46 @@ TEMPLATES.env.filters["zustand_text"] = faelligkeit.zustand_text
 TEMPLATES.env.filters["rolle_wort"] = angehoerige.rolle_wort
 TEMPLATES.env.filters["stichtag_de"] = stichtage.text_de
 
-#: Pfade, die ohne Sitzung erreichbar sind. `/kalender/` ist die Kalenderadresse
-#: mit ihrem eigenen Geheimnis in der URL (WP4).
+#: Pfade, die ohne Sitzung erreichbar sind.
 OFFENE_PFADE = ("/anmeldung",)
-OFFENE_PRAEFIXE = ("/statisch/", "/kalender/")
+OFFENE_PRAEFIXE = ("/statisch/",)
+#: Die Kalenderadresse (`/kalender/<geheimnis>.ics`) traegt ihr Geheimnis in der URL und
+#: ist offen. `/kalender/herunterladen` (ohne `.ics`) bleibt hinter der Anmeldung.
+KALENDER_PRAEFIX, KALENDER_ENDUNG = "/kalender/", ".ics"
 
 
 def ist_offen(pfad: str) -> bool:
     """Darf dieser Pfad ohne Anmeldung aufgerufen werden?"""
-    return pfad in OFFENE_PFADE or pfad.startswith(OFFENE_PRAEFIXE)
+    return (pfad in OFFENE_PFADE or pfad.startswith(OFFENE_PRAEFIXE)
+            or (pfad.startswith(KALENDER_PRAEFIX) and pfad.endswith(KALENDER_ENDUNG)))
+
+
+_HOST = re.compile(r"^[A-Za-z0-9.\-]+(:\d{1,5})?$|^\[[0-9A-Fa-f:]+\](:\d{1,5})?$")
+
+
+def _kopf(request: Request, name: str) -> str:
+    """Der erste Wert einer Kopfzeile (Proxys haengen weitere mit Komma an)."""
+    return request.headers.get(name, "").split(",")[0].strip()
+
+
+def aussenadresse(request: Request) -> tuple[str, str]:
+    """(Schema, Host), unter denen der Nutzer die App erreicht -- fuer Adressen zum Kopieren.
+
+    Hinter einem TLS-Proxy sieht die App `http` und den Host des Proxys. `BINDUNG_SICHER=1`
+    sagt, dass er davorsteht (https); sonst gelten `X-Forwarded-Proto` und
+    `X-Forwarded-Host`, wenn der Proxy sie setzt. Die Werte landen nur in der Seite des
+    Nutzers selbst, deshalb muss man dem Proxy hier nicht vertrauen; ein ungueltiger Host
+    faellt auf den der Anfrage zurueck.
+    """
+    weitergeleitet = _kopf(request, "x-forwarded-proto").lower()
+    if auth.cookie_sicher():
+        schema = "https"
+    elif weitergeleitet in ("http", "https"):
+        schema = weitergeleitet
+    else:
+        schema = request.url.scheme
+    host = _kopf(request, "x-forwarded-host") or request.headers.get("host", "")
+    return schema, host if _HOST.match(host) else request.url.netloc
 
 
 def con(request: Request) -> sqlite3.Connection:

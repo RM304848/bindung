@@ -109,6 +109,7 @@ regeln:
       selektoren: ['.knopf', '.eintrag', '.karte', '.zeile', '.kreis-knopf', '.zurueck',
                    '.option', '.chip-wahl span', '.segment span', '.kontaktlinks a', 'input[type="text"]',
                    'input[type="tel"]', 'input[type="date"]', 'input[type="number"]',
+                   'input[type="time"]', 'input[type="password"]',
                    'input[type="search"]',
                    'select', 'textarea']
 
@@ -375,3 +376,52 @@ regeln:
       dateien: [bindung/web/statisch/stil.css, bindung/web/vorlagen/_zeile.html]
       muster: ['\.plakette-stichtag \{[^}]*var\(--woche\)|plakette plakette-stichtag',
                'zeile-plaketten']
+
+  # ------------------------------------------------------- Einstellungen
+
+  - id: einstellungen-abschnitte-mit-eigenem-formular
+    regel: >
+      Die Einstellungen sind eine eigene Seite (eine Spalte, `.einstellungen`,
+      mit „‹ Zurück“ nach `/`), aufgeteilt in Abschnitte
+      (`<section class="einstellung">` mit eigener `id`). Jeder Abschnitt hat ein
+      eigenes Formular mit eigenem Speichern-Knopf, schickt per `hx-post` nur seine
+      Felder, tauscht nur seinen Abschnitt aus (`hx-target` auf die eigene `id`,
+      `outerHTML`) und meldet „Gespeichert“ in einem `role="status"`. Eine
+      abgelehnte Eingabe kommt als 422 mit Meldung und den eingegebenen Werten
+      zurueck (Passwoerter nie).
+    warum: >
+      Anders als die Personenseite speichert diese Seite nicht beim Verlassen des
+      Feldes: ein halb getipptes Passwort oder eine Zeitzone, die man beim
+      Durchblaettern der Auswahl streift, darf nicht abgeschickt werden. Getrennte
+      Formulare lassen einen abgelehnten Wert nicht die anderen Abschnitte
+      zuruecksetzen, und ohne Skript funktionieren dieselben Formulare als
+      gewoehnliche Posts (`method` und `action` stehen daneben).
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/_einstellung_passwort.html,
+                bindung/web/vorlagen/_einstellung_erinnern.html,
+                bindung/web/vorlagen/_einstellung_diktat.html]
+      muster: ['<section id="einstellung-[a-z]+" class="einstellung"',
+               'hx-post="/einstellungen/[a-z]+" hx-target="#einstellung-[a-z]+" hx-swap="outerHTML"',
+               'method="post" action="/einstellungen/[a-z]+"',
+               'role="status"']
+
+  - id: kalenderadresse-lesen-kopieren-erneuern
+    regel: >
+      Die Kalenderadresse steht in einem Feld mit `readonly` und einem Knopf
+      „Kopieren“ (`data-kopieren="<id des Feldes>"`, von `bindung.js` bedient); sie
+      steht zweimal da, als `webcal://` und als `https://` oder `http://` je
+      nachdem, wie die Seite erreicht wurde. „Adresse neu erzeugen“ fragt vorher
+      (`hx-confirm`) und sagt, dass die alte danach nicht mehr funktioniert und
+      der Kalender sie neu bekommen muss. Daneben steht, dass die Adresse geheim zu
+      halten ist.
+    warum: >
+      Die Adresse ist das einzige Geheimnis des Kalenders: wer sie kennt, liest
+      Stichtage und Notizen. Ein Feld zum Markieren und ein Knopf zum Kopieren
+      verhindern das Abtippen, und die Rueckfrage verhindert, dass ein Fehlklick
+      einen Kalender stillegt, der auf dem Telefon abonniert ist.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_einstellung_kalender.html
+      muster: ['readonly', 'data-kopieren="kalender-webcal"', 'hx-confirm="[^"]*funktioniert',
+               'Gib sie nicht weiter']

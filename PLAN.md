@@ -512,3 +512,84 @@ the review asked for, recorded with WP2 above: "a few months ago" is now 90 days
   once and derives both the card set and the row badges from it;
   `ansicht.stichtag_personen` keeps its signature as the single-purpose view of the
   same list.
+
+Small decisions taken while building WP4, where the plan was silent:
+
+- **Calendar file.** Hand-written RFC 5545 in `bindung/kalender.py`: CRLF, lines
+  folded at 75 octets without splitting a UTF-8 character, text escaped
+  (`\\ \; \, \n`), `X-WR-CALNAME:Bindung`, `REFRESH-INTERVAL` and
+  `X-PUBLISHED-TTL` of one hour, `TRANSP:TRANSPARENT` so all-day events do not
+  block the day. `DTSTAMP` and `LAST-MODIFIED` are the time of the request (UTC).
+  UIDs are `stichtag-<id>@bindung` and `melden-<person_id>@bindung`.
+- **Stichtag events.** One yearly all-day event per Stichtag of a non-archived
+  person; `DTSTART` is the stored year if there is one, else the next occurrence.
+  Titles: "Geburtstag Anna Beispiel" for a birthday with the default label, a
+  family member's birthday "Geburtstag Mia Beispiel (Anna Beispiel)", everything
+  else "Anna Beispiel: <label>". **No age in the file** (§9 had "wird 40"): the
+  description belongs to the whole series, and a calendar also shows next year's
+  and the past years' instance, where a fixed age would be wrong. With a known
+  year the description states the fact instead ("Geburtsjahr 1986", "Seit 2012");
+  the age stays in the app (badge, Personenseite). Revisit with a per-instance
+  override (`RECURRENCE-ID`) if the user misses it.
+- **29 February.** `BYMONTHDAY=-1;BYMONTH=2` is not understood everywhere, so a
+  year-less 29 February starts on the next real 29 February (never on 28
+  February, or the series would never fall on the 29th) with a plain
+  `FREQ=YEARLY`; what the calendar does in common years (skip, 28th or 1st March)
+  is its own affair. The app itself still shows it on 28 February (WP3).
+- **"Melden bei" events.** For every non-archived person whose state is not
+  `unbekannt`: one all-day event on `max(faellig_am, heute)` (overdue and cold
+  people on today, never in the past), moving with the same UID when a Kontakt is
+  logged. Description "Zuletzt besprochen: <first line of the latest real note>"
+  (a Schätzung has no note, so none). The alarm is `TRIGGER:PT9H`, a duration
+  after the start of the all-day event, i.e. 09:00 in the zone the calendar is in:
+  portable, and no UTC computation from the user's time zone is needed. Not
+  verified in Apple Calendar itself (no device here); the value is the one Apple
+  writes for "on the day, 9 AM". Stichtage get no alarm: the app's own lead time
+  is the reminder there.
+- **Routes and the open door.** `/kalender/<token>.ics` answers without login;
+  an unknown token is the same bare 404 as any unknown page, whatever it looks
+  like (no near-miss hint; the lookup is one equality in SQLite). The open door is
+  now only `/kalender/*.ics` (`basis.ist_offen`), not the whole `/kalender/` prefix,
+  so `/kalender/herunterladen` is behind the login by the same door as every other
+  page. Both answer `text/calendar; charset=utf-8` with `Cache-Control: private,
+  no-store`; the download adds `Content-Disposition: attachment;
+  filename="bindung.ics"`.
+- **Rotating the address** writes a new `secrets.token_urlsafe(32)`; the old URL is
+  a 404 at once. A confirmation (`hx-confirm`) names the consequence.
+- **Address on the page.** `basis.aussenadresse(request)` gives scheme and host:
+  `https` when `BINDUNG_SICHER=1`, otherwise `X-Forwarded-Proto` if it is `http` or
+  `https`, otherwise the request's scheme; host from `X-Forwarded-Host` or `Host`
+  (checked against a host pattern, else the request's). A helper instead of
+  middleware: the values only end up in the user's own page, so the proxy does not
+  have to be trusted and no global request state is needed. Both `webcal://` and
+  `https://`/`http://` addresses are shown, each with a copy button
+  (`navigator.clipboard`, falling back to `execCommand`).
+- **Settings page** is its own page (one column, back link to `/`), not a pane.
+  Each section has its own form with a save button and "Gespeichert" (unlike the
+  Personenseite there is no save-on-change: a half-typed password or a time zone
+  scrolled past in the list must not be sent). HTMX swaps only the section; a
+  rejected value is a 422 with the section redrawn with what was typed (passwords
+  never); without script the same routes answer the whole page.
+- **Passwort ändern.** `auth.passwort_aendern` checks the current password and
+  keeps the session it was called from (`passwort_setzen(..., behalte_token=)`
+  deletes all other sessions of the user, including a stolen cookie). A wrong
+  current password counts as a failed attempt for the failed-login delay (same
+  per-name counter as the login), and the delay refuses even the right password
+  until it has run out; the answer is a 422 with the text, not 429, because the
+  page only swaps 2xx and 422.
+- **Erinnern.** Interval 1 to 3650 days, lead time 0 to 365, time of day `HH:MM`
+  (a time field's `HH:MM:00` is accepted), saved all or nothing. Time zones: a
+  list of 40 common IANA zones, Europe/Berlin first, each checked by `zoneinfo`; a
+  zone already stored outside the list stays selectable (and only that one), so
+  a value set by hand in the database is not lost. Changing the zone or the
+  defaults needs no migration: states are computed when read. The time of the
+  Tagesmeldung is stored now, the note under the field says the push itself comes
+  later (WP5; update that text then).
+- **Diktat.** `de-DE` ("Deutsch") or `en-US` ("Englisch (USA)") in
+  `nutzer.diktat_sprache`; WP6 reads it.
+- **Code layout.** `bindung/kalender.py` (file, address, token), `bindung/
+  einstellungen.py` (read, validate, save), routers `routen/kalender.py` and
+  `routen/einstellungen.py`, templates `einstellungen.html` and one partial per
+  section (`_einstellung_<abschnitt>.html`). Two conventions went into
+  `docs/design_conventions.yaml`.
+

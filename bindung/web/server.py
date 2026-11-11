@@ -15,7 +15,14 @@ from fastapi.staticfiles import StaticFiles
 
 from bindung import auth, db
 from bindung.web import basis
-from bindung.web.routen import angehoerige, kontakte, personen, stichtage
+from bindung.web.routen import (
+    angehoerige,
+    einstellungen,
+    kalender,
+    kontakte,
+    personen,
+    stichtage,
+)
 
 app = FastAPI(title="Bindung", docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/statisch", StaticFiles(directory=str(basis.STATISCH)), name="statisch")
@@ -92,3 +99,5 @@ app.include_router(personen.router)
 app.include_router(kontakte.router)
 app.include_router(angehoerige.router)
 app.include_router(stichtage.router)
+app.include_router(kalender.router)
+app.include_router(einstellungen.router)
