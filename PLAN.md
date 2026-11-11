@@ -218,7 +218,8 @@ hide the button.
 - **Content:** one yearly `VEVENT` per Stichtag (with the age or years when
   the year is known, e.g. "Anna Beispiel wird 40"), and one all-day `VEVENT`
   per non-archived person with a due date ("Melden bei Anna Beispiel") at
-  `faellig_am`, with a `VALARM` the morning of. People with state `unbekannt`
+  `faellig_am`, with a `VALARM` the morning of; overdue and cold people on the
+  next Sunday (the weekly review), not on every new day. People with state `unbekannt`
   are not in the feed. Stable `UID`s per person and per Stichtag, so Calendar
   updates rather than duplicates.
 
@@ -537,9 +538,12 @@ Small decisions taken while building WP4, where the plan was silent:
   `FREQ=YEARLY`; what the calendar does in common years (skip, 28th or 1st March)
   is its own affair. The app itself still shows it on 28 February (WP3).
 - **"Melden bei" events.** For every non-archived person whose state is not
-  `unbekannt`: one all-day event on `max(faellig_am, heute)` (overdue and cold
-  people on today, never in the past), moving with the same UID when a Kontakt is
-  logged. Description "Zuletzt besprochen: <first line of the latest real note>"
+  `unbekannt`: one all-day event on `faellig_am`; when that day is past (overdue
+  and cold people) on the **next Sunday, today included** (`DURCHSICHT_WOCHENTAG`),
+  the day of the weekly review, so the reminder rings once a week instead of
+  every morning (changed on the user's request after WP4; the first cut moved
+  them to today each day). The event moves with the same UID when a Kontakt is
+  logged. All events are `TRANSP:TRANSPARENT`, so they show as free, not busy. Description "Zuletzt besprochen: <first line of the latest real note>"
   (a Schätzung has no note, so none). The alarm is `TRIGGER:PT9H`, a duration
   after the start of the all-day event, i.e. 09:00 in the zone the calendar is in:
   portable, and no UTC computation from the user's time zone is needed. Not

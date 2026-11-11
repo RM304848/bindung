@@ -132,7 +132,9 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   und je Person, bei der du schon einmal Kontakt eingetragen hast, ein Termin
   „Melden bei …“ am Tag, an dem du dich melden wolltest, mit einer Erinnerung um
   9 Uhr und der ersten Zeile der letzten Notiz. Wer überfällig oder erkaltet ist,
-  steht heute im Kalender. Trägst du einen Kontakt ein, rückt der Termin weiter.
+  steht am nächsten Sonntag im Kalender, dem Tag der Wochendurchsicht, nicht
+  jeden Morgen neu. Alle Einträge sind ganztägig und als „frei“ eingetragen,
+  blockieren also nichts. Trägst du einen Kontakt ein, rückt der Termin weiter.
   Archivierte Personen und Personen ohne Kontakt kommen nicht vor. Wer eine Datei
   statt eines Abos will, nimmt „Herunterladen“.
 - **Adresse neu erzeugen.** Wer die Kalenderadresse kennt, sieht deine

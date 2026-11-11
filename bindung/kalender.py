@@ -11,8 +11,10 @@ Was im Kalender steht:
   Der 29. Februar beginnt an einem 29. Februar; wie ein Kalender das Jahr ohne
   Schalttag behandelt, ueberlassen wir ihm (`BYMONTHDAY=-1` ist nicht portabel).
 - Je Person mit Zustand ausser `unbekannt` ein ganztaegiges Ereignis „Melden
-  bei ...“ am Tag `faellig_am`, bei Ueberfaelligen und Erkalteten heute, mit
-  einer Erinnerung um 9 Uhr morgens.
+  bei ...“ am Tag `faellig_am`, mit einer Erinnerung um 9 Uhr morgens.
+  Ueberfaellige und Erkaltete stehen nicht jeden Tag neu auf „heute“, sondern
+  am naechsten Sonntag, dem Tag der Wochendurchsicht -- eine Erinnerung die
+  Woche statt jeden Morgen.
 
 Die UIDs sind je Stichtag und je Person fest, damit ein Kalender aktualisiert
 statt zu verdoppeln, wenn sich der Tag verschiebt.
@@ -33,6 +35,9 @@ PRODID = "-//Bindung//Kalender//DE"
 AKTUALISIERUNG = "PT1H"
 #: Die Erinnerung des Ereignisses „Melden bei“: Stunden nach Mitternacht des Tages.
 ERINNERUNG = "PT9H"
+#: Der Tag der Wochendurchsicht, auf den Ueberfaellige und Erkaltete fallen
+#: (Montag = 0 ... Sonntag = 6).
+DURCHSICHT_WOCHENTAG = 6
 
 #: Laenger darf eine Zeile nicht sein, in Bytes ohne den Zeilenumbruch (RFC 5545, 3.1).
 ZEILENLAENGE = 75
@@ -190,9 +195,20 @@ def _stichtag_ereignisse(con: sqlite3.Connection, nutzer_id: int, heute: dt.date
 
 # ----------------------------------------------------------------- Melden bei
 
+def naechste_durchsicht(heute: dt.date) -> dt.date:
+    """Der naechste Tag der Wochendurchsicht, heute eingeschlossen."""
+    return heute + dt.timedelta(days=(DURCHSICHT_WOCHENTAG - heute.weekday()) % 7)
+
+
 def melden_tag(faellig_am: dt.date, heute: dt.date) -> dt.date:
-    """Der Tag des Ereignisses: faellig_am, nie in der Vergangenheit."""
-    return max(faellig_am, heute)
+    """Der Tag des Ereignisses: faellig_am; liegt der zurueck, die naechste Durchsicht.
+
+    So wandert ein ueberfaelliger oder erkalteter Termin nicht jeden Tag auf
+    „heute“ mit und klingelt jeden Morgen, sondern sammelt sich am Sonntag.
+    """
+    if faellig_am >= heute:
+        return faellig_am
+    return naechste_durchsicht(heute)
 
 
 def _melden_ereignisse(con: sqlite3.Connection, nutzer_id: int, heute: dt.date,

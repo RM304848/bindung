@@ -288,17 +288,34 @@ def test_due_in_the_future_gets_an_event_on_the_due_day(con, nid, anna):
     assert "RRULE" not in e
 
 
-def test_overdue_person_gets_the_event_today_not_in_the_past(con, nid, anna):
+def test_overdue_person_gets_the_event_on_the_next_sunday(con, nid, anna):
     kontakt_vor(con, nid, anna, 70)  # faellig seit 14 Tagen, aber noch nicht erkaltet
     e = nach_uid(kalender.kalender_text(con, nid))[f"melden-{anna}@bindung"]
-    assert e["DTSTART;VALUE=DATE"] == "20261111"
-    assert e["DTEND;VALUE=DATE"] == "20261112"
+    # heute ist Mittwoch, der 11.11.2026; die Durchsicht ist Sonntag, der 15.
+    assert e["DTSTART;VALUE=DATE"] == "20261115"
+    assert e["DTEND;VALUE=DATE"] == "20261116"
 
 
-def test_cold_person_gets_the_event_today(con, nid, anna):
+def test_cold_person_gets_the_event_on_the_next_sunday(con, nid, anna):
     kontakt_vor(con, nid, anna, 300)
     e = nach_uid(kalender.kalender_text(con, nid))[f"melden-{anna}@bindung"]
-    assert e["DTSTART;VALUE=DATE"] == "20261111"
+    assert e["DTSTART;VALUE=DATE"] == "20261115"
+
+
+@pytest.mark.parametrize("heute, erwartet", [
+    (dt.date(2026, 11, 15), dt.date(2026, 11, 15)),  # Sonntag bleibt Sonntag
+    (dt.date(2026, 11, 14), dt.date(2026, 11, 15)),  # Samstag -> morgen
+    (dt.date(2026, 11, 16), dt.date(2026, 11, 22)),  # Montag -> in sechs Tagen
+])
+def test_the_review_day_is_the_next_sunday_including_today(heute, erwartet):
+    assert kalender.naechste_durchsicht(heute) == erwartet
+    assert kalender.melden_tag(heute - dt.timedelta(days=1), heute) == erwartet
+
+
+def test_a_due_day_in_the_future_or_today_is_kept():
+    heute = dt.date(2026, 11, 11)
+    assert kalender.melden_tag(heute, heute) == heute
+    assert kalender.melden_tag(dt.date(2026, 12, 1), heute) == dt.date(2026, 12, 1)
 
 
 def test_next_date_decides_the_day(con, nid, anna):
@@ -357,10 +374,11 @@ def test_the_time_zone_decides_what_today_is(con, nid, anna, monkeypatch):
                         lambda: dt.datetime(2026, 11, 11, 23, 30, tzinfo=dt.UTC))
     con.execute("UPDATE nutzer SET zeitzone = 'Europe/Berlin' WHERE id = ?", (nid,))
     con.commit()
-    kontakte.eintragen(con, nid, anna, datum=dt.date(2026, 9, 1), art="anruf")
+    # Intervall 56: faellig am 11.11. In UTC ist noch der 11.: faellig heute.
+    # In Berlin ist es schon der 12.: ueberfaellig, also der naechste Sonntag.
+    kontakte.eintragen(con, nid, anna, datum=dt.date(2026, 9, 16), art="anruf")
     e = nach_uid(kalender.kalender_text(con, nid))[f"melden-{anna}@bindung"]
-    # In Berlin ist es schon der 12.: ueberfaellig, also heute = 12.
-    assert e["DTSTART;VALUE=DATE"] == "20261112"
+    assert e["DTSTART;VALUE=DATE"] == "20261115"
 
 
 # ------------------------------------------------------------ Trennung der Nutzer
