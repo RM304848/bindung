@@ -315,6 +315,74 @@ input[readonly] { background: var(--flaeche-leise); color: var(--text-leise); }
 
 .speicherstatus { font-size: 0.8125rem; color: var(--text-leise); }
 
+/* ---------------------------------------------------------------------- Diktat */
+/* Der Rahmen `.diktat` steht in der Vorlage um jedes Textfeld mit `data-diktat`; den Knopf
+   setzt bindung.js hinein, nur wenn der Browser diktieren kann. Der Knopf sitzt in einem
+   Streifen unter dem Feld, am rechten Rand; links daneben steht, was der Browser gerade
+   erkennt. So liegt er weder auf Text noch auf der Bildlaufleiste, auch wenn das Feld
+   scrollt. Ohne Knopf (kein Diktat im Browser) bleibt der Rahmen leer und ohne Platz. */
+
+.diktat { position: relative; }
+.diktat > textarea { display: block; }
+.diktat-mit-knopf { padding-bottom: calc(var(--ziel) + 6px); }
+
+.diktat-knopf {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ziel);
+  height: var(--ziel);
+  min-height: var(--ziel);
+  padding: 0;
+  border: 1px solid var(--linie);
+  border-radius: 50%;
+  background: var(--flaeche);
+  color: var(--text-leise);
+  cursor: pointer;
+}
+.diktat-knopf svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.diktat-knopf:hover { color: var(--text); background: var(--flaeche-leise); }
+.diktat-knopf[aria-pressed="true"] { border-color: var(--aufmerksamkeit); color: var(--aufmerksamkeit); }
+
+/* Der Punkt zeigt, dass aufgenommen wird; ohne Bewegung, wenn der Nutzer sie nicht will. */
+.diktat-punkt {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--aufmerksamkeit);
+}
+.diktat-knopf[aria-pressed="true"] .diktat-punkt { display: block; animation: diktat-puls 1.2s ease-in-out infinite; }
+@keyframes diktat-puls { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) {
+  .diktat-knopf[aria-pressed="true"] .diktat-punkt { animation: none; }
+}
+
+.diktat-zwischen {
+  position: absolute;
+  left: 0;
+  right: calc(var(--ziel) + 10px);
+  bottom: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-height: var(--ziel);
+  overflow: hidden;
+  align-self: center;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-style: italic;
+  color: var(--text-leise);
+  overflow-wrap: anywhere;
+}
+.diktat-fehler { font-size: 0.875rem; color: var(--fehler); }
+
 /* ------------------------------------------------------------ Liste: Personen */
 
 .listenkoerper { display: flex; flex-direction: column; gap: 8px; }

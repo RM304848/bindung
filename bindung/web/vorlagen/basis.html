@@ -8,9 +8,10 @@
   <title>{% block titel %}Bindung{% endblock %}</title>
   <link rel="stylesheet" href="/statisch/stil.css">
   <script src="/statisch/htmx.min.js" defer></script>
+  <script src="/statisch/diktat.js" defer></script>
   <script src="/statisch/bindung.js" defer></script>
 </head>
-<body class="{% block koerper %}{% endblock %}">
+<body class="{% block koerper %}{% endblock %}" data-diktat-sprache="{{ nutzer.diktat_sprache if nutzer else 'de-DE' }}">
 {% block inhalt %}{% endblock %}
 </body>
 </html>

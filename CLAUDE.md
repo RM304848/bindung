@@ -16,7 +16,8 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 
 - Die Daten bleiben auf dem eigenen Server. Nichts geht irgendwohin, ausser
   der Web-Push-Nachricht an den Push-Dienst des Browsers (nur der Text der
-  Tagesmeldung).
+  Tagesmeldung), und dem Audio beim Diktat, das der Browser selbst
+  erkennt (Apple oder Google, nicht Bindung; PLAN.md, Abschnitt 8 und 13).
 - Keine KI zur Laufzeit. Faelligkeit, Tagesmeldung und Kalender kommen aus
   festen Regeln. KI schreibt nur Code.
 - Keine echten Menschen im Repository: keine echten Namen, Firmen,
@@ -66,7 +67,7 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 | `bindung/web/ansicht.py` | die Ansicht in der Adresse (`?tag=&filter=&karte=&suche=&person=`), Kontext fuer Seitenleiste, Karten und Liste, die Teile-Helfer (`antwort`, `aktualisierung`, `spalte_bauen`); `stichtag_personen` (Personen mit Stichtag im Vorlauf, die Karte "Diese Woche"), `familie_teile` (Angehoerige und Stichtage zusammen neu zeichnen) |
 | `bindung/web/routen/` | je Seitengruppe ein Router (`personen.py`: Seite, Liste, Personenseite, Tags; `kontakte.py`: Blatt Kontakt eintragen, Zuletzt besprochen; `angehoerige.py`: Abschnitt Angehoerige und die Auswahl beim Verknuepfen; `stichtage.py`: Abschnitt Stichtage; `kalender.py`: `/kalender/<geheimnis>.ics` offen, `/kalender/herunterladen` mit Anmeldung; `einstellungen.py`: Seite `/einstellungen`, je Abschnitt ein Formular; `push.py`: `/push/schluessel`, `/push/abo`, `/push/test`, `/sw.js` offen, `/hinweis/weggeklickt`) |
 | `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_karten`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_hinweis`, `_einstellung_benachrichtigungen`, `_kontaktlinks`, `_verlauf`, `_kontakt_blatt`, `_faelligkeit`, `_angehoerige`, `_angehoeriger`, `_stichtage`, `_stichtag`, `_kandidaten`, `einstellungen` und `_einstellung_<abschnitt>` ...) |
-| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen, Adresse kopieren, Push anmelden), `sw.js` (Service Worker, nur Push) |
+| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen, Adresse kopieren, Push anmelden, Mikrofonknopf und Anzeige des Diktats), `diktat.js` (Diktat: `Diktat.verfuegbar/starten/stoppen`, ein austauschbares `backend`, Ereignisse `diktat:*` am Feld), `sw.js` (Service Worker, nur Push) |
 | `docs/design_conventions.yaml` | Regeln fuer die Oberflaeche, mit Grund; `tests/test_design.py` prueft sie |
 
 ## Tests

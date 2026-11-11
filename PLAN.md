@@ -199,8 +199,9 @@ in templates.
 A mic button next to every multi-line text field (notes) and the quick-add
 area. v1 uses the browser's built-in recognition (`SpeechRecognition` /
 `webkitSpeechRecognition`), which uses the device microphone and Apple's
-recogniser in Safari on Mac and iPhone. A language toggle (de-DE / en-US)
-sits on the button; the choice is a user setting.
+recogniser in Safari on Mac and iPhone. The language (de-DE / en-US) is a user
+setting (Einstellungen › Diktat; the toggle on the button was dropped in WP6,
+see section 13).
 
 The button talks to one small JS interface (`diktat.js`: `starten(feld)`,
 `stoppen()`, `verfuegbar()`), so a later server-side transcriber (record with
@@ -666,3 +667,56 @@ Small decisions taken while building WP5, where the plan was silent:
   denies the permission, so the flow was driven with a stubbed `Notification` and
   `PushManager.subscribe`, a real `/sw.js` registration and a stubbed `webpush`), and
   whether Apple's push service accepts the default `sub`.
+
+Small decisions taken while building WP6, where the plan was silent:
+
+- **No language toggle on the button.** Section 8 put one on the button; the setting
+  exists since WP4 (Einstellungen › Diktat, two taps from the sidebar), so the button stays
+  a single round button. The language reaches the script as `data-diktat-sprache` on
+  `<body>`, rendered from `nutzer.diktat_sprache` (`de-DE` on the login page), so a change
+  applies from the next page load, not to a page that is already open.
+- **The frame is in the templates, the button comes from the script.** Every
+  `<textarea data-diktat>` sits alone in `<div class="diktat">` (checked by
+  `tests/test_web_diktat.py`); `bindung.js` adds the button, only if `Diktat.verfuegbar()`,
+  on load and on `htmx:afterSettle`, by event delegation for the clicks. Wrapping the field
+  from script would move it in the DOM and take its focus (the Kontakt sheet has
+  `autofocus`), and would flash unstyled on every swap.
+- **The button sits in a strip below the field, not inside its corner.** The field keeps
+  its full height; the 44 px button is right-aligned under it and what the browser is
+  recognising (grey, italic, two lines at most) stands to its left. A button floating inside
+  the corner covers text as soon as the field scrolls and sits on the scrollbar on desktop;
+  verified at 1024 px and 375 px. Errors come as a red line under the strip (`role="alert"`).
+- **`diktat.js` writes final text itself, the UI listens.** `Diktat.starten(feld, sprache)`
+  inserts every final result at the cursor (else at the end, with a space to the
+  neighbours, `setRangeText`), fires `input`, and at the end of the session `change`: the
+  Personenseite saves on `change` (section 7), and a programmatic insert does not fire it by
+  itself. The field is never written with interim text. Events on the field: `diktat:start`,
+  `diktat:zwischen`, `diktat:fehler`, `diktat:ende`. The backend is one object chosen at load
+  (`backend`, shape in the file's header); a server-side transcriber replaces it. The second
+  backend is not written.
+- **Where the text goes.** The button keeps the field focused (`mousedown` is cancelled) so
+  the cursor stays and on the phone the keyboard stays as it was; a keyboard click (detail 0)
+  moves the focus back to the field first. The cursor is read at every insert while the field
+  has the focus, otherwise the end position after the last insert is used.
+- **One recording, and what ends it.** Starting another field stops the first (`stop()`, so
+  its last words still arrive). The same button again, Escape (capture phase, so a Blatt
+  behind does not close at the same time; the second Escape closes it), closing the Blatt
+  ("Abbrechen", click beside it) and the field leaving the page all end it. The browser
+  also ends a session by itself after some silence; the button then goes back to "Diktieren"
+  and the user taps again. There is no automatic restart.
+- **Errors are German and end the session**: `not-allowed` and `service-not-allowed` (with
+  the hint to allow the microphone in the browser's settings), `no-speech`, `network`,
+  `audio-capture`, `language-not-supported`, anything else with its code. `aborted` is silent.
+- **The audio leaves the server's reach.** The recognition of Safari and Chrome sends the
+  audio to Apple's or Google's service; Bindung's server never sees it. This is the
+  price of "no model to install" (above) and the one exception to "nothing leaves except
+  push" in section 2, now also named in `CLAUDE.md` and in the release notes. Who does not
+  want it dictates with a Mac dictation app (works in every field) or waits for the
+  server-side backend.
+- **Not verified here:** real speech recognition. The browser pane's Chromium has
+  `webkitSpeechRecognition`, but the pane has no microphone path; the whole flow (button,
+  recording state, interim line, final insert at the cursor, `input` and the save `POST`
+  on the Personenseite, switching fields, Escape, the four error codes) was driven with a
+  fake recognition class defined on `window` before `diktat.js` was re-evaluated against it.
+  Safari on iPhone (a second `webkitSpeechRecognition` on the same page, microphone
+  permission in an installed web app) is untested.

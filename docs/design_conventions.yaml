@@ -111,7 +111,7 @@ regeln:
                    'input[type="tel"]', 'input[type="date"]', 'input[type="number"]',
                    'input[type="time"]', 'input[type="password"]',
                    'input[type="search"]',
-                   'select', 'textarea']
+                   'select', 'textarea', '.diktat-knopf']
 
   - id: kein-cdn
     regel: >
@@ -501,3 +501,77 @@ regeln:
                'data-push-status', 'data-push-aktivieren', 'data-push-deaktivieren',
                'hx-post="/push/test" hx-target="#einstellung-benachrichtigungen" hx-swap="outerHTML"',
                'Testmeldung senden']
+
+  - id: diktat-knopf-im-rahmen
+    regel: >
+      Jedes `<textarea data-diktat>` steht in der Vorlage allein in
+      `<div class="diktat">`. Den Mikrofonknopf (`.diktat-knopf`, rund, 44 px, rechts
+      in einem Streifen unter dem Feld, links daneben der Zwischentext) setzt `bindung.js`
+      in diesen Rahmen, nur wenn `Diktat.verfuegbar()` stimmt; was HTMX spaeter einsetzt,
+      bekommt ihn bei `htmx:afterSettle`.
+      Die Aufnahme zeigt `aria-pressed="true"` und einen pulsierenden Punkt in
+      `--aufmerksamkeit` (ohne Bewegung bei `prefers-reduced-motion`); die Beschriftung
+      wechselt zwischen „Diktieren“ und „Diktat beenden“. Es laeuft immer nur ein
+      Diktat, Escape beendet es und schliesst nicht zugleich ein Blatt.
+    warum: >
+      Der Rahmen steht in der Vorlage und nicht im Skript, damit das Feld nicht beim
+      Laden umgesetzt wird (das nimmt ihm den Fokus, auch das `autofocus` des Blattes).
+      Ohne Erkennung (Firefox) darf nichts Totes auf dem Bildschirm stehen. Ein Knopf in
+      der Ecke des Feldes deckt Text zu, sobald das Feld scrollt, und liegt auf dem
+      Desktop auf der Bildlaufleiste; darum der Streifen darunter. Wer spricht, muss sehen, dass aufgenommen wird, und es mit dem Daumen
+      oder mit Escape beenden koennen.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/bindung.js
+      muster: ['diktat-knopf', 'aria-pressed', 'Diktat beenden', 'verfuegbar\(\)',
+               'htmx:afterSettle', '"Escape"']
+
+  - id: diktat-aufnahme-zeigt-sich
+    regel: >
+      Im Stylesheet hat `.diktat-knopf[aria-pressed="true"]` die Farbe `--aufmerksamkeit`,
+      der Punkt pulsiert (`diktat-puls`) und steht bei `prefers-reduced-motion: reduce`
+      still; der Knopf ist `var(--ziel)` gross.
+    warum: >
+      Ein Mikrofon, das offen ist, ohne dass man es sieht, ist das Schlimmste, was ein
+      Diktat tun kann. Die Farbe allein genuegt nicht (Farbenblindheit), darum auch der
+      Punkt und die Beschriftung.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/stil.css
+      muster: ['\.diktat-knopf\[aria-pressed="true"\] \{ border-color: var\(--aufmerksamkeit\)',
+               'diktat-puls', 'prefers-reduced-motion: reduce', 'width: var\(--ziel\)']
+
+  - id: diktat-sprache-aus-den-einstellungen
+    regel: >
+      `diktat.js` wird vor `bindung.js` einmal in `basis.html` geladen. Die Sprache
+      steht als `data-diktat-sprache` am `<body>` (aus `nutzer.diktat_sprache`, ohne
+      Nutzer `de-DE`); der Knopf hat keinen eigenen Umschalter. Die Sprache aendert man
+      unter Einstellungen › Diktat und sie gilt ab dem naechsten Laden der Seite.
+    warum: >
+      Ein Umschalter am Knopf waere ein zweiter Knopf in jedem Feld, auf dem Telefon
+      zu eng. Die Sprache wechselt selten; Einstellungen sind von der Seitenleiste aus in zwei Schritten erreicht.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/vorlagen/basis.html]
+      muster: ['<script src="/statisch/diktat\.js" defer></script>\s*<script src="/statisch/bindung\.js" defer></script>',
+               'data-diktat-sprache="\{\{ nutzer\.diktat_sprache']
+
+  - id: diktat-hinter-einer-schnittstelle
+    regel: >
+      `diktat.js` hat nach aussen `verfuegbar()`, `starten(feld, sprache)`, `stoppen()`
+      und meldet mit den Ereignissen `diktat:start`, `diktat:zwischen`, `diktat:fehler`
+      und `diktat:ende` am Feld. Der Anbieter dahinter ist ein Objekt `backend`
+      (`verfuegbar`, `starten`), gewaehlt beim Laden. Erkannter Text kommt erst als
+      endgueltig ins Feld (mit `input`, am Ende der Sitzung mit `change`); Zwischentext
+      steht nur in der Anzeige unter dem Feld.
+    warum: >
+      Ein Server, der Audio aufnimmt und transkribiert (PLAN.md, Abschnitt 8), soll
+      den Browser-Anbieter ersetzen, ohne dass Vorlagen oder Knopf sich aendern.
+      Zwischentext im Feld wuerde sich beim Verbessern der Erkennung mitaendern und
+      beim Speichern halbe Saetze festhalten; `change` am Ende laesst die Personenseite
+      speichern, die erst beim Verlassen des Feldes speichert.
+    pruefung:
+      art: datei_enthaelt
+      dateien: [bindung/web/statisch/diktat.js]
+      muster: ['var backend =', 'verfuegbar:', 'starten:', 'stoppen:', 'window\.Diktat =',
+               '"diktat:" \+ name', 'new Event\("change"']

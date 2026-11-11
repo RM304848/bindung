@@ -19,7 +19,10 @@
   // daneben schliessen es, ohne den Server zu fragen (nichts wurde gespeichert).
   function blattSchliessen() {
     var blatt = document.querySelector("[data-blatt]");
-    if (blatt) { blatt.remove(); }
+    if (blatt) {
+      if (window.Diktat) { window.Diktat.stoppen(); }   // kein Diktat in ein Feld, das weg ist
+      blatt.remove();
+    }
   }
   document.addEventListener("click", function (ereignis) {
     if (ereignis.target.closest("[data-schliessen]") || ereignis.target.matches("[data-blatt]")) {
@@ -68,6 +71,123 @@
   document.addEventListener("spalte", function (ereignis) {
     zeigen(ereignis.detail.value);
   });
+
+  // ------------------------------------------------------------------ Diktat
+  // Der Mikrofonknopf in jedem Textfeld, das in der Vorlage in `<div class="diktat">` steht und
+  // `data-diktat` traegt (PLAN.md, Abschnitt 8). Das Diktieren selbst macht `diktat.js`; hier
+  // sind nur Knopf und Anzeige. Die Sprache steht am `<body>` (`data-diktat-sprache`, aus den
+  // Einstellungen). Auch Felder, die HTMX spaeter einsetzt, bekommen den Knopf.
+  var diktatFelder = new WeakMap();   // Textfeld -> { knopf, zwischen, fehler }
+
+  function mikrofonZeichnen() {
+    var ns = "http://www.w3.org/2000/svg";
+    var bild = document.createElementNS(ns, "svg");
+    bild.setAttribute("viewBox", "0 0 24 24");
+    bild.setAttribute("width", "22");
+    bild.setAttribute("height", "22");
+    bild.setAttribute("aria-hidden", "true");
+    bild.setAttribute("focusable", "false");
+    [["rect", { x: "9", y: "3", width: "6", height: "12", rx: "3" }],
+     ["path", { d: "M5 11a7 7 0 0 0 14 0M12 18v3" }]].forEach(function (teil) {
+      var form = document.createElementNS(ns, teil[0]);
+      Object.keys(teil[1]).forEach(function (name) { form.setAttribute(name, teil[1][name]); });
+      bild.appendChild(form);
+    });
+    return bild;
+  }
+
+  function diktatKnopfAnbringen(rahmen) {
+    var feld = rahmen.querySelector("textarea[data-diktat]");
+    if (!feld || diktatFelder.has(feld)) { return; }
+    var knopf = document.createElement("button");
+    knopf.type = "button";
+    knopf.className = "diktat-knopf";
+    knopf.setAttribute("aria-pressed", "false");
+    knopf.setAttribute("aria-label", "Diktieren");
+    knopf.title = "Diktieren";
+    var punkt = document.createElement("span");
+    punkt.className = "diktat-punkt";
+    punkt.setAttribute("aria-hidden", "true");
+    knopf.appendChild(mikrofonZeichnen());
+    knopf.appendChild(punkt);
+    rahmen.appendChild(knopf);
+    rahmen.classList.add("diktat-mit-knopf");
+    // Unter dem Feld: links vom Knopf, was der Browser gerade erkennt (grau), und darunter,
+    // wenn es nicht klappt, warum.
+    var zwischen = document.createElement("p");
+    zwischen.className = "diktat-zwischen";
+    zwischen.hidden = true;
+    var fehler = document.createElement("p");
+    fehler.className = "diktat-fehler";
+    fehler.setAttribute("role", "alert");
+    fehler.hidden = true;
+    rahmen.appendChild(zwischen);
+    rahmen.insertAdjacentElement("afterend", fehler);
+    diktatFelder.set(feld, { knopf: knopf, zwischen: zwischen, fehler: fehler });
+  }
+
+  function diktatAnbringen() {
+    if (!window.Diktat || !window.Diktat.verfuegbar()) { return; }   // ohne Erkennung kein Knopf
+    Array.prototype.forEach.call(document.querySelectorAll(".diktat"), diktatKnopfAnbringen);
+  }
+
+  function diktatZeigen(feld, laeuft) {
+    var teile = diktatFelder.get(feld);
+    if (!teile) { return; }
+    teile.knopf.setAttribute("aria-pressed", laeuft ? "true" : "false");
+    var name = laeuft ? "Diktat beenden" : "Diktieren";
+    teile.knopf.setAttribute("aria-label", name);
+    teile.knopf.title = name;
+  }
+
+  // Der Knopf nimmt dem Feld den Fokus nicht (sonst verliert es Cursor und, auf dem Telefon,
+  // die Tastatur geht zu): das Diktat landet dort, wo der Cursor steht.
+  document.addEventListener("mousedown", function (ereignis) {
+    if (ereignis.target.closest(".diktat-knopf")) { ereignis.preventDefault(); }
+  });
+  document.addEventListener("click", function (ereignis) {
+    var knopf = ereignis.target.closest(".diktat-knopf");
+    if (!knopf) { return; }
+    var feld = knopf.parentNode.querySelector("textarea[data-diktat]");
+    if (!feld) { return; }
+    // Von der Tastatur (detail 0) hat der Knopf den Fokus: zurueck ins Feld, an den alten Cursor.
+    if (ereignis.detail === 0) { feld.focus(); }
+    window.Diktat.starten(feld, document.body.dataset.diktatSprache || "de-DE");
+  });
+  document.addEventListener("diktat:start", function (ereignis) {
+    var teile = diktatFelder.get(ereignis.target);
+    document.querySelectorAll('.diktat-knopf[aria-pressed="true"]').forEach(function (knopf) {
+      knopf.setAttribute("aria-pressed", "false");   // immer nur ein Diktat zugleich
+    });
+    if (teile) { teile.fehler.hidden = true; teile.fehler.textContent = ""; }
+    diktatZeigen(ereignis.target, true);
+  });
+  document.addEventListener("diktat:zwischen", function (ereignis) {
+    var teile = diktatFelder.get(ereignis.target);
+    if (!teile) { return; }
+    teile.zwischen.textContent = ereignis.detail.text;
+    teile.zwischen.hidden = !ereignis.detail.text;
+  });
+  document.addEventListener("diktat:fehler", function (ereignis) {
+    var teile = diktatFelder.get(ereignis.target);
+    if (!teile) { return; }
+    teile.fehler.textContent = ereignis.detail.text;
+    teile.fehler.hidden = false;
+  });
+  document.addEventListener("diktat:ende", function (ereignis) {
+    // Beendet ein altes Diktat erst nach dem Start eines neuen, bleibt der neue Knopf an.
+    if (window.Diktat.aktiv() !== ereignis.target) { diktatZeigen(ereignis.target, false); }
+  });
+  // Escape beendet das Diktat und schliesst nicht zugleich das Blatt dahinter.
+  document.addEventListener("keydown", function (ereignis) {
+    if (ereignis.key === "Escape" && window.Diktat && window.Diktat.aktiv()) {
+      window.Diktat.stoppen();
+      ereignis.stopPropagation();
+    }
+  }, true);
+
+  document.addEventListener("DOMContentLoaded", diktatAnbringen);
+  document.addEventListener("htmx:afterSettle", diktatAnbringen);
 
   // ------------------------------------------------------------------- Push
   // Die Tagesmeldung als Mitteilung des Browsers (PLAN.md, Abschnitt 10). Die Erlaubnis

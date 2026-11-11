@@ -94,6 +94,23 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   `bindung nutzer anlegen <name>` (das Passwort wird zweimal abgefragt und
   bleibt dabei unsichtbar); `bindung nutzer passwort <name>` setzt ein neues,
   `bindung nutzer liste` zeigt alle.
+- **Diktat.** In jedem Notizfeld – „Notiz“ beim Kontakt eintragen und beim
+  Bearbeiten eines Eintrags, „Profilnotiz“, „Namen, einer pro Zeile“ bei
+  „Mehrere hinzufügen“ – steht unter dem Feld rechts ein Mikrofonknopf. Ein Tipp
+  startet das Diktat, der Knopf leuchtet orange und pulsiert, ein zweiter Tipp
+  („Diktat beenden“) oder die Escape-Taste beendet es. Was du sprichst, erscheint
+  grau neben dem Knopf und kommt als Text ins Feld, sobald der Browser sicher ist:
+  an die Stelle des Cursors, sonst ans Ende. Auf der Personenseite wird die Notiz
+  danach gespeichert wie nach jeder Eingabe. Es läuft immer nur ein Diktat. Geht
+  etwas schief (Mikrofon nicht erlaubt, nichts gehört, keine Verbindung, kein
+  Mikrofon), steht ein kurzer Satz unter dem Feld. Das Diktat braucht **Safari oder
+  Chrome**; in Browsern ohne Spracherkennung (Firefox) gibt es den Knopf nicht. Beim
+  ersten Mal fragt der Browser nach dem Mikrofon. Die Sprache (Deutsch oder
+  Englisch) stellst du unter „Einstellungen › Diktat“ ein; sie gilt ab dem nächsten
+  Laden der Seite. **Gut zu wissen:** Die Erkennung macht der Browser, nicht Bindung;
+  das Audio geht dabei an den Spracherkennungsdienst von Apple (Safari) oder Google
+  (Chrome), nicht an deinen Server. Wer das nicht will, diktiert mit einer
+  Diktier-App auf dem Mac, die in jedem Textfeld funktioniert, auch in Bindung.
 - **Angemeldet bleiben.** Die Sitzung hält 30 Tage und verlängert sich bei
   jeder Benutzung. Nach falschen Anmeldeversuchen muss man mit jedem Versuch
   länger warten. Abmelden geht unten in der Seitenleiste.
@@ -120,7 +137,7 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   - **Benachrichtigungen:** ob dieser Browser Mitteilungen bekommt, wie viele
     Browser angemeldet sind, und „Testmeldung senden“.
   - **Kalender:** deine Kalenderadresse, siehe unten.
-  - **Diktat:** die Sprache, in der du später in Notizfelder sprechen wirst
+  - **Diktat:** die Sprache, in der du in Notizfelder sprichst
     (Deutsch oder Englisch).
   - **Passwort ändern:** aktuelles Passwort, dann zweimal das neue. Du bleibst
     angemeldet; alle anderen Geräte werden abgemeldet.

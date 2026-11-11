@@ -7,7 +7,7 @@
   {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}
   <div class="feld">
     <label for="mehrere-namen">Namen, einer pro Zeile</label>
-    <textarea id="mehrere-namen" name="namen" data-diktat rows="8" placeholder="Anna Beispiel&#10;Ben Muster; Firma Muster" autofocus required>{{ werte.namen or '' }}</textarea>
+    <div class="diktat"><textarea id="mehrere-namen" name="namen" data-diktat rows="8" placeholder="Anna Beispiel&#10;Ben Muster; Firma Muster" autofocus required>{{ werte.namen or '' }}</textarea></div>
     <p class="hilfe">Mit Semikolon kommt die Firma dazu: „Name; Firma“.</p>
   </div>
   {% if tags %}
