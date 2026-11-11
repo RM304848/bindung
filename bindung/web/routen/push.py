@@ -71,6 +71,7 @@ async def abo_abmelden(request: Request):
 
 
 TESTMELDUNG = {"titel": tagesmeldung.TITEL, "tag": "tagesmeldung", "url": "/",
+               "icon": tagesmeldung.SYMBOL,
                "text": "Testmeldung: So sieht die Tagesmeldung aus."}
 
 

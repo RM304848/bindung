@@ -25,6 +25,8 @@ from dataclasses import dataclass
 from bindung import faelligkeit, kalender, stichtage
 
 TITEL = "Bindung"
+#: Das Symbol der Meldung (der Service Worker zeigt es neben dem Text); liegt in `statisch/`.
+SYMBOL = "/statisch/symbol-192.png"
 #: Wie viele Namen im Text stehen; der Rest wird „…“.
 NAMEN_HOECHSTENS = 3
 
@@ -61,7 +63,8 @@ class Tagesmeldung:
     @property
     def nutzlast(self) -> dict:
         """Was der Service Worker bekommt. `tag` laesst eine neue Meldung die alte ersetzen."""
-        return {"titel": self.titel, "text": self.text, "url": self.url, "tag": "tagesmeldung"}
+        return {"titel": self.titel, "text": self.text, "url": self.url, "tag": "tagesmeldung",
+                "icon": SYMBOL}
 
 
 # ------------------------------------------------------------------ Worte

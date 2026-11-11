@@ -5,7 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="htmx-config" content='{"allowEval": false, "allowScriptTags": false, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "422", "swap": true}, {"code": "[45]..", "swap": false, "error": true}]}'>
+  <meta name="theme-color" content="{{ palette().hell.grund }}" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="{{ palette().dunkel.grund }}" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Bindung">
   <title>{% block titel %}Bindung{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ statisch('symbol.svg') }}">
+  <link rel="apple-touch-icon" href="{{ statisch('symbol-180.png') }}">
+  <link rel="manifest" href="{{ manifest_adresse() }}">
   <link rel="stylesheet" href="{{ statisch('stil.css') }}">
   <script src="{{ statisch('htmx.min.js') }}" defer></script>
   <script src="{{ statisch('diktat.js') }}" defer></script>

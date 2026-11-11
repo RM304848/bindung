@@ -177,11 +177,12 @@ def test_the_stichtage_of_archived_people_stay_quiet(con, nid):
 
 # ------------------------------------------------------------ Nutzlast
 
-def test_the_payload_carries_title_text_url_and_the_replace_tag(con, nid):
+def test_the_payload_carries_title_text_url_icon_and_the_replace_tag(con, nid):
     person(con, nid, "Anna Beispiel", 80)
     meldung = tagesmeldung.bauen(con, nid, HEUTE)
     assert meldung.nutzlast == {"titel": "Bindung", "text": "1 Person wartet\nAnna Beispiel",
-                                "url": "/?karte=aufmerksamkeit", "tag": "tagesmeldung"}
+                                "url": "/?karte=aufmerksamkeit", "tag": "tagesmeldung",
+                                "icon": "/statisch/symbol-192.png"}
 
 
 # ------------------------------------------------------------ Hinweis

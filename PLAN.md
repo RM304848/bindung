@@ -64,8 +64,9 @@ calendar file is written by hand (RFC 5545 is small); no `icalendar` dependency.
 
 **Mac app** (WP7, pattern from health): `werkzeuge/paket/bauen.sh` builds
 `dist/Bindung-<version>-mac.dmg` with PyInstaller. Double-click starts
-`bindung/starter.py`: server on `127.0.0.1:8788`, menu-bar icon, no Dock icon,
-opens the browser. Matters more here than in finctl: push digests and the
+`bindung/starter.py` (also `bindung app`): server on `127.0.0.1:8788`,
+menu-bar icon (`bindung/menueleiste.py`), no Dock icon, opens the browser,
+daily task inside. Matters more here than in finctl: push digests and the
 calendar feed only work while the server runs.
 
 ## 4. Users and login
@@ -729,3 +730,61 @@ Found in the review of WP6:
   from its cache after the update and showed no mic button, although the code was
   right. Computed once per process (`functools.cache`); `serve --reload` restarts the
   process. `/sw.js` keeps its own `no-cache` header, as a service worker must.
+
+Decided while building WP7 (Mac app, PWA, first release):
+
+- **The symbol is two overlapping rings** (`statisch/symbol.svg`), accent colour on
+  transparent, no text: it reads at 16 px in a tab and at 512 px on the Home Screen.
+  The SVG carries both accents (light and dark) in a `prefers-color-scheme` block, so the tab
+  icon follows the theme. The PNGs (`symbol-180`, `-192`, `-512`, `-maskable-512`,
+  `-menue`) are written by `werkzeuge/symbole/erzeugen.py`, which draws the rings and the
+  rounded square itself with the standard library (about 100 lines, no dependency).
+  Reason: `cairosvg` needs the native cairo library (not on this Mac), `rsvg-convert` is not
+  installed, and `qlmanage -t` returns an opaque white background and renders in the
+  colours of the current light or dark system appearance. The app icons are an accent
+  square with white rings: `symbol-180` and `-maskable-512` full bleed (iOS and Android
+  round or crop them), `-192` and `-512` and the `.icns` with rounded corners and
+  transparent edges. The `.icns` is built on demand by `bauen.sh` (`iconutil`) and not
+  committed; the PNGs are committed, and `tests/test_web_manifest.py` compares them byte
+  for byte with what the script produces now.
+- **Manifest** at `/manifest.webmanifest`, built in Python from `basis.palette()` (which
+  reads the `:root` blocks of `stil.css`), because templates carry no colour values. `theme_color`
+  and `background_color` are the light `--grund`; the `<meta name="theme-color">` pair covers
+  light and dark with `media`. Open route (the browser fetches it without cookies), as are
+  `/healthz` and `/statisch/`. The link in the head carries a `?v=` fingerprint of the
+  manifest content, like the static files. No `fetch` listener in `sw.js`: still no offline
+  mode in v1; the service worker stays push-only. The push payload now carries
+  `icon: /statisch/symbol-192.png`, which the service worker already passed on.
+- **The Mac app starts on port 8788** and does not touch 8785, so `bindung serve` and the
+  app can exist side by side. If Bindung answers on 8788 the second double click only opens
+  the browser. `/healthz` returns `{"app": "Bindung", "version", "daten"}`, where `daten` is a
+  12-character hash of the data folder path (not the path: the route is open).
+- **One daily task per data folder.** The app process is the one that is always on, so the
+  daily task runs there. If a `bindung serve` already answers on `BINDUNG_PORT` (default 8785)
+  with the same `daten` hash, the starter switches its own task off and says so. This is a
+  courtesy, not machinery: two tasks could not send twice anyway, because the day is claimed
+  by one atomic statement on `digest_protokoll` (`tagesaufgabe._beanspruchen`, only the
+  caller whose `UPDATE` changes the row sends). A `bindung serve` started *after* the app is
+  not detected; the claim still keeps the digest to one per day.
+- **"Beenden" only in the Mac app.** The starter sets `basis.BEENDEN`; only then does the
+  sidebar show the button (`data-beenden`, handled in `bindung.js`) and `POST /api/beenden`
+  work. Everywhere else it is 404. It needs the login like every route and refuses a foreign
+  `Origin`. The menu bar has "Bindung öffnen", "Datenordner zeigen" and "Beenden"; its image
+  is `symbol-menue.png` (the rings, black on transparent, set as a template image so macOS
+  tints it for light and dark bars). No Dock icon (`LSUIElement`).
+- **The first user is created in the app.** Someone who double-clicks the DMG has no terminal
+  for `bindung nutzer anlegen`, and section 4 says there is no self-signup. So *only* when the
+  process runs as the Mac app (`BEENDEN` set) *and* there is no user yet, `/anmeldung` leads to
+  `/einrichten` (name, password twice, minimum 8 as everywhere) and logs that user in. With
+  one user the route is 404 for good. A server (`bindung serve`, a container) never offers
+  it: a freshly started empty server must not be claimable by whoever reaches it first. More
+  users come from the CLI as before.
+- **Packaging** is health's pattern: `werkzeuge/paket/bauen.sh` (icons, PyInstaller with
+  `bindung.spec`, smoke test, `dist/Bindung-<version>-mac.dmg`), unsigned (a DMG built here
+  opens without a warning; a downloaded one needs right-click → Öffnen the first time). The
+  smoke test starts the built app in an empty data folder on port 8798 and goes through the
+  first start (setup page, login), the pages, manifest and icons, `/sw.js`, the fingerprinted
+  stylesheet, and `POST /api/beenden`. `zoneinfo` reads the system's time zone database
+  (every Mac has it); the `tzdata` package would be bundled if present.
+- **Release 0.1.0 is tagged locally and published by hand** (`docs/release.md`); the notes
+  come from `CHANGELOG.md` through `werkzeuge/release_notes.py`.

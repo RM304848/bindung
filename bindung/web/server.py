@@ -19,6 +19,7 @@ from bindung import auth, db, tagesaufgabe
 from bindung.web import basis
 from bindung.web.routen import (
     angehoerige,
+    anwendung,
     einstellungen,
     kalender,
     kontakte,
@@ -76,11 +77,49 @@ def _zur_anmeldung(request: Request) -> Response:
     return RedirectResponse("/anmeldung", status_code=303)
 
 
+def _erster_start(request: Request) -> bool:
+    """Ist das die Mac-App beim ersten Start, noch ohne Nutzer?
+
+    Nur dann gibt es die Seite `/einrichten`: wer die App aus der .dmg startet, hat kein
+    Terminal fuer `bindung nutzer anlegen`. Ein Server (`bindung serve`, Container) bekommt
+    seine Nutzer nur ueber die Kommandozeile; sonst koennte ein frisch gestarteter, noch
+    leerer Server von jedem eingerichtet werden, der ihn erreicht.
+    """
+    return basis.BEENDEN is not None and not auth.nutzer_liste(basis.con(request))
+
+
 @app.get("/anmeldung", response_class=HTMLResponse)
 def anmeldung_form(request: Request):
     if basis.nutzer(request) is not None:
         return RedirectResponse("/", status_code=303)
+    if _erster_start(request):
+        return RedirectResponse("/einrichten", status_code=303)
     return basis.seite(request, "anmeldung.html")
+
+
+@app.get("/einrichten", response_class=HTMLResponse)
+def einrichten_form(request: Request):
+    if not _erster_start(request):
+        return Response(status_code=404)
+    return basis.seite(request, "einrichten.html")
+
+
+@app.post("/einrichten")
+def einrichten(request: Request, name: str = Form(""), passwort: str = Form(""),
+               wiederholung: str = Form("")):
+    if not _erster_start(request):
+        return Response(status_code=404)
+    try:
+        if passwort != wiederholung:
+            raise auth.AuthFehler("Die beiden Passwörter sind nicht gleich.")
+        auth.nutzer_anlegen(basis.con(request), name, passwort)
+    except auth.AuthFehler as fehler:
+        return basis.seite(request, "einrichten.html", status_code=422,
+                           meldung=str(fehler), name=name)
+    token = auth.anmelden(basis.con(request), name, passwort)
+    antwort = RedirectResponse("/", status_code=303)
+    antwort.set_cookie(auth.COOKIE, token, **auth.cookie_optionen())
+    return antwort
 
 
 @app.post("/anmeldung")
@@ -107,6 +146,7 @@ def abmelden(request: Request):
     return antwort
 
 
+app.include_router(anwendung.router)
 app.include_router(personen.router)
 app.include_router(kontakte.router)
 app.include_router(angehoerige.router)

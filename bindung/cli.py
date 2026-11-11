@@ -35,6 +35,17 @@ def serve(
                 reload_dirs=[paket] if reload else None)
 
 
+@app.command("app")
+def app_starten() -> None:
+    """Startet Bindung wie die Mac-App: Server auf Port 8788, Menüleiste, Browser.
+
+    Dasselbe tut der Doppelklick auf die App aus der .dmg.
+    """
+    from bindung import starter
+
+    starter.main()
+
+
 @app.command()
 def ort() -> None:
     """Zeigt den Datenordner und warum es dieser ist."""

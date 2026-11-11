@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Bindung">
+  <title>Bindung</title>
+  <style>
+    .ring { fill: none; stroke: #3b78c4; stroke-width: 44; }
+    @media (prefers-color-scheme: dark) { .ring { stroke: #5d9be3; } }
+  </style>
+  <circle class="ring" cx="190" cy="256" r="116"/>
+  <circle class="ring" cx="322" cy="256" r="116"/>
+</svg>

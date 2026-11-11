@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import json
 import re
 import sqlite3
+from collections.abc import Callable
 from functools import cache
 from pathlib import Path
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.templating import Jinja2Templates
 
 from bindung import angehoerige, auth, faelligkeit, stichtage
@@ -44,6 +46,70 @@ def statisch(name: str) -> str:
 
 
 TEMPLATES.env.globals["statisch"] = statisch
+
+#: Gesetzt vom Starter der Mac-App (`bindung/starter.py`): beendet den Server. Nur dann
+#: gibt es den Knopf "Beenden" und `POST /api/beenden`; unter `bindung serve` bleibt es `None`.
+BEENDEN: Callable[[], None] | None = None
+
+TEMPLATES.env.globals["app_modus"] = lambda: BEENDEN is not None
+
+
+# ------------------------------------------------------------ Palette und Manifest
+
+@cache
+def palette() -> dict[str, dict[str, str]]:
+    """Die Farben des Stylesheets: {"hell": {"grund": "#f2f2f5", ...}, "dunkel": {...}}.
+
+    Gelesen aus den `:root`-Bloecken von `stil.css` -- dort stehen die Farben, und nur dort
+    (docs/design_conventions.yaml). Die Kopfzeilen (`theme-color`) und das Manifest holen sie
+    von hier und tragen keine eigene Farbe.
+    """
+    css = re.sub(r"/\*.*?\*/", " ", (STATISCH / "stil.css").read_text(encoding="utf-8"),
+                 flags=re.S)
+
+    def farben(block: str) -> dict[str, str]:
+        return dict(re.findall(r"--([\w-]+)\s*:\s*(#[0-9a-fA-F]{6})\b", block))
+
+    hell = re.search(r":root\s*\{([^{}]*)\}", css)
+    dunkel = re.search(r"prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{([^{}]*)\}", css)
+    return {"hell": farben(hell.group(1)), "dunkel": farben(dunkel.group(1))}
+
+
+def manifest() -> dict:
+    """Das Web-App-Manifest (https://www.w3.org/TR/appmanifest/)."""
+    hell = palette()["hell"]
+    return {
+        "name": "Bindung",
+        "short_name": "Bindung",
+        "description": "Den Kontakt zu den Menschen halten, die einem wichtig sind.",
+        "lang": "de",
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": hell["grund"],
+        "theme_color": hell["grund"],
+        "icons": [
+            {"src": statisch("symbol-192.png"), "sizes": "192x192", "type": "image/png",
+             "purpose": "any"},
+            {"src": statisch("symbol-512.png"), "sizes": "512x512", "type": "image/png",
+             "purpose": "any"},
+            {"src": statisch("symbol-maskable-512.png"), "sizes": "512x512",
+             "type": "image/png", "purpose": "maskable"},
+            {"src": statisch("symbol.svg"), "sizes": "any", "type": "image/svg+xml",
+             "purpose": "any"},
+        ],
+    }
+
+
+@cache
+def manifest_adresse() -> str:
+    """`/manifest.webmanifest?v=...`: der Fingerabdruck haengt am Inhalt, wie bei `statisch`."""
+    inhalt = json.dumps(manifest(), sort_keys=True).encode("utf-8")
+    return f"/manifest.webmanifest?v={hashlib.sha256(inhalt).hexdigest()[:10]}"
+
+
+TEMPLATES.env.globals["palette"] = palette
+TEMPLATES.env.globals["manifest_adresse"] = manifest_adresse
 
 
 def _erste_zeile(text: str | None) -> str:
@@ -84,7 +150,10 @@ TEMPLATES.env.filters["stichtag_de"] = stichtage.text_de
 #: Pfade, die ohne Sitzung erreichbar sind.
 #: `/sw.js` ist der Service Worker: eine Skriptdatei ohne Daten, die der Browser auch dann
 #: abrufen muss, wenn gerade keine Sitzung im Spiel ist.
-OFFENE_PFADE = ("/anmeldung", "/sw.js")
+#: `/manifest.webmanifest` holt der Browser ohne Cookies ab (kein `use-credentials`), und
+#: `/healthz` fragt der Starter der Mac-App, ob schon eine Bindung antwortet. Keines enthaelt Daten.
+#: `/einrichten` (erster Nutzer der Mac-App) antwortet 404, sobald es einen Nutzer gibt.
+OFFENE_PFADE = ("/anmeldung", "/sw.js", "/manifest.webmanifest", "/healthz", "/einrichten")
 OFFENE_PRAEFIXE = ("/statisch/",)
 #: Die Kalenderadresse (`/kalender/<geheimnis>.ics`) traegt ihr Geheimnis in der URL und
 #: ist offen. `/kalender/herunterladen` (ohne `.ics`) bleibt hinter der Anmeldung.
@@ -123,6 +192,18 @@ def aussenadresse(request: Request) -> tuple[str, str]:
         schema = request.url.scheme
     host = _kopf(request, "x-forwarded-host") or request.headers.get("host", "")
     return schema, host if _HOST.match(host) else request.url.netloc
+
+
+def nur_eigener_ursprung(request: Request) -> None:
+    """Schreibende Anfragen nur von der eigenen Seite.
+
+    Eine fremde Webseite kann den Browser des Besitzers dazu bringen, an 127.0.0.1 zu
+    schicken. `Origin` verraet, woher die Anfrage kommt; ein Formular dieser Seite nennt
+    denselben Host. Ohne `Origin` (Kommandozeile, Tests) wird nichts blockiert.
+    """
+    ursprung = request.headers.get("origin")
+    if ursprung and ursprung.split("://", 1)[-1] != request.headers.get("host"):
+        raise HTTPException(403, "Anfrage von fremdem Ursprung abgelehnt")
 
 
 def con(request: Request) -> sqlite3.Connection:

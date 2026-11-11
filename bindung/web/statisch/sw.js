@@ -16,7 +16,7 @@ self.addEventListener("push", function (ereignis) {
     tag: daten.tag || "tagesmeldung",
     renotify: true
   };
-  // Das Symbol kommt mit der Installierbarkeit (WP7); bis dahin nur, wenn der Server eines nennt.
+  // Das Symbol nennt der Server (`/statisch/symbol-192.png`); fehlt es, zeigt der Browser seines.
   if (daten.icon) { optionen.icon = daten.icon; }
   ereignis.waitUntil(self.registration.showNotification(daten.titel || "Bindung", optionen));
 });

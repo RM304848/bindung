@@ -15,11 +15,14 @@ dependencies = [
     "uvicorn>=0.30",
     "jinja2>=3.1",
     "python-multipart>=0.0.9",   # FastAPI-Formulare (Anmeldung)
-    "pywebpush>=2.0",            # Push mit VAPID; erst ab WP5 benutzt
+    "pywebpush>=2.0",            # Push mit VAPID
+    "pyobjc-framework-Cocoa>=10; sys_platform == 'darwin'",  # Symbol in der Menueleiste
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6", "httpx>=0.27"]  # httpx: FastAPI TestClient
+# Nur fuer die Mac-App (werkzeuge/paket/bauen.sh).
+paket = ["pyinstaller>=6.0"]
 
 [project.scripts]
 bindung = "bindung.cli:app"

@@ -15,6 +15,26 @@
     if (knopf) { zeigen(knopf.dataset.zeige); }
   });
 
+  // „Beenden“ gibt es nur in der Mac-App (die Seitenleiste zeigt den Knopf nur dort): der Server
+  // hoert auf, und die Seite sagt, dass es vorbei ist, statt eine tote Liste stehen zu lassen.
+  document.addEventListener("click", function (ereignis) {
+    if (!ereignis.target.closest("[data-beenden]")) { return; }
+    fetch("/api/beenden", { method: "POST" }).catch(function () { /* der Server ist schon weg */ })
+      .then(function () {
+        var haupt = document.createElement("main");
+        haupt.className = "anmeldung";
+        var titel = document.createElement("h1");
+        titel.className = "anmeldung-titel";
+        titel.textContent = "Bindung ist beendet.";
+        var text = document.createElement("p");
+        text.className = "anmeldung-text";
+        text.textContent = "Du kannst diesen Tab schließen. Zum Starten öffnest du Bindung wieder.";
+        haupt.append(titel, text);
+        document.body.className = "seite-anmeldung";
+        document.body.replaceChildren(haupt);
+      });
+  });
+
   // Das Blatt „Kontakt eintragen“ liegt ueber der Seite: Abbrechen, Escape und ein Klick
   // daneben schliessen es, ohne den Server zu fragen (nichts wurde gespeichert).
   function blattSchliessen() {

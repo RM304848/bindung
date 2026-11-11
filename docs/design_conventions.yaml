@@ -589,3 +589,56 @@ regeln:
       dateien: [bindung/web/statisch/diktat.js]
       muster: ['var backend =', 'verfuegbar:', 'starten:', 'stoppen:', 'window\.Diktat =',
                '"diktat:" \+ name', 'new Event\("change"']
+
+  # ----------------------------------------------- Symbol, Manifest, Mac-App
+
+  - id: kopfzeile-traegt-symbol-und-manifest
+    regel: >
+      `basis.html` verlinkt das Symbol (`rel="icon"` auf `symbol.svg`, `rel="apple-touch-icon"`
+      auf `symbol-180.png`) und das Manifest (`manifest_adresse()`), setzt `theme-color` fuer
+      hell und dunkel (`media`-Attribut) aus `palette()` und kennt `apple-mobile-web-app-capable`
+      und `apple-mobile-web-app-title`. Die Adressen der Dateien kommen von `statisch()`, die
+      des Manifests von `manifest_adresse()`: beide mit Fingerabdruck.
+    warum: >
+      Ohne diese Zeilen zeigt der iPhone-Bildschirm nach "Zum Home-Bildschirm" einen Ausschnitt
+      der Seite statt des Symbols, die App oeffnet sich in Safari statt im eigenen Fenster, und
+      die Statusleiste hat eine fremde Farbe. Die Farben kommen aus der Palette (`palette()`
+      liest stil.css), weil Vorlagen keine Farbwerte tragen. Der Fingerabdruck sorgt dafuer,
+      dass ein geaendertes Symbol nach einem Update ankommt.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/basis.html
+      muster: ['rel="icon"[^>]*statisch\(.symbol\.svg.\)', 'rel="apple-touch-icon"[^>]*statisch\(.symbol-180\.png.\)',
+               'rel="manifest" href="\{\{ manifest_adresse\(\) \}\}"',
+               'name="theme-color" content="\{\{ palette\(\)\.hell\.grund \}\}" media="\(prefers-color-scheme: light\)"',
+               'name="theme-color" content="\{\{ palette\(\)\.dunkel\.grund \}\}" media="\(prefers-color-scheme: dark\)"',
+               'name="apple-mobile-web-app-capable"', 'name="apple-mobile-web-app-title" content="Bindung"']
+
+  - id: symbole-kommen-aus-einer-quelle
+    regel: >
+      Die PNGs neben `symbol.svg` (`symbol-180`, `-192`, `-512`, `-maskable-512`, `-menue`) werden
+      nur von `werkzeuge/symbole/erzeugen.py` geschrieben, nie von Hand bearbeitet. Das Skript liest
+      die Ringe aus `symbol.svg` und die Farben aus `stil.css`. Das Zeichen traegt keinen Text.
+    warum: >
+      Zwei Ringe sind bei 16 und bei 512 Pixeln lesbar, ein Schriftzug nicht. Wuerde jemand ein PNG
+      anders einfaerben, stimmten Browser-Tab, Home-Bildschirm und Mac-Symbol nicht mehr
+      ueberein; `tests/test_web_manifest.py` vergleicht die Dateien byteweise mit dem, was das
+      Skript heute erzeugt, und wird rot, wenn SVG oder Palette sich aendern, ohne dass jemand
+      neu erzeugt hat.
+    pruefung:
+      art: datei_enthaelt
+      datei: werkzeuge/symbole/erzeugen.py
+      muster: ['STATISCH / "symbol\.svg"', 'STATISCH / "stil\.css"', 'palette\(\)']
+
+  - id: beenden-gibt-es-nur-in-der-mac-app
+    regel: >
+      Der Knopf "Beenden" in der Seitenleiste steht hinter `app_modus()` und hat `data-beenden`
+      statt eines eigenen Skripts in der Vorlage; die Route `POST /api/beenden` gibt ausserhalb
+      der Mac-App 404 und prueft den Ursprung (`nur_eigener_ursprung`).
+    warum: >
+      Ein Server (`bindung serve`, Container) darf sich nicht von einer Seite abschalten lassen;
+      und eine Vorlage ohne Skript bleibt fuer die Tests (keine Inline-Skripte) pruefbar.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_seitenleiste.html
+      muster: ['\{% if app_modus\(\) %\}', 'data-beenden']

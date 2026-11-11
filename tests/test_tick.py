@@ -88,7 +88,8 @@ def test_the_digest_goes_out_at_the_users_time(con, bereit, ersatz):
     assert len(ersatz.aufrufe) == 1
     nutzlast = json.loads(ersatz.aufrufe[0]["data"])
     assert nutzlast == {"titel": "Bindung", "text": "1 Person wartet\nAnna Beispiel",
-                        "url": "/?karte=aufmerksamkeit", "tag": "tagesmeldung"}
+                        "url": "/?karte=aufmerksamkeit", "tag": "tagesmeldung",
+                        "icon": "/statisch/symbol-192.png"}
     assert versand_am(con, bereit) == "2026-11-11"
 
 

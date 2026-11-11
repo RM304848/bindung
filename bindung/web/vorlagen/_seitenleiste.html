@@ -38,5 +38,8 @@
     <form method="post" action="/abmelden">
       <button type="submit" class="knopf knopf-text">Abmelden</button>
     </form>
+    {% if app_modus() %}
+    <button type="button" class="knopf knopf-text" data-beenden>Beenden</button>
+    {% endif %}
   </div>
 </nav>
