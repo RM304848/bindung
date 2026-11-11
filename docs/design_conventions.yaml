@@ -425,3 +425,79 @@ regeln:
       datei: bindung/web/vorlagen/_einstellung_kalender.html
       muster: ['readonly', 'data-kopieren="kalender-webcal"', 'hx-confirm="[^"]*funktioniert',
                'Gib sie nicht weiter']
+
+  # --------------------------------------------------- Benachrichtigungen
+
+  - id: hinweis-ist-ein-streifen-ueber-der-app
+    regel: >
+      Der Hinweis (die Tagesmeldung, wenn dieser Browser keinen Push hat) ist ein
+      `<aside id="hinweis" class="hinweis">` ueber `.app`, nicht in einer der drei
+      Spalten: eine Zeile mit der Zahl, hoechstens zwei mit den Namen, daneben
+      „Benachrichtigungen erlauben“ (`data-push-aktivieren`) und „Heute ausblenden“,
+      das `/hinweis/weggeklickt` abschickt und den Streifen durch nichts ersetzt. Er
+      ist niedrig: auf dem Telefon stehen die Knoepfe unter dem Text, nicht daneben in
+      einer eigenen Reihe darueber. Ein Attribut `hidden` gewinnt immer
+      (`[hidden] { display: none !important; }`).
+    warum: >
+      Auf dem Telefon oeffnet die App auf der Seitenleiste; ein Streifen in der Liste
+      sahe man erst nach dem ersten Tippen, und er verschwaende bei jedem Wechsel der
+      Liste. Ueber der App steht er bei jedem Wechsel an seinem Platz und schiebt die
+      Karten nur um eine Zeile nach unten. Ohne die `hidden`-Regel wuerden die
+      `display`-Werte der Klassen das Attribut stillschweigend ueberstimmen und
+      Streifen und Knoepfe waeren immer zu sehen.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_hinweis.html
+      muster: ['<aside id="hinweis" class="hinweis"', 'data-push-aktivieren',
+               'hx-post="/hinweis/weggeklickt" hx-target="#hinweis" hx-swap="outerHTML"']
+
+  - id: attribut-hidden-gewinnt
+    regel: >
+      Das Stylesheet hat `[hidden] { display: none !important; }`. Was `bindung.js` ein-
+      oder ausblendet, tut es mit dem Attribut `hidden`, nicht mit einem Stil.
+    warum: >
+      Jede Klasse mit `display: flex` ueberstimmt das Attribut `hidden` still. Ohne die
+      Regel waeren Knoepfe und Streifen, die fuer diesen Browser gar nicht gelten, immer
+      zu sehen, und kein Test sahe es, weil der Text im HTML steht.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/stil.css
+      muster: ['\[hidden\] \{ display: none !important; \}']
+
+  - id: erlaubnis-fragt-nur-ein-klick
+    regel: >
+      Die Erlaubnis fuer Mitteilungen wird nur nach einem Klick auf einen Knopf mit
+      `data-push-aktivieren` erfragt (`bindung.js`, `pushAktivieren`), nie beim Laden
+      einer Seite und nie aus einem anderen Ereignis. Was dieser Browser kann und ob er
+      schon angemeldet ist, stellt `bindung.js` fest, ohne zu fragen, und blendet die
+      Knoepfe danach ein oder aus.
+    warum: >
+      Browser verbergen die Erlaubnis nach einem Nein dauerhaft in ihren Einstellungen,
+      und Safari verlangt eine Geste. Wer beim Laden fragt, wird beim ersten Besuch
+      abgelehnt und ist dann ohne Umweg nicht mehr zu erreichen.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/statisch/bindung.js
+      muster: ['function pushAktivieren', 'Notification\.requestPermission\(\)',
+               'closest\("\[data-push-aktivieren\]"\)']
+
+  - id: einstellung-benachrichtigungen
+    regel: >
+      Die Benachrichtigungen sind ein eigener Abschnitt der Einstellungen
+      (`<section id="einstellung-benachrichtigungen" class="einstellung">`) unter
+      „Erinnern“, ohne Speichern-Knopf: der Status dieses Browsers
+      (`data-push-status`) und die Knoepfe „In diesem Browser aktivieren“ und
+      „Deaktivieren“ kommen aus `bindung.js`, die Zahl der angemeldeten Browser und die
+      „Testmeldung senden“ vom Server. Der Abschnitt tauscht sich selbst aus
+      (`outerHTML`), die Testmeldung sagt im Abschnitt, wie sie ausging.
+    warum: >
+      „Erinnern“ speichert Zahlen mit einem Knopf und tauscht sich beim Speichern aus;
+      ein Status, den das Skript eben eingetragen hat, ginge dabei verloren. Und nur
+      der Browser weiss, ob er Mitteilungen kann: der Server darf es nicht behaupten.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_einstellung_benachrichtigungen.html
+      muster: ['<section id="einstellung-benachrichtigungen" class="einstellung"',
+               'data-push-status', 'data-push-aktivieren', 'data-push-deaktivieren',
+               'hx-post="/push/test" hx-target="#einstellung-benachrichtigungen" hx-swap="outerHTML"',
+               'Testmeldung senden']

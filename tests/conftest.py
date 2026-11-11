@@ -26,7 +26,9 @@ os.environ["BINDUNG_DATEN"] = str(_SITZUNG / "daten")
 os.environ.update(HOME=str(_SITZUNG / "heim"), APPDATA=str(_SITZUNG / "heim" / "appdata"),
                   XDG_DATA_HOME=str(_SITZUNG / "heim" / "share"),
                   USERPROFILE=str(_SITZUNG / "heim"))
-for _name in ("BINDUNG_SICHER", "BINDUNG_HOST", "BINDUNG_PORT"):
+# Die Tagesaufgabe darf in Tests nicht von selbst laufen (echte Uhr, echte Abos).
+os.environ["BINDUNG_TAGESAUFGABE"] = "0"
+for _name in ("BINDUNG_SICHER", "BINDUNG_HOST", "BINDUNG_PORT", "BINDUNG_PUSH_KONTAKT"):
     os.environ.pop(_name, None)
 
 import pytest  # noqa: E402

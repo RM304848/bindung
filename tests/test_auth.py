@@ -148,3 +148,26 @@ def test_cookie_optionen(monkeypatch):
     assert optionen["secure"] is False
     monkeypatch.setenv("BINDUNG_SICHER", "1")
     assert auth.cookie_optionen()["secure"] is True
+
+
+def _ablauf(con) -> str:
+    return con.execute("SELECT laeuft_ab_am FROM sitzung").fetchone()[0]
+
+
+def test_erneuerung_schreibt_hoechstens_einmal_am_tag(con, nutzer, monkeypatch):
+    jetzt = _uhr(monkeypatch, dt.datetime(2026, 1, 1, 12, tzinfo=dt.UTC))
+    token = auth.anmelden(con, nutzer, PASSWORT)
+    anfang = _ablauf(con)
+    # Ein Telefon fragt alle paar Minuten: die Zeile bleibt unberuehrt ...
+    for _ in range(5):
+        jetzt[0] += dt.timedelta(hours=3)
+        assert auth.sitzung_pruefen(con, token) is not None
+    assert _ablauf(con) == anfang
+    # ... am naechsten Tag wird verlaengert, und danach wieder nicht.
+    jetzt[0] += dt.timedelta(hours=10)
+    assert auth.sitzung_pruefen(con, token) is not None
+    verlaengert = _ablauf(con)
+    assert verlaengert > anfang
+    jetzt[0] += dt.timedelta(hours=1)
+    assert auth.sitzung_pruefen(con, token) is not None
+    assert _ablauf(con) == verlaengert

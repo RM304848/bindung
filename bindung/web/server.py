@@ -9,11 +9,13 @@ ohne Netz.
 
 from __future__ import annotations
 
+import contextlib
+
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from bindung import auth, db
+from bindung import auth, db, tagesaufgabe
 from bindung.web import basis
 from bindung.web.routen import (
     angehoerige,
@@ -21,10 +23,20 @@ from bindung.web.routen import (
     kalender,
     kontakte,
     personen,
+    push,
     stichtage,
 )
 
-app = FastAPI(title="Bindung", docs_url=None, redoc_url=None, openapi_url=None)
+
+@contextlib.asynccontextmanager
+async def _lebensdauer(_app: FastAPI):
+    """Die Tagesaufgabe (Tagesmeldung per Push) laeuft, solange die App laeuft."""
+    async with tagesaufgabe.laufen():
+        yield
+
+
+app = FastAPI(title="Bindung", docs_url=None, redoc_url=None, openapi_url=None,
+              lifespan=_lebensdauer)
 app.mount("/statisch", StaticFiles(directory=str(basis.STATISCH)), name="statisch")
 
 
@@ -101,3 +113,4 @@ app.include_router(angehoerige.router)
 app.include_router(stichtage.router)
 app.include_router(kalender.router)
 app.include_router(einstellungen.router)
+app.include_router(push.router)

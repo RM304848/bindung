@@ -597,3 +597,72 @@ Small decisions taken while building WP4, where the plan was silent:
   section (`_einstellung_<abschnitt>.html`). Two conventions went into
   `docs/design_conventions.yaml`.
 
+Small decisions taken while building WP5, where the plan was silent:
+
+- **Digest content.** Waiting = state `ueberfaellig` or `erkaltet`, plus `bald` with
+  `faellig_am == heute`; plus every Stichtag in its lead window (today counts). Text, one
+  line per fact: "3 Personen warten · 1 Geburtstag" (Stichtage counted per kind:
+  Geburtstag, Jahrestag, Stichtag for `sonstiges`), then up to three names, cold first,
+  then by due date, then name, with " …" if more, then the nearest Stichtag with the
+  words of the calendar title ("Geburtstag Mia Beispiel (Anna Beispiel) in 3 Tagen" for
+  a family birthday). Title "Bindung". The click opens `/?karte=aufmerksamkeit`, or
+  `/?karte=woche` when nobody waits and only Stichtage are in their window.
+- **Hinweis, not banner.** The strip is `#hinweis` above `.app` (not inside the list):
+  on the phone the app opens on the sidebar, and a strip in the list would be seen only
+  after the first tap and lost on every list change. It shows the same count and names
+  (two lines at most), "Benachrichtigungen erlauben" and "Heute ausblenden". With a
+  subscription anywhere the server renders it `hidden`; `bindung.js` shows it when *this*
+  browser has none and removes it when it has one. So a second device without push still
+  gets the strip and the ask. The Safari/Dock sentence appears in the strip only when the
+  browser cannot do push at all (no `PushManager`), and always in the settings.
+- **Permission** is asked only by a click on `data-push-aktivieren`; a denied browser gets
+  the strip without the button. A subscription is re-posted once a day (localStorage) so a
+  replaced database or a switched user heals itself.
+- **Subscriptions.** `push_abo.endpunkt` is unique across users, so a browser that signs
+  in as another user *moves* to that user (one Mac, two people) instead of failing. The
+  server only accepts `https` endpoints with a host name (no IP literal, `localhost`,
+  `.local`, `.internal`) and base64url keys, because it will POST to that address. Not
+  checked: a public name that resolves to a private address (an authenticated user could
+  make the server send an encrypted POST there); revisit before the server faces the
+  internet with several users. `DELETE /push/abo` answers 204 even for an unknown
+  endpoint and only ever touches the caller's rows.
+- **Keys.** `vapid.json` holds `privat_pem`, `oeffentlich` (URL-safe base64, uncompressed
+  point, what `subscribe()` wants) and `sub`; written to a temp file with mode 0600 and
+  hard-linked to the final name, so two first starts cannot overwrite each other. The `sub`
+  is `mailto:bindung@localhost` unless `BINDUNG_PUSH_KONTAKT` is set (read at send time).
+  Some push services may insist on a real address (Apple is the one to watch); not
+  verified without a device. Messages carry a TTL of 12 hours: a morning digest is
+  worthless the next day. No icon is sent yet (no manifest before WP7; `sw.js` uses
+  `icon` as soon as the server sends one).
+- **Daily task.** `tagesaufgabe.tick(con, jetzt)`; the loop wakes every 60 s, starts with
+  the server (FastAPI lifespan) and runs the tick in a worker thread (sending waits for
+  the network). The user's time has passed when local `HH:MM >= tagesmeldung_zeit`; the day
+  is the user's local date. **The `digest_protokoll` row is the lock:** claiming the day
+  is one conditional upsert (`... WHERE letzter_versand_am IS NOT excluded...`), and only
+  the process whose statement changes a row sends. This holds for two processes on one
+  data folder (reload, a second instance) without a lock file. The claim comes *before*
+  sending: a crash in between loses a digest rather than doubling it. A user without
+  subscriptions, or with nothing due, still gets the day recorded; a person who becomes
+  due later that day waits for tomorrow. A server that starts at 17:00 with the time
+  08:00 still sends today's digest once; yesterday's is never sent late (in a zone far
+  behind the server the *local* previous day can be sent once at start, that is today's
+  rule applied to that zone). Every user is wrapped in try/except, the loop catches
+  everything. `BINDUNG_TAGESAUFGABE=0` turns the loop off; the tests do.
+- **Settings.** "Benachrichtigungen" is its own section under "Erinnern", not a block in
+  its form: saving Erinnern swaps its whole section and would erase the status the
+  script just wrote. The status (`erlaubt und angemeldet`, `noch nicht erlaubt`, `nicht
+  erlaubt`, `nicht unterstützt`) is computed by the browser; the count of registered
+  browsers and the result of "Testmeldung senden" come from the server, and the section
+  reloads itself (`GET /einstellungen/benachrichtigungen`, HTMX only) after every
+  subscribe and unsubscribe. The test message replaces the section with its result ("an
+  2 Browser gesendet", "Nur 1 von 2 ..."); a dead browser is dropped on the way.
+- **`/sw.js`** is open (no login, no data in it), served with `Cache-Control: no-cache`
+  and `Service-Worker-Allowed: /`; the worker only handles `push` and `notificationclick`
+  (focus a window and navigate it to the URL, else open one), no `fetch`, no cache.
+- **Session renewal** (WP0 review note): the expiry is rewritten only when it is more than
+  one day below the full 30 days, so at most one write per session per day. The cookie is
+  still re-sent every time; the database governs.
+- **Not verified here:** real delivery in Safari, Chrome and Firefox (the browser pane
+  denies the permission, so the flow was driven with a stubbed `Notification` and
+  `PushManager.subscribe`, a real `/sw.js` registration and a stubbed `webpush`), and
+  whether Apple's push service accepts the default `sub`.

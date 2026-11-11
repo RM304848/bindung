@@ -25,7 +25,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
-from bindung import angehoerige, faelligkeit, kontakte, personen, stichtage
+from bindung import angehoerige, faelligkeit, kontakte, personen, push, stichtage, tagesmeldung
 from bindung.web import basis
 
 _FILTER = (personen.FILTER_OHNE_KONTAKT, personen.FILTER_ARCHIV)
@@ -184,6 +184,20 @@ def kontext_bauen(request: Request, ansicht: Ansicht) -> dict:
         "karten": {name: len(nummern) for name, nummern in karten.items()},
         "zeilen": _zeilen(con, nutzer_id, ansicht, bindungen, karten, vorlauf),
     }
+
+
+def hinweis_bauen(request: Request) -> dict | None:
+    """Der Hinweis (die Tagesmeldung als Streifen) fuer die Startseite, oder `None`.
+
+    Hat der Nutzer irgendwo ein Push-Abo, ist der Streifen zunaechst versteckt: ob *dieser*
+    Browser Push hat, weiss nur der Browser, und `bindung.js` zeigt den Streifen, wenn nicht.
+    Ohne jedes Abo ist er sofort da.
+    """
+    con, nutzer_id = basis.con(request), basis.nutzer(request)["id"]
+    meldung = tagesmeldung.hinweis(con, nutzer_id, personen.heute(con, nutzer_id))
+    if meldung is None:
+        return None
+    return {"meldung": meldung, "versteckt": push.abos_zaehlen(con, nutzer_id) > 0}
 
 
 def teil_rendern(name: str, kontext: dict, **mehr) -> str:

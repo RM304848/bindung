@@ -1,0 +1,17 @@
+{# Einstellungen: Benachrichtigungen (Push). Was dieser Browser kann, sagt bindung.js in `data-push-status` und blendet die Knoepfe ein; die Zahl der angemeldeten Browser und das Ergebnis der Testmeldung kommen vom Server. #}
+<section id="einstellung-benachrichtigungen" class="einstellung" aria-labelledby="einstellung-benachrichtigungen-titel">
+  <h2 id="einstellung-benachrichtigungen-titel" class="einstellung-titel">Benachrichtigungen</h2>
+  <p class="hilfe">Zur eingestellten Uhrzeit schickt Bindung die Tagesmeldung als Mitteilung an deinen Browser, aber nur, wenn jemand fällig ist oder ein Stichtag nah ist. Dafür muss der Server laufen. Safari auf dem Mac braucht Bindung zuerst im Dock (Ablage › Zum Dock hinzufügen), auf dem iPhone auf dem Startbildschirm (über „Teilen“).</p>
+  <p>Dieser Browser: <strong data-push-status>wird geprüft …</strong></p>
+  <p>Angemeldete Browser: <strong>{{ s_benachrichtigungen.anzahl }}</strong></p>
+  <div class="knopfreihe">
+    <button type="button" class="knopf knopf-primaer" data-push-aktivieren hidden>In diesem Browser aktivieren</button>
+    <button type="button" class="knopf" data-push-deaktivieren hidden>Deaktivieren</button>
+    <form method="post" action="/push/test" hx-post="/push/test" hx-target="#einstellung-benachrichtigungen" hx-swap="outerHTML">
+      <button type="submit" class="knopf"{% if not s_benachrichtigungen.anzahl %} disabled{% endif %}>Testmeldung senden</button>
+    </form>
+  </div>
+  {% if s_benachrichtigungen.test %}
+  <p class="{{ 'speicherstatus' if s_benachrichtigungen.test.gut else 'meldung meldung-fehler' }}" role="status">{{ s_benachrichtigungen.test.text }}</p>
+  {% endif %}
+</section>

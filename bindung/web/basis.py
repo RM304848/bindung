@@ -60,7 +60,9 @@ TEMPLATES.env.filters["rolle_wort"] = angehoerige.rolle_wort
 TEMPLATES.env.filters["stichtag_de"] = stichtage.text_de
 
 #: Pfade, die ohne Sitzung erreichbar sind.
-OFFENE_PFADE = ("/anmeldung",)
+#: `/sw.js` ist der Service Worker: eine Skriptdatei ohne Daten, die der Browser auch dann
+#: abrufen muss, wenn gerade keine Sitzung im Spiel ist.
+OFFENE_PFADE = ("/anmeldung", "/sw.js")
 OFFENE_PRAEFIXE = ("/statisch/",)
 #: Die Kalenderadresse (`/kalender/<geheimnis>.ics`) traegt ihr Geheimnis in der URL und
 #: ist offen. `/kalender/herunterladen` (ohne `.ics`) bleibt hinter der Anmeldung.

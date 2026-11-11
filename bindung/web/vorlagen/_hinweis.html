@@ -1,0 +1,15 @@
+{# Hinweis: die Tagesmeldung als Streifen ueber der App, solange dieser Browser keinen Push hat. Einmal am Tag, wegklickbar. Hat der Nutzer irgendwo ein Abo, steht er `hidden` da, und bindung.js zeigt ihn, wenn dieser Browser keines hat. Die Erlaubnis fragt nur ein Klick auf den Knopf, nie das Laden der Seite. #}
+<aside id="hinweis" class="hinweis" aria-label="Tagesmeldung" data-hinweis{% if hinweis.versteckt %} hidden{% endif %}>
+  <div class="hinweis-text">
+    <p class="hinweis-kopf">{{ hinweis.meldung.zaehlzeile }}</p>
+    {% set rest = [hinweis.meldung.namenzeile, hinweis.meldung.stichtagzeile] | select | join(" · ") %}
+    {% if rest %}<p class="hinweis-rest">{{ rest }}</p>{% endif %}
+    <p class="hilfe" data-hinweis-dock hidden>Safari kann Mitteilungen erst, wenn Bindung im Dock (Mac: Ablage › Zum Dock hinzufügen) oder auf dem Startbildschirm (iPhone) liegt.</p>
+  </div>
+  <div class="hinweis-knoepfe">
+    <button type="button" class="knopf knopf-primaer" data-push-aktivieren hidden>Benachrichtigungen erlauben</button>
+    <form method="post" action="/hinweis/weggeklickt" hx-post="/hinweis/weggeklickt" hx-target="#hinweis" hx-swap="outerHTML">
+      <button type="submit" class="knopf knopf-text">Heute ausblenden</button>
+    </form>
+  </div>
+</aside>

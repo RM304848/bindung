@@ -116,8 +116,9 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   eigenen Knopf und meldet „Gespeichert“:
   - **Erinnern:** dein Intervall in Tagen (Vorgabe für alle Personen ohne
     eigenes), der Vorlauf für Stichtage, die Zeitzone und die Uhrzeit der
-    Tagesmeldung. Die Tagesmeldung selbst kommt in einer späteren Version; die
-    Uhrzeit wird schon jetzt gespeichert.
+    Tagesmeldung (siehe „Tagesmeldung“ unten).
+  - **Benachrichtigungen:** ob dieser Browser Mitteilungen bekommt, wie viele
+    Browser angemeldet sind, und „Testmeldung senden“.
   - **Kalender:** deine Kalenderadresse, siehe unten.
   - **Diktat:** die Sprache, in der du später in Notizfelder sprechen wirst
     (Deutsch oder Englisch).
@@ -145,6 +146,29 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
   dein Kalender die anderen Jahre behandelt, entscheidet er selbst. Bei einem
   bekannten Jahr steht „Geburtsjahr 1986“ bzw. „Seit 2012“ in der Beschreibung,
   kein Alter: das würde im nächsten Jahr nicht mehr stimmen.
+
+- **Tagesmeldung.** Einmal am Tag, zu der Uhrzeit aus „Einstellungen ›
+  Erinnern“ (in deiner Zeitzone), schaut Bindung nach, ob jemand wartet:
+  überfällige und erkaltete Personen, dazu wer heute fällig wird, und
+  Stichtage, die heute sind oder in ihrem Vorlauf liegen. Gibt es etwas, kommt
+  eine Mitteilung, zum Beispiel „3 Personen warten · 1 Geburtstag“ mit bis zu
+  drei Namen und dem nächsten Stichtag („Geburtstag Mia Beispiel in 3 Tagen“).
+  Ein Klick öffnet Bindung bei „Braucht Aufmerksamkeit“, oder bei „Diese Woche“,
+  wenn nur Stichtage anstehen. Gibt es nichts, kommt auch nichts. Ein Tag, an dem
+  der Server aus war, wird nicht nachgeholt; war er erst nach der Uhrzeit wieder
+  da, kommt die Meldung noch am selben Tag. **Der Server muss dafür laufen.**
+- **Benachrichtigungen einschalten.** Unter „Einstellungen › Benachrichtigungen“
+  wählst du „In diesem Browser aktivieren“ und erlaubst Mitteilungen; „Testmeldung
+  senden“ zeigt sofort, ob es klappt. Das geht für jeden Browser und jedes Gerät
+  einzeln, mit „Deaktivieren“ nimmst du einen wieder heraus. **Safari auf dem Mac**
+  kann Mitteilungen erst, wenn Bindung im Dock liegt (Ablage › Zum Dock
+  hinzufügen); auf dem iPhone muss Bindung auf dem Startbildschirm liegen.
+- **Hinweis in der App.** Hat ein Browser keine Mitteilungen (nicht erlaubt oder
+  nicht möglich), zeigt Bindung die Tagesmeldung oben als Streifen, einmal am Tag.
+  „Heute ausblenden“ schließt ihn bis morgen; „Benachrichtigungen erlauben“ fragt
+  den Browser. Wer Mitteilungen eingeschaltet hat, sieht den Streifen nicht.
+- **Angemeldet bleiben.** Die Anmeldung wird höchstens einmal am Tag verlängert
+  statt bei jedem Aufruf; die 30 Tage ohne Benutzung ändern sich nicht.
 
 ### Behoben
 

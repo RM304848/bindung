@@ -264,9 +264,10 @@ def test_the_zone_decides_what_today_is(angemeldet, con, nid, monkeypatch):
     assert personen.heute(con, nid) == dt.date(2026, 11, 11)
 
 
-def test_the_hint_says_the_notification_comes_later(angemeldet):
+def test_the_hint_names_the_time_and_where_to_switch_it_on(angemeldet):
     seite = angemeldet.get("/einstellungen").text
-    assert "Die Tagesmeldung selbst kommt in einer späteren Version" in seite
+    assert "Zu dieser Uhrzeit" in seite and "späteren Version" not in seite
+    assert "Benachrichtigungen" in seite
 
 
 def test_defaults_change_what_a_person_without_own_interval_needs(angemeldet, con, nid):

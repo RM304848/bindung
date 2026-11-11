@@ -644,3 +644,41 @@ a.posten-name { color: var(--text); text-decoration-color: var(--linie); }
 .adresszeile .knopf { flex: 0 0 auto; }
 .einstellung .knopfreihe > form { display: flex; flex: 1 1 auto; }
 .einstellung .knopfreihe > form .knopf { flex: 1 1 auto; }
+
+/* ------------------------------------------------------------------- Hinweis */
+
+/* Ein Attribut `hidden` muss gegen jedes `display` der Klassen gewinnen. */
+[hidden] { display: none !important; }
+
+/* Die Tagesmeldung als Streifen ueber der App: eine bis zwei Zeilen Text, daneben die Knoepfe.
+   Auf dem Telefon stehen die Knoepfe darunter, nebeneinander, damit der Streifen niedrig bleibt. */
+.hinweis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 8px var(--abstand);
+  background: var(--akzent-leise);
+  border-bottom: 1px solid var(--linie);
+}
+.hinweis-text { flex: 1 1 18rem; min-width: 0; }
+.hinweis-kopf { font-weight: 600; }
+.hinweis-rest {
+  color: var(--text-leise);
+  font-size: 0.875rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hinweis-knoepfe { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hinweis-knoepfe form { display: flex; }
+
+/* Mit Streifen teilen sich Streifen und App die Hoehe des Fensters. */
+.seite-start { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+.seite-start > .app { flex: 1 1 auto; min-height: 0; height: auto; }
+
+@media (max-width: 767px) {
+  .seite-start { display: block; height: auto; }
+}

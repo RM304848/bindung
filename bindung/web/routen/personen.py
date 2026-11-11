@@ -22,6 +22,7 @@ from bindung.web.ansicht import (
     fehler_in_spalte,
     formular_lesen,
     gepruefte_ansicht,
+    hinweis_bauen,
     kontext_bauen,
     meldung_antwort,
     nur_htmx,
@@ -79,6 +80,7 @@ def start(request: Request):
     person = (personen.laden(basis.con(request), basis.nutzer(request)["id"], ansicht.person)
               if ansicht.person is not None else None)
     return basis.seite(request, "start.html", **kontext, spalte=ansicht.spalte,
+                       hinweis=hinweis_bauen(request),
                        pane=spalte_bauen(request, kontext, "person" if person else "leer", person))
 
 

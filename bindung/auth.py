@@ -5,7 +5,7 @@ sondern nur die Datenbank. `bindung/web/` ruft es auf, die CLI auch.
 
 - Passwoerter: `hashlib.scrypt` mit eigenem Salz je Nutzer.
 - Sitzung: ein zufaelliger Token im Cookie; in der Datenbank steht nur sein
-  SHA-256. 30 Tage gueltig, bei jeder Benutzung erneuert.
+  SHA-256. 30 Tage gueltig, bei Benutzung erneuert -- hoechstens einmal am Tag.
 - Fehlversuche: je Nutzername eine wachsende Wartezeit (1, 2, 4 ... bis
   300 Sekunden), im Speicher des Prozesses. Auch unbekannte Namen zaehlen,
   sonst verriete die Wartezeit, welche Namen es gibt.
@@ -25,6 +25,8 @@ import sqlite3
 COOKIE = "bindung_sitzung"
 GUELTIG_TAGE = 30
 GUELTIG_SEKUNDEN = GUELTIG_TAGE * 24 * 3600
+#: Die Sitzung wird erst erneuert, wenn sie mehr als so viele Tage jung verbraucht hat.
+ERNEUERN_TAGE = 1
 
 MIN_LAENGE = 8
 
@@ -244,9 +246,13 @@ def sitzung_pruefen(con: sqlite3.Connection, token: str | None) -> sqlite3.Row |
         con.execute("DELETE FROM sitzung WHERE id = ?", (zeile["sitzung_id"],))
         con.commit()
         return None
-    con.execute("UPDATE sitzung SET laeuft_ab_am = ? WHERE id = ?",
-                (_text(jetzt + dt.timedelta(days=GUELTIG_TAGE)), zeile["sitzung_id"]))
-    con.commit()
+    # Hoechstens einmal am Tag schreiben: ein Telefon, das die App abfragt, soll die
+    # Datenbank nicht bei jeder Anfrage anfassen. Der Ablauf wandert so um bis zu
+    # einen Tag zu frueh, nie zu spaet.
+    if zeile["laeuft_ab_am"] < _text(jetzt + dt.timedelta(days=GUELTIG_TAGE - ERNEUERN_TAGE)):
+        con.execute("UPDATE sitzung SET laeuft_ab_am = ? WHERE id = ?",
+                    (_text(jetzt + dt.timedelta(days=GUELTIG_TAGE)), zeile["sitzung_id"]))
+        con.commit()
     return zeile
 
 

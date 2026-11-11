@@ -2,6 +2,7 @@
 {% block titel %}Bindung{% endblock %}
 {% block koerper %}seite-start{% endblock %}
 {% block inhalt %}
+{% if hinweis %}{% include "_hinweis.html" %}{% endif %}
 <div class="app" id="app" data-ansicht="{{ spalte }}">
   {% include "_seitenleiste.html" %}
   {% include "_liste.html" %}

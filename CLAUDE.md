@@ -29,7 +29,9 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
   um. `tests/test_pfade.py` haelt die Zahl der eigenen Pfade auf null.
 - Containertauglich von Anfang an: `BINDUNG_HOST` (Vorgabe `127.0.0.1`),
   `BINDUNG_PORT` (Vorgabe `8785`), `BINDUNG_SICHER=1` macht das Cookie
-  `Secure`. Nichts im Code darf einen Mac voraussetzen.
+  `Secure`, `BINDUNG_PUSH_KONTAKT` ist der `sub` der Push-Schluessel
+  (Vorgabe `mailto:bindung@localhost`), `BINDUNG_TAGESAUFGABE=0` schaltet die
+  Tagesaufgabe aus. Nichts im Code darf einen Mac voraussetzen.
 - Jede Tabelle mit Nutzerdaten traegt `nutzer_id`, jede Abfrage filtert danach.
   Es gibt keine Sicht ueber Nutzer hinweg.
 - Zeiten stehen als UTC-Text in der Datenbank, Tage als ISO-Tag in der
@@ -55,13 +57,16 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 | `bindung/faelligkeit.py` | Faelligkeit und Zustand nach PLAN.md 6: reine Regeln (`zustand`, `faellig_am`, `kaelte_grenze`), `bindungen()` rechnet alle Personen in einer Abfrage, Karten, Sortierung, Worte (`vor_text`, `plakette`) |
 | `bindung/kalender.py` | Kalender nach RFC 5545 von Hand: Bausteine (`maskieren`, `falten`, `ereignis`), `kalender_text` (Stichtage jaehrlich, „Melden bei“ mit Erinnerung), Kalenderadresse (`nutzer_zu_token`, `token_erneuern`, `pfad`) |
 | `bindung/einstellungen.py` | Einstellungen des Nutzers: lesen, pruefen und speichern (Erinnern, Zeitzonen-Liste, Diktatsprache); Passwort in `auth.passwort_aendern` |
+| `bindung/tagesmeldung.py` | die Tagesmeldung als reine Regeln: `bauen(con, nutzer_id, heute)` gibt Titel, Zeilen, Ziel (`/?karte=...`) und Nutzlast oder `None`; `hinweis` und `hinweis_wegklicken` (einmal am Tag, `digest_protokoll`) |
+| `bindung/push.py` | VAPID-Schluessel (erzeugt beim ersten Bedarf, `pfade.VAPID_PATH` = `vapid.json` im Datenordner, Modus 0600; `BINDUNG_PUSH_KONTAKT` setzt den `sub`), Abos (`abo_speichern`, `abo_loeschen`, nur https-Endpunkte mit Namen) und `senden` ueber `pywebpush.webpush` (404/410 loescht das Abo, sonst nur Protokoll) |
+| `bindung/tagesaufgabe.py` | `tick(con, jetzt)` (je Nutzer: Uhrzeit erreicht, Tag in `digest_protokoll` beansprucht, senden) und die Schleife im Server (`laufen()`, jede Minute); `BINDUNG_TAGESAUFGABE=0` schaltet sie aus, die Tests tun das |
 | `bindung/cli.py` | Typer: `serve`, `ort`, `nutzer anlegen/passwort/liste` |
 | `bindung/web/server.py` | App, Tuer (Sitzungspruefung), Anmeldung und Abmeldung |
 | `bindung/web/basis.py` | Vorlagen, Verbindung und Nutzer der Anfrage, offene Pfade, Filter (`datum_de`, `vor_datum`) |
 | `bindung/web/ansicht.py` | die Ansicht in der Adresse (`?tag=&filter=&karte=&suche=&person=`), Kontext fuer Seitenleiste, Karten und Liste, die Teile-Helfer (`antwort`, `aktualisierung`, `spalte_bauen`); `stichtag_personen` (Personen mit Stichtag im Vorlauf, die Karte "Diese Woche"), `familie_teile` (Angehoerige und Stichtage zusammen neu zeichnen) |
-| `bindung/web/routen/` | je Seitengruppe ein Router (`personen.py`: Seite, Liste, Personenseite, Tags; `kontakte.py`: Blatt Kontakt eintragen, Zuletzt besprochen; `angehoerige.py`: Abschnitt Angehoerige und die Auswahl beim Verknuepfen; `stichtage.py`: Abschnitt Stichtage; `kalender.py`: `/kalender/<geheimnis>.ics` offen, `/kalender/herunterladen` mit Anmeldung; `einstellungen.py`: Seite `/einstellungen`, je Abschnitt ein Formular) |
-| `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_karten`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_kontaktlinks`, `_verlauf`, `_kontakt_blatt`, `_faelligkeit`, `_angehoerige`, `_angehoeriger`, `_stichtage`, `_stichtag`, `_kandidaten`, `einstellungen` und `_einstellung_<abschnitt>` ...) |
-| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen, Adresse kopieren) |
+| `bindung/web/routen/` | je Seitengruppe ein Router (`personen.py`: Seite, Liste, Personenseite, Tags; `kontakte.py`: Blatt Kontakt eintragen, Zuletzt besprochen; `angehoerige.py`: Abschnitt Angehoerige und die Auswahl beim Verknuepfen; `stichtage.py`: Abschnitt Stichtage; `kalender.py`: `/kalender/<geheimnis>.ics` offen, `/kalender/herunterladen` mit Anmeldung; `einstellungen.py`: Seite `/einstellungen`, je Abschnitt ein Formular; `push.py`: `/push/schluessel`, `/push/abo`, `/push/test`, `/sw.js` offen, `/hinweis/weggeklickt`) |
+| `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_karten`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_hinweis`, `_einstellung_benachrichtigungen`, `_kontaktlinks`, `_verlauf`, `_kontakt_blatt`, `_faelligkeit`, `_angehoerige`, `_angehoeriger`, `_stichtage`, `_stichtag`, `_kandidaten`, `einstellungen` und `_einstellung_<abschnitt>` ...) |
+| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen, Adresse kopieren, Push anmelden), `sw.js` (Service Worker, nur Push) |
 | `docs/design_conventions.yaml` | Regeln fuer die Oberflaeche, mit Grund; `tests/test_design.py` prueft sie |
 
 ## Tests
