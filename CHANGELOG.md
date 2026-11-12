@@ -5,30 +5,31 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 
 ## Unveröffentlicht
 
+## 0.2.0 (2026-11-12)
+
+Bindung lässt sich jetzt auch von einem Bot wie Claude Desktop bedienen, eine Suche ohne Treffer legt die Person gleich an, und dazu kommen die ersten Rückmeldungen aus dem Alltag: klarere Worte, die Profilnotiz gleich oben, Hell oder Dunkel nach eigener Wahl. Die Datenbank wird beim ersten Start erweitert, alle Daten bleiben erhalten.
+
+- **Bindung mit einem Bot benutzen.** Bindung lässt sich mit Claude Desktop und
+  anderen Programmen verbinden, die das *Model Context Protocol* sprechen. Der Bot
+  kann fragen („Wer wartet auf mich?“, „Was haben Anna und ich zuletzt
+  besprochen?“, „Was steht diese Woche an?“, „Welche Tags gibt es?“) und für dich
+  eintragen: eine **Person anlegen** (mit Tags und einer groben Angabe, wann ihr
+  zuletzt gesprochen habt), einen **Touchpoint eintragen**, die **Profilnotiz**
+  setzen und einen **Stichtag** anlegen. Er trägt nur unter deinem Namen ein, mit
+  denselben Prüfungen wie die App: Ein Touchpoint in der Zukunft wird abgelehnt,
+  ein neuer Touchpoint löscht den Nächsten Termin, und was er einträgt, siehst du
+  sofort in der App. Passt ein Name auf mehrere Personen, rät der Bot nicht,
+  sondern fragt nach. Archivieren, Löschen und Einstellungen bleiben bei dir. Der
+  Bot liest dabei auch deine Notizen; verbinde nur ein Programm, dem du das
+  zutraust. Die Mac-App bringt den Zugang mit; wie du ihn in Claude Desktop
+  einrichtest, steht in der Anleitung
+  [docs/mcp.md](https://github.com/RM304848/bindung/blob/main/docs/mcp.md).
 - **Person gleich aus der Suche anlegen.** Findet die Suche in der Liste
   niemanden, steht unter „Niemand gefunden“ jetzt der Knopf
   **„Anna Beispiel“ als Person anlegen** (mit dem, was du getippt hast). Er
   öffnet „Person hinzufügen“ mit dem Namen schon im Feld; ein geöffneter Tag
   bleibt vorgewählt. Nach „Anlegen“ ist die neue Person ausgewählt, auch wenn
   sie nicht zur Suche passt. Im Archiv gibt es den Knopf nicht.
-
-- **Bindung mit einem Bot benutzen.** Der neue Befehl `bindung mcp` verbindet Bindung mit
-  Claude Desktop und anderen Programmen, die das *Model Context Protocol* sprechen. Der
-  Bot kann fragen („Wer wartet auf mich?“, „Was haben Anna und ich zuletzt besprochen?“,
-  „Was steht diese Woche an?“, „Welche Tags gibt es?“) und für dich eintragen: eine
-  **Person anlegen** (mit Tags und einer groben Angabe, wann ihr zuletzt gesprochen habt),
-  einen **Touchpoint eintragen**, die **Profilnotiz** setzen und einen **Stichtag**
-  anlegen. Er trägt nur unter deinem Namen ein (`--nutzer`), mit denselben Prüfungen wie
-  die App – ein Touchpoint in der Zukunft wird abgelehnt, ein neuer Touchpoint löscht den
-  Nächsten Termin – und was er einträgt, siehst du sofort in der App. Passt ein Name auf
-  mehrere Personen, rät der Bot nicht, sondern fragt nach. Archivieren, Löschen und
-  Einstellungen bleiben bei dir. Wie du es in Claude Desktop einrichtest, steht in
-  `docs/mcp.md`.
-
-## 0.1.1 (2026-11-12)
-
-Erste Rückmeldungen aus dem Alltag: klarere Worte, die Profilnotiz gleich oben, Hell oder Dunkel nach eigener Wahl. Die Datenbank wird beim ersten Start erweitert, alle Daten bleiben erhalten.
-
 - **„Touchpoint“ statt „Kontakt“.** „Kontakt eintragen“ klang, als legtest du
   einen Eintrag im Telefonbuch an. Der Knopf und das Blatt heißen jetzt
   **Touchpoint eintragen**, in der Seitenleiste steht **Noch kein Touchpoint**,

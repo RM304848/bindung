@@ -870,9 +870,16 @@ Decisions while building the MCP server (section 14):
   parameters; `additionalProperties: false`), so a model that invents a parameter is told
   instead of silently ignored. Read tools carry `readOnlyHint`, all tool descriptions say
   whether they write ("SCHREIBT").
-- **The glossary is `CONTEXT.md` next to the package.** An installed copy without the
-  source folder (the Mac app) has no glossary and says so; the bot access is meant for the
-  checkout. No second copy of the vocabulary to keep in step.
+- **The glossary is `CONTEXT.md` next to the package.** No second copy of the vocabulary
+  to keep in step; the Mac app bundles the file.
+- **The Mac app starts the bot access too** (reviewed 2026-11-12): whoever installs from
+  the .dmg has no `bindung` in the terminal, so `werkzeuge/paket/start.py` hands
+  `Bindung mcp --nutzer NAME` to the CLI, the bundle carries `CONTEXT.md`, and the smoke
+  test drives handshake, tools, one write and the glossary in the built app. A client is
+  configured with `/Applications/Bindung.app/Contents/MacOS/Bindung` as the command.
+- **0.1.1 was never published; the release is 0.2.0** with the 0.1.1 feedback, the bot
+  access and the empty-search button together, because the user wanted the release to
+  include MCP.
 - **The model reads the notes.** Touchpoint notes and Profilnotiz are in the answers,
   because "what did Anna and I talk about?" cannot be answered without them. The data stays
   on the machine, but the client's model sees what a tool returns; `docs/mcp.md` says so.
