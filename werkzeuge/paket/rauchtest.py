@@ -4,8 +4,9 @@
 
 In einem leeren Datenordner, ohne Browser: antwortet sie, richtet sie den ersten Nutzer ein,
 zeigt sie ihre Seiten, liefert sie Manifest, Service Worker, Stylesheet und Symbole, laesst
-sie sich beenden? Einer App, der eine Vorlage oder eine Datei fehlt, sieht man das beim Start
-nicht an -- sie stuerzt erst bei der ersten Seite.
+sie sich beenden, antwortet `Bindung mcp` mit Werkzeugen und Glossar? Einer App, der eine
+Vorlage oder eine Datei fehlt, sieht man das beim Start nicht an -- sie stuerzt erst bei der
+ersten Seite.
 
 Die Menueleiste bleibt an: so wird auch geprueft, dass AppKit in der App steckt. Auf einem
 Rechner ohne Bildschirm (ssh) hilft `BINDUNG_KEINE_MENUELEISTE=1` in der Umgebung.
@@ -121,6 +122,40 @@ def pruefen() -> int:
     return n
 
 
+def mcp_pruefen(programm: Path, umgebung: dict) -> int:
+    """`Bindung mcp` aus der App: Handshake, Werkzeuge, ein Eintrag, das Glossar."""
+    zeilen = [
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+         "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                    "clientInfo": {"name": "rauchtest", "version": "0"}}},
+        {"jsonrpc": "2.0", "method": "notifications/initialized"},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+        {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+         "params": {"name": "person_anlegen", "arguments": {"name": "Rita Rauch"}}},
+        {"jsonrpc": "2.0", "id": 4, "method": "tools/call",
+         "params": {"name": "touchpoint_eintragen",
+                    "arguments": {"person": "Rita Rauch", "art": "treffen"}}},
+        {"jsonrpc": "2.0", "id": 5, "method": "resources/read",
+         "params": {"uri": "bindung://glossar"}},
+    ]
+    lauf = subprocess.run([str(programm), "mcp", "--nutzer", NAME], env=umgebung,
+                          input="".join(json.dumps(z) + "\n" for z in zeilen),
+                          capture_output=True, text=True, timeout=60)
+    _erwarte(lauf.returncode == 0, f"Bindung mcp: {lauf.returncode}\n{lauf.stderr}")
+    antworten = {a["id"]: a for a in map(json.loads, lauf.stdout.splitlines())}
+    _erwarte(sorted(antworten) == [1, 2, 3, 4, 5], f"Bindung mcp antwortet: {lauf.stdout[:500]}")
+    _erwarte(antworten[1]["result"]["serverInfo"]["name"] == "bindung", "MCP-Handshake")
+    werkzeuge = {w["name"] for w in antworten[2]["result"]["tools"]}
+    _erwarte({"person_anlegen", "touchpoint_eintragen", "wer_wartet"} <= werkzeuge,
+             f"MCP-Werkzeuge: {werkzeuge}")
+    for nummer in (3, 4):
+        _erwarte(antworten[nummer]["result"]["isError"] is False,
+                 f"MCP-Aufruf {nummer}: {antworten[nummer]}")
+    glossar = antworten[5].get("result", {}).get("contents", [{}])[0].get("text", "")
+    _erwarte("Touchpoint" in glossar, f"Glossar fehlt in der App: {antworten[5]}")
+    return 6
+
+
 def main() -> None:
     programm = Path(sys.argv[1]).resolve()
     with tempfile.TemporaryDirectory() as tmp:
@@ -156,6 +191,8 @@ def main() -> None:
             _erwarte(_holen("/api/beenden", methode="POST", daten={}, cookie=cookie)[0] == 200,
                      "Beenden wurde abgelehnt.")
             lauf.wait(timeout=15)
+            # Der Bot-Zugang aus derselben App, auf denselben Daten (der Nutzer von eben).
+            zahl += mcp_pruefen(programm, umgebung)
             print(f"Rauchtest bestanden: {zahl} Pruefungen, beendet mit {lauf.returncode}.")
         finally:
             if lauf.poll() is None:

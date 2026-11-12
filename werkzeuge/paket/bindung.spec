@@ -4,7 +4,8 @@
 #
 # Mitgenommen wird, was die App zur Laufzeit von der Platte liest und kein Import verraet:
 # Vorlagen, Stylesheet, Skripte, Symbole, Schema -- dieselbe Liste wie package-data in
-# pyproject.toml -- und die Module, die erst per Name geladen werden (uvicorn, die Router).
+# pyproject.toml --, das Glossar fuer den MCP-Zugang und die Module, die erst per Name
+# geladen werden (uvicorn, die Router).
 #
 # Zeitzonen: `zoneinfo` liest die Zeitzonendatenbank des Systems (/usr/share/zoneinfo);
 # die hat jeder Mac. Gibt es das Paket `tzdata` im Build, kommt es zusaetzlich mit.
@@ -21,7 +22,9 @@ BAU = WURZEL / "build" / "paket"
 
 daten = (collect_data_files("bindung", includes=["**/*.html", "**/*.css", "**/*.js", "**/*.svg",
                                                  "**/*.png", "**/*.sql"])
-         + collect_data_files("pywebpush") + copy_metadata("bindung"))
+         + collect_data_files("pywebpush") + copy_metadata("bindung")
+         # Das Glossar fuer `Bindung mcp` (Ressource bindung://glossar): liegt neben dem Paket.
+         + [(str(WURZEL / "CONTEXT.md"), ".")])
 versteckt = (collect_submodules("bindung") + collect_submodules("uvicorn")
              + collect_submodules("pywebpush") + ["py_vapid", "http_ece", "multipart",
                                                   "python_multipart", "AppKit", "Foundation",

@@ -13,14 +13,19 @@ Touchpoints. Verbinde nur einen Client, dem du das zutraust.
 
 ## Einrichten
 
-Voraussetzung: Bindung ist installiert (`.venv` im Projektordner) und es gibt einen
-Nutzer (`bindung nutzer anlegen <name>` oder in der Mac-App eingerichtet).
+Voraussetzung: es gibt einen Nutzer (in der Mac-App eingerichtet oder mit
+`bindung nutzer anlegen <name>`). Der Befehl kommt aus der Mac-App oder aus dem
+Projektordner:
+
+```bash
+/Applications/Bindung.app/Contents/MacOS/Bindung mcp --nutzer Anna
+```
 
 ```bash
 .venv/bin/bindung mcp --nutzer Anna
 ```
 
-Der Befehl liest Zeilen von stdin und antwortet auf stdout; im Terminal sieht man nichts,
+Beide sind derselbe Zugang auf denselben Datenordner. Der Befehl liest Zeilen von stdin und antwortet auf stdout; im Terminal sieht man nichts,
 bis man JSON eintippt. Er ist dafür gedacht, vom Client gestartet zu werden.
 
 - `--nutzer NAME`: als dieser Nutzer handeln (Groß-/Kleinschreibung egal). Ohne Angabe
@@ -32,7 +37,20 @@ bis man JSON eintippt. Er ist dafür gedacht, vom Client gestartet zu werden.
 ### Claude Desktop
 
 In `~/Library/Application Support/Claude/claude_desktop_config.json` unter
-`mcpServers` ergänzen und Claude Desktop neu starten:
+`mcpServers` ergänzen und Claude Desktop neu starten. Mit der Mac-App:
+
+```json
+{
+  "mcpServers": {
+    "bindung": {
+      "command": "/Applications/Bindung.app/Contents/MacOS/Bindung",
+      "args": ["mcp", "--nutzer", "Anna"]
+    }
+  }
+}
+```
+
+Aus dem Projektordner:
 
 ```json
 {
@@ -48,13 +66,14 @@ In `~/Library/Application Support/Claude/claude_desktop_config.json` unter
 }
 ```
 
-Der Pfad zu `bindung` muss vollständig sein: Claude Desktop startet den Befehl ohne deine
+Der Pfad zum Befehl muss vollständig sein: Claude Desktop startet den Befehl ohne deine
 Shell. `env` kannst du weglassen, wenn die App den Standardordner benutzt.
 
 ### Ein anderer Client
 
 Jeder Client, der einen MCP-Server über stdio starten kann, braucht dieselben drei
-Angaben: den Befehl (`…/.venv/bin/bindung`), die Argumente (`mcp`, optional
+Angaben: den Befehl (`/Applications/Bindung.app/Contents/MacOS/Bindung` oder
+`…/.venv/bin/bindung`), die Argumente (`mcp`, optional
 `--nutzer NAME`) und optional die Umgebung (`BINDUNG_DATEN`). Unterstützt sind die
 Protokollfassungen 2025-06-18, 2025-03-26 und 2024-11-05.
 
@@ -117,7 +136,8 @@ stderr, stdout gehört dem Protokoll.
 
 ## Hinweis für Entwickler
 
-Das Glossar liest der Server aus `CONTEXT.md` neben dem Paket. Eine installierte Kopie
-ohne den Quellordner (zum Beispiel die Mac-App) hat es nicht, dann antwortet die
-Ressource mit einer Meldung; der Bot-Zugang ist für die Installation aus dem Quellordner
-gedacht.
+Das Glossar liest der Server aus `CONTEXT.md` neben dem Paket; die Mac-App nimmt die
+Datei mit (`werkzeuge/paket/bindung.spec`). Eine Kopie ohne sie antwortet auf
+`bindung://glossar` mit einer Meldung. `werkzeuge/paket/start.py` reicht `mcp` an die
+Kommandozeile weiter, und `werkzeuge/paket/rauchtest.py` prüft den Zugang in der gebauten
+App.
