@@ -189,3 +189,26 @@ def test_fremde_person_und_fremder_kontakt_gibt_es_nicht(con, nid, fremder):
     assert kontakte.laden(con, nid, fremder_kontakt) is None
     assert kontakte.letzte_notizen(con, nid) == {}
     assert kontakte.laden(con, fremder, fremder_kontakt)["notiz"] == "geheim"
+
+
+# ------------------------------------------------------------- Schaetzung
+
+def test_schaetzung_eintragen_wie_mehrere_hinzufuegen(con, nid, anna):
+    kontakt_id = kontakte.schaetzung_eintragen(con, nid, anna, "vor_monaten")
+    zeile = kontakte.laden(con, nid, kontakt_id)
+    assert (zeile["art"], zeile["datum"], zeile["notiz"]) == ("schaetzung", "2026-08-13", None)
+    assert kontakte.mit_echtem_kontakt(con, nid) == set()
+
+
+def test_schaetzung_loescht_den_naechsten_termin_nicht(con, nid, anna):
+    personen.aendern(con, nid, anna, naechster_termin="2026-12-01")
+    kontakte.schaetzung_eintragen(con, nid, anna, "diesen_monat")
+    assert personen.laden(con, nid, anna)["naechster_termin"] == "2026-12-01"
+
+
+def test_schaetzung_lehnt_ab(con, nid, anna):
+    with pytest.raises(personen.EingabeFehler):
+        kontakte.schaetzung_eintragen(con, nid, anna, "gestern")
+    with pytest.raises(personen.NichtGefunden):
+        kontakte.schaetzung_eintragen(con, nid, 9999, "vor_monaten")
+    assert kontakte.liste(con, nid, anna) == []

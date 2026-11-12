@@ -5,6 +5,19 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 
 ## Unveröffentlicht
 
+- **Bindung mit einem Bot benutzen.** Der neue Befehl `bindung mcp` verbindet Bindung mit
+  Claude Desktop und anderen Programmen, die das *Model Context Protocol* sprechen. Der
+  Bot kann fragen („Wer wartet auf mich?“, „Was haben Anna und ich zuletzt besprochen?“,
+  „Was steht diese Woche an?“, „Welche Tags gibt es?“) und für dich eintragen: eine
+  **Person anlegen** (mit Tags und einer groben Angabe, wann ihr zuletzt gesprochen habt),
+  einen **Touchpoint eintragen**, die **Profilnotiz** setzen und einen **Stichtag**
+  anlegen. Er trägt nur unter deinem Namen ein (`--nutzer`), mit denselben Prüfungen wie
+  die App – ein Touchpoint in der Zukunft wird abgelehnt, ein neuer Touchpoint löscht den
+  Nächsten Termin – und was er einträgt, siehst du sofort in der App. Passt ein Name auf
+  mehrere Personen, rät der Bot nicht, sondern fragt nach. Archivieren, Löschen und
+  Einstellungen bleiben bei dir. Wie du es in Claude Desktop einrichtest, steht in
+  `docs/mcp.md`.
+
 ## 0.1.1 (2026-11-12)
 
 Erste Rückmeldungen aus dem Alltag: klarere Worte, die Profilnotiz gleich oben, Hell oder Dunkel nach eigener Wahl. Die Datenbank wird beim ersten Start erweitert, alle Daten bleiben erhalten.

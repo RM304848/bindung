@@ -46,6 +46,30 @@ def app_starten() -> None:
     starter.main()
 
 
+@app.command("mcp")
+def mcp_starten(
+    nutzer: str = typer.Option(None, "--nutzer", help="Als dieser Nutzer handeln; ohne Angabe "
+                                                     "der einzige Nutzer"),
+) -> None:
+    """Spricht MCP über stdin/stdout: ein Bot fragt ab und trägt ein, als dieser Nutzer.
+
+    Für Claude Desktop und andere MCP-Clients (docs/mcp.md). stdout gehört dem Protokoll;
+    Meldungen stehen auf stderr.
+    """
+    from bindung import mcp
+    from bindung.mcp import werkzeuge
+
+    con = db.verbinden()
+    try:
+        werkzeuge.nutzer_waehlen(con, nutzer)
+    except werkzeuge.Meldung as fehler:
+        typer.echo(str(fehler), err=True)
+        raise typer.Exit(1) from None
+    finally:
+        con.close()
+    mcp.laufen(nutzer=nutzer)
+
+
 @app.command()
 def ort() -> None:
     """Zeigt den Datenordner und warum es dieser ist."""

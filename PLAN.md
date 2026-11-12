@@ -286,7 +286,7 @@ Each WP ends with tests green, ruff clean, a CHANGELOG entry under
   build and smoke test, first release `v0.1.0` with release notes.
 
 Later, in this order, each as its own plan section when it comes:
-**MCP server for a bot (section 14)** · Docker image and compose file with a TLS
+Docker image and compose file with a TLS
 proxy · server-side dictation (Parakeet v3 sidecar) · vCard import with a review
 screen · sharing a person between users · email digest · Apple Contacts or
 LinkedIn integration (not planned).
@@ -829,7 +829,55 @@ Decisions after the first feedback on 0.1.0:
   editable and uses the same `kandidaten` route as before. The create form stays as it
   is (the name is typed first).
 
-## 14. MCP server (planned 2026-11-12, not built)
+Decisions while building the MCP server (section 14):
+
+- **Who the bot is is decided once, at the start, and again on every call.**
+  `bindung mcp --nutzer NAME` checks the name against the data folder and exits with a
+  message on stderr if it is unknown, or if there is no user, or if there are several
+  and no name was given (a client that shows a dead server is easier to fix than one
+  that answers every call with an error). Each tool call opens its own connection and
+  resolves the user again (`werkzeuge._kontext`), so nothing is cached across calls and
+  a number that belongs to another user is simply "not there" (`NichtGefunden`
+  becomes "Es gibt keine Person mit der Nummer ..."), indistinguishable from one that
+  never existed.
+- **A name is accepted only if it hits exactly one person.** The whole name wins over a
+  part of a name ("Ben" with a person called "Ben" and one called "Ben Muster" is the
+  first); several hits, including two people with the same name, are refused with the
+  candidates and their numbers. By name only active people are found; by number an
+  archived one is too, because the pages show it as well. The answer always repeats the
+  full name and number so the bot can notice a wrong pick.
+- **The bot cannot do a thing twice by accident.** An identical Touchpoint (person, day,
+  kind, note) or Stichtag (kind, date, name) is refused with the number of the existing
+  one; a person with an existing name needs `trotzdem=true`. A client that repeats a call
+  after a timeout therefore does no harm. No tool undoes or deletes anything; the answer
+  says what to fix in the app.
+- **Tags by name are created if missing, and the answer says so.** The brief asked for
+  "tags by name"; refusing unknown tags would make the first sitting miserable, and a typo
+  is visible in the answer ("Neu angelegte Tags: ...", with a pointer to `tags`).
+  Matching ignores case like the app. Everything that can fail (empty tag, unknown rough
+  contact) is checked before the person is created, so a refused call leaves nothing.
+- **The rough last contact reuses the Schätzung.** `kontakte.schaetzung_eintragen` is
+  the single-person form of what "Mehrere hinzufügen" does; no new kind.
+- **`profilnotiz_setzen` replaces, but shows what stood there**; `anhaengen=true` adds a
+  line instead. Replacing is what the page does when the field is saved; the echo makes it
+  recoverable from the conversation.
+- **`heute` and `gestern` are accepted as a date** in `touchpoint_eintragen`, nothing else
+  beyond the page's ISO day. A model often means exactly that, and it does not know the
+  user's time zone's "today"; every `person` answer also says "Heute ist ...".
+  `E-Mail` as a kind is read as `email`; other kinds, dates and Stichtag fields get the
+  page's own error text.
+- **Arguments are checked against the announced schema** (types, required, no unknown
+  parameters; `additionalProperties: false`), so a model that invents a parameter is told
+  instead of silently ignored. Read tools carry `readOnlyHint`, all tool descriptions say
+  whether they write ("SCHREIBT").
+- **The glossary is `CONTEXT.md` next to the package.** An installed copy without the
+  source folder (the Mac app) has no glossary and says so; the bot access is meant for the
+  checkout. No second copy of the vocabulary to keep in step.
+- **The model reads the notes.** Touchpoint notes and Profilnotiz are in the answers,
+  because "what did Anna and I talk about?" cannot be answered without them. The data stays
+  on the machine, but the client's model sees what a tool returns; `docs/mcp.md` says so.
+
+## 14. MCP server (planned and built 2026-11-12)
 
 The user wants to use Bindung through a bot: ask questions ("wen habe ich lange
 nicht gesprochen?", "was haben Anna und ich zuletzt besprochen?"), log a

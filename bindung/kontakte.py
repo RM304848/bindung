@@ -89,6 +89,28 @@ def eintragen(con: sqlite3.Connection, nutzer_id: int, person_id: int, *,
     return kontakt_id
 
 
+def schaetzung_eintragen(con: sqlite3.Connection, nutzer_id: int, person_id: int,
+                         grober_kontakt: str) -> int:
+    """Traegt den groben letzten Touchpoint ein, wie „Mehrere hinzufuegen“ ihn setzt.
+
+    `grober_kontakt` ist ein Schluessel aus `personen.GROBER_KONTAKT`.
+
+    Eine Schaetzung hat ein ungefaehres Datum, keine Notiz, und loescht den naechsten Termin
+    nicht: sie ist kein Gespraech, nur der Startwert fuer die Faelligkeit.
+    """
+    if grober_kontakt not in personen.GROBER_KONTAKT:
+        raise EingabeFehler("Unbekannte Angabe zum letzten Touchpoint.")
+    if personen.laden(con, nutzer_id, person_id) is None:
+        raise NichtGefunden(f"Person {person_id}")
+    tage = personen.GROBER_KONTAKT[grober_kontakt]
+    tag = personen.heute(con, nutzer_id) - dt.timedelta(days=tage)
+    kontakt_id = con.execute(
+        "INSERT INTO kontakt (nutzer_id, person_id, datum, art) VALUES (?, ?, ?, ?)",
+        (nutzer_id, person_id, tag.isoformat(), SCHAETZUNG)).lastrowid
+    con.commit()
+    return kontakt_id
+
+
 def aendern(con: sqlite3.Connection, nutzer_id: int, kontakt_id: int, **felder) -> None:
     """Korrigiert Datum, Art oder Notiz; was nicht genannt ist, bleibt.
 
