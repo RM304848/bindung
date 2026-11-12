@@ -5,6 +5,10 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 
 ## Unveröffentlicht
 
+## 0.1.1 (2026-11-12)
+
+Erste Rückmeldungen aus dem Alltag: klarere Worte, die Profilnotiz gleich oben, Hell oder Dunkel nach eigener Wahl. Die Datenbank wird beim ersten Start erweitert, alle Daten bleiben erhalten.
+
 - **„Touchpoint“ statt „Kontakt“.** „Kontakt eintragen“ klang, als legtest du
   einen Eintrag im Telefonbuch an. Der Knopf und das Blatt heißen jetzt
   **Touchpoint eintragen**, in der Seitenleiste steht **Noch kein Touchpoint**,
