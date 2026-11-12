@@ -126,13 +126,15 @@ def person_abwaehlen(request: Request):
 
 
 @router.get("/personen/neu")
-def person_formular(request: Request):
+def person_formular(request: Request, name: str = ""):
+    """„Person hinzufügen“; `name` belegt das Namensfeld vor (Knopf der leeren Suche)."""
     if (umleitung := nur_htmx(request, "/")):
         return umleitung
     ansicht = aktuelle_ansicht(request)
     kontext = kontext_bauen(request, ansicht)
     vorbelegt = {ansicht.tag} if ansicht.tag is not None else set()
-    return antwort([spalte_bauen(request, kontext, "neu", gewaehlt=vorbelegt, werte={})],
+    werte = {"name": name.strip()[:200]} if name.strip() else {}
+    return antwort([spalte_bauen(request, kontext, "neu", gewaehlt=vorbelegt, werte=werte)],
                     spalte="person")
 
 

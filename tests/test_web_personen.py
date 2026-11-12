@@ -310,6 +310,94 @@ def test_suche_behaelt_den_filter(angemeldet, con, nid):
     assert antwort.headers["hx-replace-url"] == f"/?tag={familie}&suche=an"
 
 
+# ------------------------------------------- Suche ohne Treffer: Person anlegen
+
+KNOPF_ANLEGEN = "als Person anlegen"
+
+
+def test_leere_suche_bietet_an_die_person_anzulegen(angemeldet, con, nid):
+    personen.anlegen(con, nid, "Anna Beispiel")
+    antwort = angemeldet.get("/liste/suche?suche=%20%20Ben%20Muster%20", headers=HX)
+    assert "Niemand gefunden für „Ben Muster“." in antwort.text
+    assert re.search(r'<button type="button" class="knopf knopf-primaer"[^>]*data-suche-anlegen'
+                     r'[^>]*hx-get="/personen/neu\?name=Ben%20Muster"[^>]*hx-target="#personenseite"'
+                     r'[^>]*>„Ben Muster“ als Person anlegen</button>', antwort.text)
+    # Dieselbe Antwort liefert die ganze Seite.
+    assert "„Ben Muster“ als Person anlegen" in angemeldet.get("/?suche=Ben+Muster").text
+
+
+def test_der_knopf_fehlt_bei_treffern_ohne_suchtext_und_im_archiv(angemeldet, con, nid):
+    anna = personen.anlegen(con, nid, "Anna Beispiel")
+    assert KNOPF_ANLEGEN not in angemeldet.get("/liste/suche?suche=anna", headers=HX).text
+    assert KNOPF_ANLEGEN not in angemeldet.get("/liste/suche?suche=", headers=HX).text
+    assert KNOPF_ANLEGEN not in angemeldet.get("/liste/suche?suche=%20%20", headers=HX).text
+    assert KNOPF_ANLEGEN not in angemeldet.get("/").text
+    # Keine Suche, andere leere Liste: weiter nur der Satz der Liste.
+    assert KNOPF_ANLEGEN not in angemeldet.get("/?karte=erkaltet").text
+    # Im Archiv bliebe die neue Person unsichtbar: dort gibt es den Knopf nicht.
+    personen.archivieren(con, nid, anna)
+    archiv = angemeldet.get("/liste/suche?filter=archiv&suche=zzz", headers=HX).text
+    assert "Niemand gefunden für „zzz“." in archiv and KNOPF_ANLEGEN not in archiv
+
+
+def test_der_suchtext_im_knopf_ist_maskiert(angemeldet):
+    antwort = angemeldet.get("/liste/suche", params={"suche": 'Ben <b>"Muster"</b>'}, headers=HX)
+    assert "<b>" not in antwort.text and "&lt;b&gt;" in antwort.text
+    assert "hx-get=\"/personen/neu?name=Ben%20%3Cb%3E%22Muster%22%3C/b%3E\"" in antwort.text
+
+
+def test_formular_bekommt_den_namen_vorbelegt_und_maskiert(angemeldet, con, nid):
+    familie = personen.tag_anlegen(con, nid, "Familie")
+    antwort = angemeldet.get("/personen/neu", params={"name": '  Ben <i>"Muster"  '},
+                             headers=hx(f"/?tag={familie}&suche=Ben"))
+    assert antwort.status_code == 200
+    assert 'name="name" value="Ben &lt;i&gt;&#34;Muster&#34;"' in antwort.text
+    assert "<i>" not in antwort.text
+    assert re.search(rf'value="{familie}" checked', antwort.text), "offener Tag bleibt gewählt"
+    assert _spalte(antwort) == "person"
+    # Ohne Namen bleibt das Feld leer, wie bisher.
+    leer = angemeldet.get("/personen/neu", headers=hx())
+    assert 'name="name" value=""' in leer.text
+
+
+def test_anlegen_aus_der_leeren_suche_waehlt_die_person_aus(angemeldet, con, nid):
+    personen.anlegen(con, nid, "Anna Beispiel")
+    formular = angemeldet.get("/personen/neu", params={"name": "Ben Muster"},
+                              headers=hx("/?suche=Ben+Muster"))
+    assert 'value="Ben Muster"' in formular.text
+    antwort = angemeldet.post("/personen", headers=hx("/?suche=Ben+Muster"),
+                              data={"name": "Ben Muster"})
+    assert antwort.status_code == 200
+    ben = next(z["id"] for z in personen.liste(con, nid) if z["name"] == "Ben Muster")
+    assert antwort.headers["hx-push-url"] == f"/?suche=Ben+Muster&person={ben}"
+    assert _spalte(antwort) == "person"
+    assert 'id="personenseite"' in antwort.text and "Ben Muster" in antwort.text
+    # Die Liste hinter der Suche zeigt die neue Person jetzt, statt „Niemand gefunden“.
+    assert "Niemand gefunden" not in antwort.text and KNOPF_ANLEGEN not in antwort.text
+
+
+def test_passt_der_gespeicherte_name_nicht_zur_suche_bleibt_die_person_ausgewaehlt(
+        angemeldet, con, nid):
+    antwort = angemeldet.post("/personen", headers=hx("/?suche=Ben"), data={"name": "Cem Probe"})
+    assert antwort.status_code == 200
+    cem = personen.liste(con, nid)[0]["id"]
+    assert antwort.headers["hx-push-url"] == f"/?suche=Ben&person={cem}"
+    assert "Cem Probe" in antwort.text
+    assert "Niemand gefunden für „Ben“." in antwort.text
+
+
+def test_vorbelegter_name_gehoert_zum_eigenen_nutzer(
+        angemeldet, anderer_client, con, nid, fremder, fremde_daten):
+    # Der Name wird nur ins Formular gesetzt; gespeichert wird beim eigenen Nutzer.
+    angemeldet.post("/personen", headers=hx("/?suche=Fremd"), data={"name": "Fremd Neu"})
+    assert [z["name"] for z in personen.liste(con, nid)] == ["Fremd Neu"]
+    assert [z["name"] for z in personen.liste(con, fremder)] == ["Fremd Beispiel"]
+    # Der andere Nutzer findet "Fremd" und bekommt keinen Knopf; die Person des ersten
+    # sieht er nicht.
+    suche = anderer_client.get("/liste/suche?suche=Fremd+Neu", headers=HX).text
+    assert "Niemand gefunden für „Fremd Neu“." in suche
+
+
 # -------------------------------------------------------------------- Tags
 
 def test_tag_anlegen_ueber_die_seitenleiste(angemeldet, con, nid):

@@ -24,6 +24,11 @@
   </ul>
   {% elif ansicht.suche %}
   <p class="leer">Niemand gefunden für „{{ ansicht.suche }}“.</p>
+  {% if ansicht.filter != "archiv" %}
+  <div class="leer-aktion">
+    <button type="button" class="knopf knopf-primaer" data-suche-anlegen hx-get="/personen/neu?name={{ ansicht.suche|urlencode }}" hx-target="#personenseite" hx-swap="outerHTML">„{{ ansicht.suche }}“ als Person anlegen</button>
+  </div>
+  {% endif %}
   {% elif ansicht.karte == "aufmerksamkeit" %}
   <p class="leer">Niemand braucht gerade Aufmerksamkeit.</p>
   {% elif ansicht.karte == "erkaltet" %}

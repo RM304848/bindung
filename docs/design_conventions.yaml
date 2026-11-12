@@ -211,6 +211,24 @@ regeln:
       datei: bindung/web/statisch/stil.css
       muster: ['max-width: 767px', '\.app\[data-ansicht="person"\]', 'display: none']
 
+  - id: leere-suche-bietet-das-anlegen-an
+    regel: >
+      Findet die Suche niemanden, steht unter „Niemand gefunden für ...“ ein
+      primaerer Knopf „<Suchtext> als Person anlegen“ (`data-suche-anlegen`), ausser
+      im Archiv. Er laedt `GET /personen/neu?name=<Suchtext>` in die Personenseite
+      (`hx-target="#personenseite"`), also dasselbe Formular wie „Person hinzufuegen“
+      mit vorbelegtem Namen. Der Suchtext kommt als `urlencode` in die Adresse und
+      maskiert in den Knopf, nie roh.
+    warum: >
+      Wer jemanden sucht, den es noch nicht gibt, will ihn gleich anlegen und
+      nicht den Namen noch einmal tippen. Im Archiv bliebe die neue (aktive) Person
+      in der offenen Liste unsichtbar.
+    pruefung:
+      art: datei_enthaelt
+      datei: bindung/web/vorlagen/_listenkoerper.html
+      muster: ['data-suche-anlegen', 'hx-get="/personen/neu\?name=\{\{ ansicht\.suche\|urlencode \}\}"',
+               'knopf-primaer', 'ansicht\.filter != "archiv"']
+
   - id: chips-sind-kontrollkaestchen
     regel: >
       Tags zum An- und Abwaehlen sind `<label class="chip-wahl">` um ein

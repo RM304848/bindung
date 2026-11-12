@@ -876,6 +876,19 @@ Decisions while building the MCP server (section 14):
 - **The model reads the notes.** Touchpoint notes and Profilnotiz are in the answers,
   because "what did Anna and I talk about?" cannot be answered without them. The data stays
   on the machine, but the client's model sees what a tool returns; `docs/mcp.md` says so.
+- **Empty search offers to create the person.** Under "Niemand gefunden für ..." the
+  list shows a primary button `„<Suchtext>“ als Person anlegen` (the trimmed search
+  text, escaped). It loads `GET /personen/neu?name=<text>` into the person pane, the
+  same form as "Person hinzufügen", with the name field filled (at most 200
+  characters, the field's own limit). The open sidebar tag is still preselected; the
+  search text stays in the field and in the URL, because the request only changes the
+  pane. After "Anlegen" the new person is selected exactly as after "Person
+  hinzufügen": the list stays filtered by the search, and if the saved name does not
+  match it the person is still open on the right but absent from the list (and the
+  empty sentence with the button is still there). We chose not to clear the search:
+  the user sees the same list they were in, and clearing would also lose a tag or card
+  context. **Not offered in the Archiv**, because a new person is active and would
+  vanish from the list that is open; the same sentence there stays text only.
 
 ## 14. MCP server (planned and built 2026-11-12)
 

@@ -183,6 +183,10 @@ input[readonly] { background: var(--flaeche-leise); color: var(--text-leise); }
 .leer { color: var(--text-leise); padding: var(--abstand) 4px; }
 .leer-klein { padding: 4px 12px; font-size: 0.9375rem; }
 
+/* Der Knopf unter „Niemand gefunden“: der Suchtext kann lang sein und bricht um. */
+.leer-aktion { padding: 0 4px var(--abstand); }
+.leer-aktion .knopf { width: 100%; padding-block: 8px; text-align: center; overflow-wrap: anywhere; }
+
 /* --------------------------------------------------------------- Drei Spalten */
 
 .app {

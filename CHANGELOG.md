@@ -5,6 +5,13 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 
 ## Unveröffentlicht
 
+- **Person gleich aus der Suche anlegen.** Findet die Suche in der Liste
+  niemanden, steht unter „Niemand gefunden“ jetzt der Knopf
+  **„Anna Beispiel“ als Person anlegen** (mit dem, was du getippt hast). Er
+  öffnet „Person hinzufügen“ mit dem Namen schon im Feld; ein geöffneter Tag
+  bleibt vorgewählt. Nach „Anlegen“ ist die neue Person ausgewählt, auch wenn
+  sie nicht zur Suche passt. Im Archiv gibt es den Knopf nicht.
+
 - **Bindung mit einem Bot benutzen.** Der neue Befehl `bindung mcp` verbindet Bindung mit
   Claude Desktop und anderen Programmen, die das *Model Context Protocol* sprechen. Der
   Bot kann fragen („Wer wartet auf mich?“, „Was haben Anna und ich zuletzt besprochen?“,
