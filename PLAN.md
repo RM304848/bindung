@@ -286,10 +286,10 @@ Each WP ends with tests green, ruff clean, a CHANGELOG entry under
   build and smoke test, first release `v0.1.0` with release notes.
 
 Later, in this order, each as its own plan section when it comes:
-Docker image and compose file with a TLS proxy · server-side dictation
-(Parakeet v3 sidecar) · vCard import with a review screen · sharing a person
-between users · email digest · Apple Contacts or LinkedIn integration (not
-planned).
+**MCP server for a bot (section 14)** · Docker image and compose file with a TLS
+proxy · server-side dictation (Parakeet v3 sidecar) · vCard import with a review
+screen · sharing a person between users · email digest · Apple Contacts or
+LinkedIn integration (not planned).
 
 ## 13. Decisions and their reasons
 
@@ -828,3 +828,50 @@ Decisions after the first feedback on 0.1.0:
   (`person_daten` -> `vorschlaege`), so the user picks without typing; the field stays
   editable and uses the same `kandidaten` route as before. The create form stays as it
   is (the name is typed first).
+
+## 14. MCP server (planned 2026-11-12, not built)
+
+The user wants to use Bindung through a bot: ask questions ("wen habe ich lange
+nicht gesprochen?", "was haben Anna und ich zuletzt besprochen?"), log a
+Touchpoint after a call, and create a person on the fly. The way in is the
+Model Context Protocol, like `finctl mcp` in the user's finance app: JSON-RPC
+over stdin/stdout, no port, no library, one message per line
+(`bindung/mcp/protokoll.py` for the handshake, `tools/list`, `tools/call`,
+`resources/list`, `resources/read`; `bindung/mcp/werkzeuge.py` for the tools).
+Copy finctl's structure; the difference is that here the bot **writes for
+real**, because the user asked for it.
+
+- **Who the bot is.** `bindung mcp --nutzer <name>` acts as exactly that user on
+  the local data folder; every tool goes through the same functions as the
+  pages (`personen.py`, `kontakte.py`, `faelligkeit.py`, `stichtage.py`,
+  `angehoerige.py`), never through SQL, so `nutzer_id` filtering and the state
+  rules hold. Without `--nutzer` and with exactly one user, that user. Over the
+  network (the later Docker deployment) the same tools sit behind an HTTP
+  transport with a per-user token from Einstellungen; that is a second step,
+  not v1 of the MCP.
+- **Tools, read:** `personen_suchen` (text over name, firma, ort, tag; returns
+  id, name, firma, tags, Zustand, letzter Touchpoint), `person` (everything the
+  Personenseite shows: fields, Zuletzt besprochen, Angehörige, Stichtage, Fällig
+  am), `wer_wartet` (the three cards with names, sorted like the app),
+  `diese_woche` (due people and Stichtage in their window), `tags`.
+- **Tools, write:** `person_anlegen` (name, optional firma, rolle, telefon,
+  email, ort, herkunft, profilnotiz, tags by name, optional rough last
+  contact as in "Mehrere hinzufügen"), `touchpoint_eintragen` (person id or
+  unambiguous name, art, datum default today, notiz; same rules as the sheet:
+  no future date, clears the next date), `profilnotiz_setzen`,
+  `stichtag_anlegen`. No archiving, no deleting, no tag management, no settings
+  through the bot in v1: a wrong write there is hard to notice.
+- **Resources:** `bindung://glossar` (CONTEXT.md, so the bot uses the app's
+  words) and `bindung://heute` (the digest text for today).
+- **Answers are text**, formatted as the app formats them (relative times,
+  states, badges), with ids in brackets so a follow-up call can refer to them;
+  errors are `isError` answers with the German message the page would show.
+- **Safety:** stdout belongs to the protocol (everything else to stderr, as
+  finctl does); the tool descriptions say what each one changes; a name that
+  matches several people is refused with the candidates instead of guessed.
+- **Done means:** `bindung mcp` registered in Claude Desktop or any MCP client
+  can answer "wer wartet?", log "Anruf mit Anna, wir haben über X gesprochen"
+  and create a person with tags, each visible in the app at once; tests drive
+  the protocol over pipes with recorded JSON-RPC lines, plus unit tests per
+  tool including user isolation; a page in `docs/` shows the client
+  configuration; CHANGELOG entry for users.
