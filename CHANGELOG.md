@@ -5,6 +5,31 @@ Release bekommt einen eigenen Abschnitt, geschrieben vor dem Taggen.
 
 ## Unveröffentlicht
 
+- **„Touchpoint“ statt „Kontakt“.** „Kontakt eintragen“ klang, als legtest du
+  einen Eintrag im Telefonbuch an. Der Knopf und das Blatt heißen jetzt
+  **Touchpoint eintragen**, in der Seitenleiste steht **Noch kein Touchpoint**,
+  auf der Personenseite **Letzter Touchpoint**, und in der Liste steht
+  „noch kein Touchpoint“. Gemeint ist weiter dasselbe: ein Gespräch, ein Anruf,
+  ein Treffen mit Art, Datum und Notiz. „Zuletzt besprochen“ heißt wie zuvor.
+  Alles, was du schon eingetragen hast, bleibt unverändert.
+- **Profilnotiz gleich unter dem Kopf der Person.** Auf der Personenseite
+  stehen jetzt zuerst Name, Firma und Rolle, die Tags, Telefon und E-Mail, Ort
+  und Herkunft und die **Profilnotiz**, dann der Knopf „Touchpoint eintragen“
+  mit „Zuletzt besprochen“, „Angehörige“ und „Stichtage“, ganz unten Intervall,
+  Nächster Termin und Archivieren. Unter der Profilnotiz steht ein Hinweis:
+  Sie wird beim Verlassen des Feldes gespeichert.
+- **Hell oder Dunkel selbst wählen.** Unter Einstellungen gibt es den neuen
+  Abschnitt **Darstellung** mit „System“, „Hell“ und „Dunkel“. „System“ folgt
+  wie bisher deinem Gerät; mit „Hell“ oder „Dunkel“ bleibt Bindung dabei, auch
+  wenn dein Mac anders eingestellt ist. Die Wahl gilt sofort und gehört zu
+  deinem Zugang, nicht zum Gerät. Die Anmeldeseite folgt immer dem Gerät.
+  Beim ersten Start nach dem Update wird die Datenbank um diese Einstellung
+  erweitert, deine Daten bleiben erhalten.
+- **Verknüpfen mit vorbelegter Suche.** Beim Verknüpfen eines Angehörigen ist
+  die Personensuche mit seinem Namen vorbelegt, und die passenden Personen
+  stehen sofort da, ohne dass du tippen musst. Du kannst den Namen im Feld
+  weiter ändern.
+
 ## 0.1.0 (2026-11-11)
 
 Das erste Release: Bindung merkt sich, worüber du zuletzt mit jemandem gesprochen hast, und erinnert dich, bevor eine Bindung erkaltet.

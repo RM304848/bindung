@@ -35,7 +35,7 @@
       });
   });
 
-  // Das Blatt „Kontakt eintragen“ liegt ueber der Seite: Abbrechen, Escape und ein Klick
+  // Das Blatt „Touchpoint eintragen“ liegt ueber der Seite: Abbrechen, Escape und ein Klick
   // daneben schliessen es, ohne den Server zu fragen (nichts wurde gespeichert).
   function blattSchliessen() {
     var blatt = document.querySelector("[data-blatt]");
@@ -90,6 +90,27 @@
   // Der Server sagt mit HX-Trigger {"spalte": ...}, wohin die Antwort fuehrt.
   document.addEventListener("spalte", function (ereignis) {
     zeigen(ereignis.detail.value);
+  });
+
+  // Die Darstellung (Einstellungen): der Server sagt mit HX-Trigger {"darstellung": ...}, was
+  // gespeichert wurde. Die offene Seite zieht nach, ohne neu zu laden: `data-darstellung` am
+  // <html> (das Stylesheet haengt daran), das color-scheme und die beiden theme-color-Zeilen
+  // (erst hell, dann dunkel; wie in basis.html).
+  var FARBSCHEMA = { hell: "light", dunkel: "dark", system: "light dark" };
+  var MEDIEN = {
+    hell: ["all", "not all"],
+    dunkel: ["not all", "all"],
+    system: ["(prefers-color-scheme: light)", "(prefers-color-scheme: dark)"]
+  };
+  document.addEventListener("darstellung", function (ereignis) {
+    var wert = ereignis.detail.value;
+    if (!FARBSCHEMA[wert]) { return; }
+    document.documentElement.setAttribute("data-darstellung", wert);
+    var schema = document.querySelector('meta[name="color-scheme"]');
+    if (schema) { schema.setAttribute("content", FARBSCHEMA[wert]); }
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function (meta, i) {
+      if (MEDIEN[wert][i]) { meta.setAttribute("media", MEDIEN[wert][i]); }
+    });
   });
 
   // ------------------------------------------------------------------ Diktat

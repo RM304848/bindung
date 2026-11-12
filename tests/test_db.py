@@ -30,7 +30,7 @@ def test_frische_datenbank_hat_alle_tabellen(con):
 
 
 def test_frische_datenbank_steht_auf_der_aktuellen_version(con):
-    assert db.version(con) == db.aktuelle_version() == 1
+    assert db.version(con) == db.aktuelle_version() == 2
 
 
 def test_datenbank_liegt_im_datenordner_des_tests(con, daten):
@@ -40,7 +40,7 @@ def test_datenbank_liegt_im_datenordner_des_tests(con, daten):
 
 def test_zweites_verbinden_aendert_nichts(con):
     db.verbinden().close()
-    assert db.version(con) == 1
+    assert db.version(con) == 2
     assert con.execute("SELECT COUNT(*) FROM schema_version").fetchone()[0] == 1
 
 
@@ -110,4 +110,23 @@ def test_migrationen_werden_nachgespielt(tmp_path, monkeypatch):
     con = db.verbinden(tmp_path / "m.db")
     assert db.version(con) == 2
     assert "spitzname" in _spalten(con, "person")
+    con.close()
+
+
+def test_alte_datenbank_bekommt_die_spalte_darstellung(tmp_path):
+    """Eine Datenbank auf Version 1 (ohne Darstellung) wird beim Verbinden erweitert."""
+    pfad = tmp_path / "alt.db"
+    alt = sqlite3.connect(pfad)
+    alt.executescript(db.SCHEMA.read_text(encoding="utf-8"))
+    alt.execute("INSERT INTO schema_version (version) VALUES (1)")
+    alt.execute("INSERT INTO nutzer (name, passwort_hash, kalender_token) VALUES ('a', 'x', 't')")
+    alt.commit()
+    assert "darstellung" not in [z[1] for z in alt.execute("PRAGMA table_info(nutzer)")]
+    alt.close()
+    con = db.verbinden(pfad)
+    assert db.version(con) == 2
+    # Wer schon da war, folgt weiter dem Geraet; die Daten bleiben.
+    assert con.execute("SELECT name, darstellung FROM nutzer").fetchone()[:] == ("a", "system")
+    with pytest.raises(sqlite3.IntegrityError):
+        con.execute("UPDATE nutzer SET darstellung = 'bunt'")
     con.close()

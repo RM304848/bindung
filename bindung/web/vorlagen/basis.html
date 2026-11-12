@@ -1,12 +1,16 @@
 <!doctype html>
-<html lang="de">
+{# Die Darstellung steht schon im ersten Byte der Seite, damit nichts aufblitzt: der Server kennt den Nutzer. Anmeldung und Einrichten kennen keinen und folgen dem Gerät. #}
+{% set darstellung = nutzer.darstellung if nutzer else "system" %}
+{% set farbschema = {"hell": "light", "dunkel": "dark"}.get(darstellung, "light dark") %}
+{% set medien = {"hell": ("all", "not all"), "dunkel": ("not all", "all")}.get(darstellung, ("(prefers-color-scheme: light)", "(prefers-color-scheme: dark)")) %}
+<html lang="de" data-darstellung="{{ darstellung }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="{{ farbschema }}">
   <meta name="htmx-config" content='{"allowEval": false, "allowScriptTags": false, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "422", "swap": true}, {"code": "[45]..", "swap": false, "error": true}]}'>
-  <meta name="theme-color" content="{{ palette().hell.grund }}" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="{{ palette().dunkel.grund }}" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="{{ palette().hell.grund }}" media="{{ medien[0] }}">
+  <meta name="theme-color" content="{{ palette().dunkel.grund }}" media="{{ medien[1] }}">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Bindung">

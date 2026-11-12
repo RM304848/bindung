@@ -62,7 +62,7 @@ def test_seitenleiste_zeigt_zahlen_und_tags(angemeldet, con, nid):
     personen.archivieren(con, nid, cem)
     text = angemeldet.get("/").text
     assert re.search(r'<span class="eintrag-name">Alle</span><span class="zahl">2<', text)
-    assert re.search(r'Noch kein Kontakt</span><span class="zahl">2<', text)
+    assert re.search(r'Noch kein Touchpoint</span><span class="zahl">2<', text)
     assert re.search(r'Archiv</span><span class="zahl">1<', text)
     assert re.search(r'Familie</span><span class="zahl">1<', text)
     assert "Anna Beispiel" in text and "Cem Probe" not in text
@@ -263,7 +263,7 @@ def test_liste_ohne_kontakt_und_archiv(angemeldet, con, nid):
     con.commit()
     personen.archivieren(con, nid, ben)
     text = angemeldet.get("/liste?filter=ohne_kontakt", headers=HX).text
-    assert "Zu allen ist ein Kontakt eingetragen." in text
+    assert "Zu allen ist ein Touchpoint eingetragen." in text
     text = angemeldet.get("/liste?filter=archiv", headers=HX).text
     assert "Ben Muster" in text and "Anna Beispiel" not in text
 
@@ -447,7 +447,7 @@ def test_fuenf_personen_auf_einmal(angemeldet, con, nid):
     assert antwort.headers["hx-push-url"] == f"/?person={erste}"
     assert 'value="Anna Beispiel"' in antwort.text
     assert re.search(r'Alle</span><span class="zahl">5<', antwort.text)
-    assert "Noch kein Kontakt</span><span class=\"zahl\">0<" in antwort.text
+    assert "Noch kein Touchpoint</span><span class=\"zahl\">0<" in antwort.text
 
 
 def test_mehrere_ohne_namen_ist_eine_meldung(angemeldet, con, nid):

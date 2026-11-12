@@ -1,4 +1,4 @@
-{# Ein Angehöriger. Ist er verknüpft und heißt wie die Person, ist sein Name der Link zu ihr; sonst steht „In der App“ darunter. „Bearbeiten“ tauscht genau diese Zeile gegen ein Formular, „Verknüpfen“ klappt die Auswahl auf. #}
+{# Ein Angehöriger. Ist er verknüpft und heißt wie die Person, ist sein Name der Link zu ihr; sonst steht „In der App“ darunter. „Bearbeiten“ tauscht genau diese Zeile gegen ein Formular, „Verknüpfen“ klappt die Auswahl auf, die Suche schon mit dem Namen des Angehörigen gefüllt und den Treffern dazu. #}
 <li class="posten" id="angehoeriger-{{ a.id }}">
   {% set gleich = a.verknuepfte_person_id and a.name == a.verknuepft_name %}
   <div class="posten-kopf">
@@ -27,8 +27,9 @@
     <form class="posten-formular" hx-post="/angehoerige/{{ a.id }}/verknuepfen" hx-target="#angehoerige" hx-swap="outerHTML">
       <div class="feld">
         <label for="verknuepfen-suche-{{ a.id }}">Person in der App suchen</label>
-        <input type="search" id="verknuepfen-suche-{{ a.id }}" name="suche" data-ohne-enter autocomplete="off" placeholder="Name der Person" hx-get="/personen/{{ person.id }}/kandidaten?ziel={{ a.id }}" hx-trigger="input changed delay:250ms" hx-target="#kandidaten-{{ a.id }}" hx-swap="outerHTML">
-        <div id="kandidaten-{{ a.id }}" class="kandidaten"><p class="hilfe">Tippe einen Namen, um eine Person zu finden.</p></div>
+        <input type="search" id="verknuepfen-suche-{{ a.id }}" name="suche" value="{{ a.name }}" data-ohne-enter autocomplete="off" placeholder="Name der Person" hx-get="/personen/{{ person.id }}/kandidaten?ziel={{ a.id }}" hx-trigger="input changed delay:250ms" hx-target="#kandidaten-{{ a.id }}" hx-swap="outerHTML">
+        {% set ziel = a.id %}{% set suche = a.name %}{% set treffer, mehr = vorschlaege[a.id] %}
+        {% include "_kandidaten.html" %}
       </div>
       <div class="knopfreihe">
         <button type="submit" class="knopf knopf-primaer">Verknüpfen</button>

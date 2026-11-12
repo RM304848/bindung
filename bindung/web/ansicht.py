@@ -5,7 +5,7 @@ Der Zustand der Ansicht steht in der Adresse
 dasselbe zeigen. Der Server schreibt die Adresse vor: er schickt `HX-Push-Url`
 oder `HX-Replace-Url` mit, der Browser baut sie nicht selbst.
 
-Aenderungen (anlegen, speichern, archivieren, Kontakt eintragen ...) kommen als
+Aenderungen (anlegen, speichern, archivieren, Touchpoint eintragen ...) kommen als
 POST von der Seite. Welche Ansicht gerade offen ist, steht dann in
 `HX-Current-URL`, das HTMX bei jeder Anfrage mitschickt; so bekommt die Antwort
 Seitenleiste, Karten und Liste im richtigen Filter, ohne dass jedes Formular den
@@ -167,7 +167,7 @@ def kontext_bauen(request: Request, ansicht: Ansicht) -> dict:
     nutzer_id = nutzer["id"]
     heute = personen.heute(con, nutzer_id)
     tag = personen.tag_laden(con, nutzer_id, ansicht.tag) if ansicht.tag is not None else None
-    titel = {personen.FILTER_OHNE_KONTAKT: "Noch kein Kontakt",
+    titel = {personen.FILTER_OHNE_KONTAKT: "Noch kein Touchpoint",
              personen.FILTER_ARCHIV: "Archiv"}.get(ansicht.filter or "")
     bindungen = faelligkeit.bindungen(con, nutzer_id, heute)
     vorlauf = stichtage.je_person(stichtage.im_vorlauf(con, nutzer_id, heute))
@@ -209,6 +209,7 @@ def person_daten(request: Request, person) -> dict:
     con, nutzer_id = basis.con(request), basis.nutzer(request)["id"]
     heute = personen.heute(con, nutzer_id)
     bindung = faelligkeit.bindungen(con, nutzer_id, heute, person_id=person["id"])[person["id"]]
+    familie = angehoerige.liste(con, nutzer_id, person["id"])
     return {
         "person": person,
         "bindung": bindung,
@@ -218,7 +219,10 @@ def person_daten(request: Request, person) -> dict:
         "arten": kontakte.ARTEN,
         "art_namen": kontakte.ART_NAMEN,
         "gewaehlt": personen.tags_der_person(con, nutzer_id, person["id"]),
-        "angehoerige": angehoerige.liste(con, nutzer_id, person["id"]),
+        "angehoerige": familie,
+        # „Verknüpfen“ öffnet mit dem Namen des Angehörigen in der Suche und den Treffern dazu.
+        "vorschlaege": {a["id"]: angehoerige.verknuepfbare(con, nutzer_id, person["id"], a["name"])
+                        for a in familie if not a["verknuepfte_person_id"]},
         "rollen": angehoerige.ROLLEN,
         "stichtage": stichtage.liste(con, nutzer_id, person["id"], heute),
         "stichtag_arten": stichtage.ARTEN,

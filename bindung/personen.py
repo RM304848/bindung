@@ -5,7 +5,7 @@ bekommt die `nutzer_id` und filtert danach; eine Nummer, die einem anderen
 Nutzer gehoert, ist fuer diese Funktionen nicht vorhanden (`NichtGefunden`).
 
 Zustand, Faelligkeit und Kontakte eintragen kommen in WP2 -- hier wird nur
-gefragt, OB eine Person einen Kontakt hat ("Noch kein Kontakt").
+gefragt, OB eine Person einen Kontakt hat ("Noch kein Touchpoint").
 """
 
 from __future__ import annotations
@@ -186,7 +186,7 @@ def _tagnamen_je_person(con: sqlite3.Connection, nutzer_id: int) -> dict[int, li
 
 
 def zaehler(con: sqlite3.Connection, nutzer_id: int) -> dict[str, int]:
-    """Die Zahlen der Seitenleiste: Alle, Noch kein Kontakt, Archiv (ohne Tags)."""
+    """Die Zahlen der Seitenleiste: Alle, Noch kein Touchpoint, Archiv (ohne Tags)."""
     zeile = con.execute(
         "SELECT "
         " COALESCE(SUM(p.archiviert_am IS NULL), 0) AS alle, "
@@ -322,7 +322,7 @@ def mehrere_hinzufuegen(con: sqlite3.Connection, nutzer_id: int, text: str, *,
     ohne Notiz. Gibt die Nummern der angelegten Personen zurueck.
     """
     if grober_kontakt != UNBEKANNT and grober_kontakt not in GROBER_KONTAKT:
-        raise EingabeFehler("Unbekannte Angabe zum letzten Kontakt.")
+        raise EingabeFehler("Unbekannte Angabe zum letzten Touchpoint.")
     tags = set(tag_ids)
     for tag_id in tags:
         _tag(con, nutzer_id, tag_id)

@@ -101,7 +101,7 @@ def test_the_pages_with_text_fields_deliver_the_frame(angemeldet, con, nid):
         "Personenseite": f"/personen/{pid}",
         "Person hinzufuegen": "/personen/neu",
         "Mehrere hinzufuegen": "/personen/mehrere",
-        "Kontakt eintragen": f"/personen/{pid}/kontakt/neu",
+        "Touchpoint eintragen": f"/personen/{pid}/kontakt/neu",
     }
     for name, adresse in seiten.items():
         text = angemeldet.get(adresse, headers=HX).text

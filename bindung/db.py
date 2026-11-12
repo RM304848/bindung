@@ -21,7 +21,11 @@ SCHEMA = Path(__file__).with_name("schema.sql")
 
 #: Nummerierte Migrationen ab Version 2. `MIGRATIONEN[0]` hebt Version 1 auf 2.
 #: Jeder Eintrag ist ein SQL-Skript (mehrere Anweisungen erlaubt).
-MIGRATIONEN: list[str] = []
+MIGRATIONEN: list[str] = [
+    # 2: Darstellung (hell, dunkel oder dem Geraet folgen), je Nutzer.
+    ("ALTER TABLE nutzer ADD COLUMN darstellung TEXT NOT NULL DEFAULT 'system' "
+     "CHECK (darstellung IN ('system', 'hell', 'dunkel'));"),
+]
 
 #: Der Stand, auf dem schema.sql eine frische Datenbank anlegt.
 BASISVERSION = 1

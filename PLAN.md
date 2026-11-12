@@ -85,7 +85,8 @@ calendar feed only work while the server runs.
   per-user secret in the URL (§9).
 - **Settings page** (`/einstellungen`): change password, digest time, default
   interval, default lead time, time zone, calendar feed URL (with "neu
-  erzeugen"), push on/off, dictation language.
+  erzeugen"), push on/off, dictation language, appearance (System / Hell /
+  Dunkel).
 
 ## 5. Domain model
 
@@ -93,7 +94,7 @@ Vocabulary is in CONTEXT.md. Tables (all with `nutzer_id` where user data):
 
 | Table | Holds |
 |---|---|
-| `nutzer` | name, password hash, digest time (default 08:00), time zone, default interval days (56), default lead days (7), calendar token, dictation language |
+| `nutzer` | name, password hash, digest time (default 08:00), time zone, default interval days (56), default lead days (7), calendar token, dictation language, appearance (`darstellung`: `system`, `hell`, `dunkel`; default `system`) |
 | `sitzung` | login sessions |
 | `person` | name, company, job role, phone, email, city, how we met, profile note, interval days (NULL → user default), next-date override (NULL → from interval), archived-at |
 | `tag` | user-defined tag names, order |
@@ -134,7 +135,7 @@ For a person on day `heute` in the user's time zone:
 - `faellig_am` = next-date override if set, else `letzter_kontakt + intervall`.
 - **Zustand** (state), exactly one:
   - `unbekannt`: no Kontakt at all. Never due, never counted on a card. Shown
-    with a grey "noch kein Kontakt" label in the list and in a sidebar filter.
+    with a grey "noch kein Touchpoint" label in the list and in a sidebar filter.
   - `erkaltet`: `heute − letzter_kontakt > min(2 × intervall, 180)` days.
   - `ueberfaellig`: `heute > faellig_am` and not erkaltet.
   - `bald`: `faellig_am` within the next 7 days.
@@ -161,7 +162,7 @@ then name. Default list ("Alle"): by name, with the state as a coloured dot.
 Three panes like Apple Reminders on macOS, muted palette, system font, no
 decoration. One page; HTMX swaps panes.
 
-- **Left sidebar:** Alle, Noch kein Kontakt, Archiv; then one entry per tag
+- **Left sidebar:** Alle, Noch kein Touchpoint, Archiv; then one entry per tag
   with its count; "Tag hinzufügen" at the bottom; user name and Einstellungen
   at the very bottom.
 - **Middle column:** the three cards with counts; a search field (name,
@@ -169,14 +170,15 @@ decoration. One page; HTMX swaps panes.
   "Mehrere hinzufügen"; the list. A row shows a checkbox-style circle, name,
   company, the first line of the latest note, and on the right the state badge
   ("vor 3 Wochen", "überfällig seit 12 Tagen", "Geburtstag in 4 Tagen").
-  Clicking the circle opens **Kontakt eintragen** for that person. Clicking the
+  Clicking the circle opens **Touchpoint eintragen** for that person. Clicking the
   row selects it.
-- **Right pane:** the person. Header with name, company and role, tags as
-  chips, phone (tel: link) and email (mailto: link), city, how we met, profile
-  note. A prominent **Kontakt eintragen** button. Then: Zuletzt besprochen
+- **Right pane:** the person, top to bottom: header with name, company and
+  role, tags as chips, phone (tel: link) and email (mailto: link), city, how we
+  met, profile note (with a one-line hint that it saves when the field is left).
+  A prominent **Touchpoint eintragen** button. Then: Zuletzt besprochen
   (the history, latest first, each with date, kind and note), Angehörige,
   Stichtage, Intervall and next date, Archivieren. Everything edits inline.
-- **Kontakt eintragen** (sheet over the right pane): kind as a segmented
+- **Touchpoint eintragen** (sheet over the right pane): kind as a segmented
   control, date (default today), note with a mic button, Save. Saving adds the
   entry, updates the row and the cards without a page reload.
 - **Mehrere hinzufügen** (sheet): a text area, one name per line, optional
@@ -271,7 +273,7 @@ Each WP ends with tests green, ruff clean, a CHANGELOG entry under
   sidebar, search, archive and restore, "Mehrere hinzufügen" with rough last
   contact. Done: a list of invented people, filtered by tag and search, on Mac
   and at phone width.
-- **WP2 Kontakte und Fälligkeit.** Kontakt eintragen, history, due logic
+- **WP2 Kontakte und Fälligkeit.** Touchpoint eintragen, history, due logic
   (§6), states, badges, the three cards with filtering, interval and next-date
   override per person. Done: the weekly review works.
 - **WP3 Angehörige und Stichtage.** Family entries with linking and inverse,
@@ -395,7 +397,7 @@ Small decisions taken while building WP2, where the plan was silent:
   approximate dates already stored in a database stay as they were (no
   migration; a rough contact is only a starting point and the next real Kontakt
   replaces it).
-- **Row badge ("Plakette").** `unbekannt` → "noch kein Kontakt"; `erkaltet` →
+- **Row badge ("Plakette").** `unbekannt` → "noch kein Touchpoint"; `erkaltet` →
   "erkaltet"; `ueberfaellig` → "überfällig seit N Tagen"; `bald` → "fällig heute
   / morgen / in N Tagen" (more useful than "vor 6 Wochen" for someone about to be
   due); `ok` → relative time of the last contact. Relative time: 0 days
@@ -408,7 +410,7 @@ Small decisions taken while building WP2, where the plan was silent:
   note and does not count as a conversation, so a person with only a rough
   contact still shows the profile note. A real Kontakt without a note shows no
   second line.
-- **Kontakt eintragen.** Any day up to and including today in the user's time
+- **Touchpoint eintragen.** Any day up to and including today in the user's time
   zone is accepted (back-dating is normal after a busy week); a later day is
   rejected with a message. The art starts on "Anruf". Logging always clears the
   next date, even for a back-dated entry. Editing or deleting a Kontakt never
@@ -421,7 +423,7 @@ Small decisions taken while building WP2, where the plan was silent:
   sheet in one request (`GET /personen/<id>/kontakt/neu`).
 - **Cards are links** (`?karte=aufmerksamkeit|erkaltet|woche`) so the state lives
   in the URL. A card click is list navigation like the sidebar: it closes the open
-  person, keeps tag and search, drops `filter` (Noch kein Kontakt / Archiv hold
+  person, keeps tag and search, drops `filter` (Noch kein Touchpoint / Archiv hold
   nobody that a card could count). Clicking a sidebar entry resets the card. In
   the Archiv `karte` is ignored. The counts are always over all active people,
   whatever tag, search or card is open; opening a person or saving keeps the card
@@ -430,9 +432,8 @@ Small decisions taken while building WP2, where the plan was silent:
   then name); every other list stays by name. Cards, rows and the Personenseite
   all read the same `faelligkeit.bindungen()` result for the request: one query
   for all of a user's people, state and sorting in Python (a few hundred people).
-- **Personenseite** now has two forms (name, company, role, contact links; then
-  the other fields) with the button "Kontakt eintragen" and "Zuletzt besprochen"
-  between them, because HTML has no nested forms. Both save on `change` as
+- **Personenseite** (order changed after 0.1.0, see below) has several forms of
+  one kind around "Zuletzt besprochen", because HTML has no nested forms. Both save on `change` as
   before. "Fällig am", the state and the last contact sit under Intervall and
   Nächster Termin and are redrawn (`hx-swap-oob`) after every change that touches
   them. Archived people show "Im Archiv: keine Erinnerung." instead.
@@ -788,3 +789,42 @@ Decided while building WP7 (Mac app, PWA, first release):
   (every Mac has it); the `tzdata` package would be bundled if present.
 - **Release 0.1.0 is tagged locally and published by hand** (`docs/release.md`); the notes
   come from `CHANGELOG.md` through `werkzeuge/release_notes.py`.
+
+Decisions after the first feedback on 0.1.0:
+
+- **The word in the interface is "Touchpoint", the word in the code stays
+  `kontakt`.** "Kontakt eintragen" sounded like adding a phone-book entry. The
+  interface, the help texts, the changelog from the next release on and CONTEXT.md say
+  Touchpoint (der Touchpoint, die Touchpoints, "einen Touchpoint eintragen"; the
+  list of past ones is still "Zuletzt besprochen", the kinds are unchanged). The
+  table `kontakt`, the modules, routes, template names and CSS classes keep the old
+  word: renaming them needs a migration and touches thousands of lines with no gain
+  for the user. This is the one deliberate split between UI word and code word and is
+  recorded in CONTEXT.md ("Touchpoint ... im Code `kontakt`"). The published 0.1.0
+  notes keep their wording (history). Where this plan says "Kontakt" for the domain
+  object in §5 and §6, it means the Touchpoint. "Den Kontakt halten" as an idiom
+  ("keep in touch", login page, manifest, README) stays.
+- **Personenseite order follows §7 again.** Header (name, company, role), tags, the
+  contact links, phone, email, city, how we met, **Profilnotiz**; then the button
+  "Touchpoint eintragen", "Zuletzt besprochen", "Angehörige", "Stichtage"; then
+  Intervall, Nächster Termin, state and Fällig am; Archivieren. The WP2 layout had
+  pushed the profile note under the history, where the user could not find it. The
+  tag chips are forms themselves, so "one form above the button" is not possible;
+  there are three forms of the same kind (header; phone to profile note; Intervall
+  and Nächster Termin), all `POST /personen/<id>`, each with its own fields and
+  saving on `change`. A hint under the Profilnotiz says when it is saved.
+- **Appearance is stored per user, not per device.** `nutzer.darstellung`
+  (`system` | `hell` | `dunkel`, default `system`; migration 2, existing users get
+  `system`). The server writes it as `data-darstellung` on `<html>` in the first byte
+  of the page (no flash; a browser-side store would flash and would not follow the
+  user to another device), together with `color-scheme` and the two `theme-color`
+  lines. `stil.css` has the two device blocks unchanged and repeats their values under
+  `:root[data-darstellung="hell"|"dunkel"]`; no new colours (`tests/test_design.py`
+  keeps the four blocks equal). Login and setup have no user and follow the device.
+  Saving the section sends `HX-Trigger: {"darstellung": ...}` and `bindung.js` updates
+  the live page. The favicon `symbol.svg` still follows the device (its own media query).
+- **"Verknüpfen" opens with the name.** The search field of an Angehöriger without
+  link is prefilled with its name and the matching people are rendered on the server
+  (`person_daten` -> `vorschlaege`), so the user picks without typing; the field stays
+  editable and uses the same `kandidaten` route as before. The create form stays as it
+  is (the name is typed first).

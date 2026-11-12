@@ -1,4 +1,4 @@
-{# Ein Kontakt zum Bearbeiten, an Ort und Stelle. Eine Schätzung hat nur ein Datum. #}
+{# Ein Touchpoint zum Bearbeiten, an Ort und Stelle. Eine Schätzung hat nur ein Datum. #}
 <li class="verlauf-eintrag verlauf-bearbeiten" id="kontakt-{{ k.id }}">
   <form class="verlauf-formular" hx-post="/kontakte/{{ k.id }}" hx-target="#verlauf" hx-swap="outerHTML">
     {% if meldung %}<p class="meldung meldung-fehler" role="alert">{{ meldung }}</p>{% endif %}

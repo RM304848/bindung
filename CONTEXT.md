@@ -23,7 +23,7 @@ _Avoid_: Profil, Konfiguration, Settings
 ## Menschen
 
 **Person**:
-Ein Mensch, zu dem der Nutzer die Bindung halten will, mit Name, Firma, Rolle, Kontaktdaten, Herkunft der Bekanntschaft und Profilnotiz.
+Ein Mensch, zu dem der Nutzer die Bindung halten will, mit Name, Firma, Rolle, Telefon und E-Mail, Herkunft der Bekanntschaft und Profilnotiz.
 _Avoid_: Kontakt (für den Menschen), Eintrag, Connection, Freund
 
 **Bindung**:
@@ -64,38 +64,38 @@ _Avoid_: Link, Referenz, Zuordnung
 Der Angehörigen-Eintrag auf der anderen Seite einer Verknüpfung; seine Rolle ist eigenständig bearbeitbar.
 _Avoid_: Inverse, Spiegel, Rückverweis
 
-## Kontakte und Fälligkeit
+## Touchpoints und Fälligkeit
 
-**Kontakt**:
-Ein Austausch mit einer Person an einem Datum, mit Art und Notiz; er wird nie überschrieben, nur ergänzt.
-_Avoid_: Interaktion, Log, Eintrag, Gespräch (als Datenbegriff)
+**Touchpoint**:
+Ein Austausch mit einer Person an einem Datum, mit Art und Notiz; er wird nie überschrieben, nur ergänzt. Im Code heißt er `kontakt` (Tabelle, Modul, Routen, CSS-Klassen) – die einzige gewollte Trennung zwischen Wort der Oberfläche und Wort im Code: „Kontakt eintragen“ klang nach einem Telefonbucheintrag, ein Umbenennen im Code brächte eine Migration und tausende Zeilen Änderung ohne Nutzen für den Nutzer.
+_Avoid_: Kontakt (in Oberfläche, Hilfetexten und Release-Notizen), Interaktion, Log, Eintrag, Gespräch (als Datenbegriff)
 
-**Art** (eines Kontakts):
-Wie der Austausch stattfand: Anruf, Nachricht, E-Mail, Treffen, Sonstiges; Schätzung für einen groben letzten Kontakt ohne Notiz.
+**Art** (eines Touchpoints):
+Wie der Austausch stattfand: Anruf, Nachricht, E-Mail, Treffen, Sonstiges; Schätzung für einen groben letzten Touchpoint ohne Notiz.
 _Avoid_: Kanal, Methode, Medium
 
 **Zuletzt besprochen**:
-Die Kontakte einer Person, jüngster zuerst; das, was der Nutzer vor dem nächsten Anruf liest.
+Die Touchpoints einer Person, jüngster zuerst; das, was der Nutzer vor dem nächsten Anruf liest.
 _Avoid_: Historie, Verlauf, Timeline
 
 **Schätzung**:
-Ein Kontakt ohne Notiz mit ungefährem Datum, den der Nutzer setzt, wenn er nur grob weiß, wann er die Person zuletzt gesprochen hat.
+Ein Touchpoint ohne Notiz mit ungefährem Datum, den der Nutzer setzt, wenn er nur grob weiß, wann er die Person zuletzt gesprochen hat.
 _Avoid_: Platzhalter, Dummy, Startwert
 
-**Letzter Kontakt**:
-Das Datum des jüngsten Kontakts einer Person; fehlt er, ist der Zustand unbekannt.
-_Avoid_: Last contact, Letzte Interaktion
+**Letzter Touchpoint**:
+Das Datum des jüngsten Touchpoints einer Person; fehlt er, ist der Zustand unbekannt.
+_Avoid_: Letzter Kontakt, Last contact, Letzte Interaktion
 
 **Intervall**:
-Wie viele Tage nach dem letzten Kontakt der Nutzer sich wieder melden will; je Person einstellbar, sonst die Vorgabe des Nutzers (56 Tage).
+Wie viele Tage nach dem letzten Touchpoint der Nutzer sich wieder melden will; je Person einstellbar, sonst die Vorgabe des Nutzers (56 Tage).
 _Avoid_: Frequenz, Rhythmus, Cadence, Zyklus
 
 **Nächster Termin**:
-Ein vom Nutzer gesetztes Datum, das für ein Mal das Intervall ersetzt; der nächste Kontakt löscht es.
+Ein vom Nutzer gesetztes Datum, das für ein Mal das Intervall ersetzt; der nächste Touchpoint löscht es.
 _Avoid_: Snooze, Wiedervorlage, Override
 
 **Fällig am**:
-Der Tag, an dem die App den Nutzer an eine Person erinnert: der nächste Termin, sonst letzter Kontakt plus Intervall.
+Der Tag, an dem die App den Nutzer an eine Person erinnert: der nächste Termin, sonst letzter Touchpoint plus Intervall.
 _Avoid_: Deadline, Frist, Due date
 
 **Zustand** (einer Bindung):
@@ -103,7 +103,7 @@ Genau eines von: unbekannt, ok, bald, überfällig, erkaltet.
 _Avoid_: Status, Ampel, Health
 
 **Unbekannt**:
-Der Zustand einer Person ohne Kontakt; sie zählt auf keiner Karte.
+Der Zustand einer Person ohne Touchpoint; sie zählt auf keiner Karte.
 _Avoid_: Neu, Leer, Offen
 
 **Bald**:
@@ -115,7 +115,7 @@ Der Zustand einer Person, deren Fälligkeit vorbei ist, die aber noch nicht erka
 _Avoid_: Braucht Aufmerksamkeit (als Zustand), Verspätet, Overdue
 
 **Erkaltet**:
-Der Zustand einer Person, deren letzter Kontakt länger her ist als das Doppelte ihres Intervalls oder 180 Tage, je nachdem, was früher eintritt.
+Der Zustand einer Person, deren letzter Touchpoint länger her ist als das Doppelte ihres Intervalls oder 180 Tage, je nachdem, was früher eintritt.
 _Avoid_: Kalt, Cold, Verloren, Eingeschlafen
 
 ## Stichtage
@@ -131,7 +131,7 @@ _Avoid_: Lead time, Erinnerung, Vorwarnung
 ## Oberfläche
 
 **Seitenleiste**:
-Die linke Spalte mit Alle, Noch kein Kontakt, Archiv und einer Liste je Tag.
+Die linke Spalte mit Alle, Noch kein Touchpoint, Archiv und einer Liste je Tag.
 _Avoid_: Navigation, Menü, Sidebar
 
 **Liste**:
@@ -151,12 +151,12 @@ Die Karte mit den Personen, die bald fällig sind oder deren Stichtag im Vorlauf
 _Avoid_: Upcoming, Demnächst, Wochenplan
 
 **Personenseite**:
-Die rechte Spalte mit der ausgewählten Person, ihren Kontakten, Angehörigen und Stichtagen.
+Die rechte Spalte mit der ausgewählten Person, ihren Touchpoints, Angehörigen und Stichtagen.
 _Avoid_: Profil, Detailansicht, Steckbrief
 
-**Kontakt eintragen**:
-Die Handlung, einen Kontakt mit Art, Datum und Notiz zu einer Person zu speichern; erreichbar über den Kreis in der Liste und den Knopf auf der Personenseite.
-_Avoid_: Log contact, Abhaken, Erledigen, Check-in
+**Touchpoint eintragen**:
+Die Handlung, einen Touchpoint mit Art, Datum und Notiz zu einer Person zu speichern; erreichbar über den Kreis in der Liste und den Knopf auf der Personenseite.
+_Avoid_: Kontakt eintragen, Log contact, Abhaken, Erledigen, Check-in
 
 **Mehrere hinzufügen**:
 Das Feld, in das der Nutzer mehrere Namen auf einmal einträgt, mit Tags und Schätzung für alle.

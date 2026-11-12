@@ -1,4 +1,5 @@
-{# Eine Person. Die Felder stehen in zwei Formularen (Kopf, Rest) um „Zuletzt besprochen“ herum und speichern beim Verlassen eines Feldes. #}
+{# Eine Person, von oben nach unten wie in PLAN.md, Abschnitt 7: Kopf, Tags, Links, Ort, Herkunft, Profilnotiz, der Knopf, Zuletzt besprochen, Angehörige, Stichtage, dann Intervall und Fälligkeit, Archivieren.
+   Formulare dürfen nicht ineinander stehen, und die Tags sind selbst Formulare; darum sind es mehrere Formulare derselben Art (alle auf POST /personen/<id>, jedes mit seinen Feldern), die beim Verlassen eines Feldes speichern. #}
 <article class="person">
   <header class="kopfleiste">
     <button type="button" class="zurueck" data-zeige="liste" aria-label="Zurück zur Liste">‹ Zurück</button>
@@ -33,21 +34,11 @@
       </div>
     </div>
 
-    {% include "_kontaktlinks.html" %}
-
   </form>
 
-  {% if not person.archiviert_am %}
-  <div class="kontakt-aktion">
-    <button type="button" class="knopf knopf-primaer knopf-gross" hx-get="/personen/{{ person.id }}/kontakt/neu" hx-target="#personenseite" hx-swap="outerHTML">Kontakt eintragen</button>
-  </div>
-  {% endif %}
+  {% include "_personentags.html" %}
 
-  {% include "_verlauf.html" %}
-
-  {% include "_angehoerige.html" %}
-
-  {% include "_stichtage.html" %}
+  {% include "_kontaktlinks.html" %}
 
   <form class="stamm" hx-post="/personen/{{ person.id }}" hx-trigger="change, submit" hx-swap="none" hx-sync="this:queue last">
     <div class="felder">
@@ -69,8 +60,26 @@
       </div>
       <div class="feld feld-breit">
         <label for="profilnotiz">Profilnotiz</label>
-        <div class="diktat"><textarea id="profilnotiz" name="profilnotiz" data-diktat rows="5" placeholder="Wer ist die Person, was mag sie, was sollte man wissen?">{{ person.profilnotiz or '' }}</textarea></div>
+        <div class="diktat"><textarea id="profilnotiz" name="profilnotiz" data-diktat rows="5" placeholder="Wer ist die Person, was mag sie, was sollte man wissen?" aria-describedby="profilnotiz-hilfe">{{ person.profilnotiz or '' }}</textarea></div>
+        <p class="hilfe" id="profilnotiz-hilfe">Wer die Person ist. Wird beim Verlassen des Feldes gespeichert.</p>
       </div>
+    </div>
+  </form>
+
+  {% if not person.archiviert_am %}
+  <div class="kontakt-aktion">
+    <button type="button" class="knopf knopf-primaer knopf-gross" hx-get="/personen/{{ person.id }}/kontakt/neu" hx-target="#personenseite" hx-swap="outerHTML">Touchpoint eintragen</button>
+  </div>
+  {% endif %}
+
+  {% include "_verlauf.html" %}
+
+  {% include "_angehoerige.html" %}
+
+  {% include "_stichtage.html" %}
+
+  <form class="stamm" hx-post="/personen/{{ person.id }}" hx-trigger="change, submit" hx-swap="none" hx-sync="this:queue last">
+    <div class="felder">
       <div class="feld">
         <label for="intervall_tage">Intervall in Tagen</label>
         <input type="number" id="intervall_tage" name="intervall_tage" value="{{ person.intervall_tage or '' }}" min="1" max="3650" inputmode="numeric" placeholder="{{ nutzer['vorgabe_intervall_tage'] }} (Vorgabe)">
@@ -82,8 +91,6 @@
       {% include "_faelligkeit.html" %}
     </div>
   </form>
-
-  {% include "_personentags.html" %}
 
   {% if not person.archiviert_am %}
   <form class="person-fuss" hx-post="/personen/{{ person.id }}/archivieren" hx-target="#personenseite" hx-swap="outerHTML">

@@ -1,4 +1,4 @@
-"""Kontakt eintragen, Zuletzt besprochen, Karten: die Teile, die HTMX tauscht.
+"""Touchpoint eintragen, Zuletzt besprochen, Karten: die Teile, die HTMX tauscht.
 
 Die Uhr steht auf Mittwoch, 11. November 2026 (Berlin: 13:00).
 """
@@ -99,7 +99,7 @@ def test_zeile_zeigt_die_plakette_des_zustands(angemeldet, fuenf):
     assert ">erkaltet<" in zeile(text, "Ben Muster")
     assert "fällig in 6 Tagen" in zeile(text, "Cem Probe")
     assert "vor 5 Tagen" in zeile(text, "Dora Test")
-    assert "noch kein Kontakt" in zeile(text, "Emil Neu")
+    assert "noch kein Touchpoint" in zeile(text, "Emil Neu")
 
 
 def test_die_plakette_im_archiv_entfaellt(angemeldet, con, nid, fuenf):
@@ -134,7 +134,7 @@ def test_profilnotiz_nur_wo_es_keinen_echten_kontakt_gibt(angemeldet, con, nid):
 def test_der_kreis_ist_der_knopf_kontakt_eintragen(angemeldet, fuenf):
     text = zeile(angemeldet.get("/").text, "Anna Beispiel")
     assert f'hx-get="/personen/{fuenf["ueber"]}/kontakt/neu"' in text
-    assert 'aria-label="Kontakt eintragen: Anna Beispiel"' in text
+    assert 'aria-label="Touchpoint eintragen: Anna Beispiel"' in text
     assert re.search(r"<button[^>]*kreis-knopf", text)
     assert "<a " in text  # die Zeile selbst bleibt ein Link auf die Person
     assert text.index("kreis-knopf") < text.index('<a class="zeile')  # Knopf neben, nicht im Link
@@ -172,7 +172,7 @@ def test_blatt_ohne_htmx_leitet_auf_die_seite(angemeldet, fuenf):
 
 def test_personenseite_hat_den_knopf_kontakt_eintragen(angemeldet, fuenf):
     text = angemeldet.get(f"/?person={fuenf['ueber']}").text
-    assert re.search(r'<button[^>]*hx-get="/personen/\d+/kontakt/neu"[^>]*>Kontakt eintragen<',
+    assert re.search(r'<button[^>]*hx-get="/personen/\d+/kontakt/neu"[^>]*>Touchpoint eintragen<',
                      text)
     assert 'role="dialog"' not in text  # das Blatt ist nur nach Klick da
 
@@ -180,7 +180,7 @@ def test_personenseite_hat_den_knopf_kontakt_eintragen(angemeldet, fuenf):
 def test_archivierte_person_hat_keinen_knopf(angemeldet, con, nid, fuenf):
     personen.archivieren(con, nid, fuenf["ok"])
     text = angemeldet.get(f"/?person={fuenf['ok']}").text
-    assert ">Kontakt eintragen<" not in text and "Im Archiv: keine Erinnerung." in text
+    assert ">Touchpoint eintragen<" not in text and "Im Archiv: keine Erinnerung." in text
 
 
 # -------------------------------------------------------------- Eintragen
@@ -209,10 +209,10 @@ def test_eintragen_speichert_und_zieht_alles_nach(angemeldet, con, nid, fuenf):
 
 def test_der_erste_kontakt_zaehlt_die_seitenleiste_herunter(angemeldet, fuenf):
     vorher = angemeldet.get("/").text
-    assert re.search(r"Noch kein Kontakt</span><span class=\"zahl\">1<", vorher)
+    assert re.search(r"Noch kein Touchpoint</span><span class=\"zahl\">1<", vorher)
     antwort = angemeldet.post(f"/personen/{fuenf['neu']}/kontakte", headers=hx(),
                               data={"art": "anruf", "datum": "2026-11-10"})
-    assert re.search(r"Noch kein Kontakt</span><span class=\"zahl\">0<", antwort.text)
+    assert re.search(r"Noch kein Touchpoint</span><span class=\"zahl\">0<", antwort.text)
     assert "vor 1 Tag" not in antwort.text and "gestern" in zeile(antwort.text, "Emil Neu")
 
 
@@ -342,14 +342,15 @@ def test_eintrag_loeschen_mit_bestaetigung_und_nachzug(angemeldet, con, nid):
     pid = person_mit(con, nid, "Anna Beispiel", 5)
     kid = kontakte.liste(con, nid, pid)[0]["id"]
     seite = angemeldet.get(f"/?person={pid}").text
-    assert re.search(rf'hx-post="/kontakte/{kid}/loeschen"[^>]*hx-confirm="Den Kontakt vom ', seite)
+    assert re.search(
+        rf'hx-post="/kontakte/{kid}/loeschen"[^>]*hx-confirm="Den Touchpoint vom ', seite)
     antwort = angemeldet.post(f"/kontakte/{kid}/loeschen", headers=hx(f"/?person={pid}"))
     assert antwort.status_code == 200
     assert kontakte.liste(con, nid, pid) == []
     assert "Noch nichts eingetragen." in antwort.text
     assert "Zustand" in antwort.text and "unbekannt" in antwort.text
-    assert re.search(r"Noch kein Kontakt</span><span class=\"zahl\">1<", antwort.text)
-    assert "noch kein Kontakt" in zeile(antwort.text, "Anna Beispiel")
+    assert re.search(r"Noch kein Touchpoint</span><span class=\"zahl\">1<", antwort.text)
+    assert "noch kein Touchpoint" in zeile(antwort.text, "Anna Beispiel")
 
 
 # ------------------------------------------------------------ Faelligkeit
@@ -532,3 +533,19 @@ def test_ohne_anmeldung_kommt_niemand_an_die_kontakte(client):
                           ("get", "/kontakte/1"), ("post", "/kontakte/1/loeschen")):
         antwort = getattr(client, methode)(pfad, headers={"HX-Request": "true"})
         assert antwort.status_code == 401
+
+
+def test_personenseite_hat_die_profilnotiz_vor_dem_touchpoint_knopf(angemeldet, con, nid):
+    """PLAN.md, Abschnitt 7: Kopf, Tags, Telefon und E-Mail, Ort, Herkunft, Profilnotiz,
+    dann der Knopf, Zuletzt besprochen, Angehörige, Stichtage, dann Intervall und Archivieren."""
+    pid = person_mit(con, nid, "Anna Beispiel", 5)
+    text = angemeldet.get(f"/?person={pid}").text
+    reihe = ['id="name"', 'id="personentags"', 'id="kontaktlinks"', 'id="telefon"',
+             'id="email"', 'id="ort"', 'id="herkunft"', 'id="profilnotiz"',
+             '>Touchpoint eintragen<', 'id="verlauf"', 'id="angehoerige"', 'id="stichtage"',
+             'id="intervall_tage"', 'id="naechster_termin"', 'id="faelligkeit"',
+             '>Archivieren<']
+    stellen = [text.index(m) for m in reihe]
+    assert stellen == sorted(stellen), reihe
+    assert 'for="profilnotiz">Profilnotiz<' in text
+    assert "Wer die Person ist. Wird beim Verlassen des Feldes gespeichert." in text

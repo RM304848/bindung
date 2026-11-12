@@ -35,6 +35,9 @@ ZEITZONEN = (
 #: Die Sprachen des Diktats mit ihrem Wort in der Oberflaeche.
 DIKTAT_SPRACHEN = {"de-DE": "Deutsch", "en-US": "Englisch (USA)"}
 
+#: Die Darstellung mit ihrem Wort in der Oberflaeche; `system` folgt dem Geraet.
+DARSTELLUNGEN = {"system": "System", "hell": "Hell", "dunkel": "Dunkel"}
+
 _UHRZEIT = re.compile(r"^([01]\d|2[0-3]):([0-5]\d)$")
 
 
@@ -42,7 +45,8 @@ def lesen(con: sqlite3.Connection, nutzer_id: int) -> sqlite3.Row:
     """Die Einstellungen des Nutzers."""
     return con.execute(
         "SELECT id, name, tagesmeldung_zeit, zeitzone, vorgabe_intervall_tage, "
-        "vorgabe_vorlauf_tage, diktat_sprache, kalender_token FROM nutzer WHERE id = ?",
+        "vorgabe_vorlauf_tage, diktat_sprache, darstellung, kalender_token "
+        "FROM nutzer WHERE id = ?",
         (nutzer_id,)).fetchone()
 
 
@@ -105,3 +109,13 @@ def diktat_speichern(con: sqlite3.Connection, nutzer_id: int, sprache: object) -
         raise EingabeFehler("Wähle eine der Sprachen aus der Liste.")
     con.execute("UPDATE nutzer SET diktat_sprache = ? WHERE id = ?", (text, nutzer_id))
     con.commit()
+
+
+def darstellung_speichern(con: sqlite3.Connection, nutzer_id: int, darstellung: object) -> str:
+    """Speichert die Darstellung (`system`, `hell` oder `dunkel`) und gibt sie zurueck."""
+    text = str(darstellung or "").strip()
+    if text not in DARSTELLUNGEN:
+        raise EingabeFehler("Wähle System, Hell oder Dunkel.")
+    con.execute("UPDATE nutzer SET darstellung = ? WHERE id = ?", (text, nutzer_id))
+    con.commit()
+    return text

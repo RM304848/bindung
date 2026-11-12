@@ -21,7 +21,7 @@
     <input type="text" id="mehrere-neuer-tag" name="neuer_tag" value="{{ werte.neuer_tag or '' }}" maxlength="60" autocomplete="off">
   </div>
   <fieldset class="gruppe">
-    <legend>Letzter Kontakt, grob</legend>
+    <legend>Letzter Touchpoint, grob</legend>
     {% set auswahl = werte.letzter_kontakt or "unbekannt" %}
     <div class="optionen">
       <label class="option"><input type="radio" name="letzter_kontakt" value="diesen_monat"{% if auswahl == "diesen_monat" %} checked{% endif %}><span>Diesen Monat</span></label>

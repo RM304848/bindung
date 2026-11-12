@@ -39,6 +39,27 @@ regeln:
     pruefung:
       art: paletten_gleich
 
+  - id: darstellung-waehlt-der-nutzer
+    regel: >
+      Hell oder dunkel folgt standardmaessig dem Geraet, kann aber je Nutzer
+      festgelegt werden (Einstellungen › Darstellung: System, Hell, Dunkel).
+      Die Wahl steht serverseitig als `data-darstellung` am `<html>` (`system`,
+      `hell`, `dunkel`), nie erst per Skript; `stil.css` legt unter
+      `:root[data-darstellung="hell"]` und `:root[data-darstellung="dunkel"]`
+      dieselben Werte noch einmal ueber die Geraete-Bloecke, mit `color-scheme`
+      `light` beziehungsweise `dark`. Das `color-scheme` und die beiden
+      `theme-color` in `basis.html` folgen der Wahl; Anmeldung und Einrichten
+      kennen keinen Nutzer und stehen auf `system`. Keine neuen Farben dafuer.
+    warum: >
+      Wer den Mac dauerhaft dunkel stellt, will Bindung trotzdem hell (oder
+      umgekehrt) und fragt sonst, warum die App dunkel ist. Weil der Server den
+      Nutzer kennt, steht die Wahl im ersten Byte der Seite: es gibt kein kurzes
+      Aufblitzen im falschen Thema, wie es bei einer Wahl aus dem Browser-
+      Speicher passiert. Die Werte stehen doppelt, weil CSS ohne Hilfsmittel
+      keine Palette in zwei Selektoren teilen kann; der Test haelt sie gleich.
+    pruefung:
+      art: darstellung_gleich
+
   - id: keine-inline-stile
     regel: >
       Vorlagen haben kein `style="..."`, keinen `<style>`-Block und keine
@@ -85,14 +106,14 @@ regeln:
       ausnahmen: []
 
   - id: seite-ist-deutsch-ausgezeichnet
-    regel: Jede Seite beginnt mit `<html lang="de">` und hat den Viewport `width=device-width`.
+    regel: Jede Seite beginnt mit `<html lang="de" ...>` und hat den Viewport `width=device-width`.
     warum: >
       Silbentrennung, Vorlesen und die Schrift der Zeichen haengen an `lang`;
       ohne Viewport rendert das Telefon eine verkleinerte Desktop-Seite.
     pruefung:
       art: datei_enthaelt
       datei: bindung/web/vorlagen/basis.html
-      muster: ['<html lang="de">', 'width=device-width']
+      muster: ['<html lang="de"[ >]', 'width=device-width']
 
   # ------------------------------------------------------------ Bedienung
 
@@ -102,7 +123,7 @@ regeln:
       (`min-height: var(--ziel)`, `--ziel: 44px`).
     warum: >
       Die App wird auf dem iPhone benutzt, mit dem Daumen, im Gehen. Kleinere
-      Ziele trifft man nicht, und ein falscher Tipp auf "Kontakt eintragen"
+      Ziele trifft man nicht, und ein falscher Tipp auf "Touchpoint eintragen"
       speichert Unsinn.
     pruefung:
       art: beruehrziele
@@ -222,7 +243,7 @@ regeln:
   - id: kreis-ist-ein-knopf-neben-der-zeile
     regel: >
       Der Kreis vor einer Person ist ein eigener `<button class="kreis-knopf">`
-      neben dem Link der Zeile, nie darin; er oeffnet „Kontakt eintragen“ und
+      neben dem Link der Zeile, nie darin; er oeffnet „Touchpoint eintragen“ und
       traegt ein `aria-label` mit dem Namen. Seine Farbe nennt den Zustand
       (ueberfaellig, erkaltet, bald), die Plakette rechts nennt ihn mit Worten.
     warum: >
@@ -232,12 +253,12 @@ regeln:
     pruefung:
       art: datei_enthaelt
       datei: bindung/web/vorlagen/_zeile.html
-      muster: ['<button type="button" class="kreis-knopf"', 'aria-label="Kontakt eintragen',
+      muster: ['<button type="button" class="kreis-knopf"', 'aria-label="Touchpoint eintragen',
                'plakette plakette-']
 
   - id: segmente-sind-optionsfelder
     regel: >
-      Eine Auswahl aus wenigen Moeglichkeiten (Art eines Kontakts) sind
+      Eine Auswahl aus wenigen Moeglichkeiten (Art eines Touchpoints) sind
       `<label class="segment">` um ein Optionsfeld (`type="radio"`) und einen
       `<span>`; die Optik haengt am `input:checked + span`. Die Gruppe hat ein
       `<legend>`.
@@ -253,7 +274,7 @@ regeln:
 
   - id: blatt-ueber-der-seite
     regel: >
-      „Kontakt eintragen“ ist ein Blatt ueber der Personenseite:
+      „Touchpoint eintragen“ ist ein Blatt ueber der Personenseite:
       `<div class="ueberzug" data-blatt role="dialog" aria-modal="true">` mit
       einem Formular darin; mittig auf dem Mac, am unteren Rand auf dem Telefon.
       „Abbrechen“ (`data-schliessen`), Escape und ein Klick daneben schliessen
@@ -610,8 +631,8 @@ regeln:
       datei: bindung/web/vorlagen/basis.html
       muster: ['rel="icon"[^>]*statisch\(.symbol\.svg.\)', 'rel="apple-touch-icon"[^>]*statisch\(.symbol-180\.png.\)',
                'rel="manifest" href="\{\{ manifest_adresse\(\) \}\}"',
-               'name="theme-color" content="\{\{ palette\(\)\.hell\.grund \}\}" media="\(prefers-color-scheme: light\)"',
-               'name="theme-color" content="\{\{ palette\(\)\.dunkel\.grund \}\}" media="\(prefers-color-scheme: dark\)"',
+               'name="theme-color" content="\{\{ palette\(\)\.hell\.grund \}\}" media="\{\{ medien\[0\] \}\}"',
+               'name="theme-color" content="\{\{ palette\(\)\.dunkel\.grund \}\}" media="\{\{ medien\[1\] \}\}"', '<html lang="de" data-darstellung="\{\{ darstellung \}\}">',
                'name="apple-mobile-web-app-capable"', 'name="apple-mobile-web-app-title" content="Bindung"']
 
   - id: symbole-kommen-aus-einer-quelle

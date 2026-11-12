@@ -44,6 +44,12 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
   Aenderung an `schema.sql` allein.
 - Code, Kommentare, Vorlagen, CLI-Text und Commit-Nachrichten sind deutsch;
   im Code ASCII-Umlaute (ae/oe/ue), in Vorlagen und Oberflaechentexten echte.
+- Das Wort der Oberflaeche fuer einen Kontakt ist **Touchpoint** (`CONTEXT.md`);
+  im Code heisst er weiter `kontakt` (Tabelle, Modul `kontakte`, Routen, CSS).
+  Das ist die einzige gewollte Trennung zwischen Oberflaechen- und Codewort.
+- Die Darstellung (System, Hell, Dunkel) steht je Nutzer in `nutzer.darstellung`
+  und serverseitig als `data-darstellung` am `<html>`; `stil.css` haelt vier
+  Farbbloecke gleich (`tests/test_design.py`).
 - Jeder Release (Tag) bekommt vor dem Taggen einen Abschnitt in `CHANGELOG.md`,
   geschrieben fuer die Nutzer.
 
@@ -60,7 +66,7 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 | `bindung/stichtage.py` | Stichtage als Funktionen: Datum mit oder ohne Jahr (`bauen`, `pruefen`, `text_de`), `naechstes_vorkommen` (29. Februar), `im_vorlauf`, `Vorkommen` (Tage, Alter, Plakettentext) |
 | `bindung/faelligkeit.py` | Faelligkeit und Zustand nach PLAN.md 6: reine Regeln (`zustand`, `faellig_am`, `kaelte_grenze`), `bindungen()` rechnet alle Personen in einer Abfrage, Karten, Sortierung, Worte (`vor_text`, `plakette`) |
 | `bindung/kalender.py` | Kalender nach RFC 5545 von Hand: Bausteine (`maskieren`, `falten`, `ereignis`), `kalender_text` (Stichtage jaehrlich, „Melden bei“ mit Erinnerung), Kalenderadresse (`nutzer_zu_token`, `token_erneuern`, `pfad`) |
-| `bindung/einstellungen.py` | Einstellungen des Nutzers: lesen, pruefen und speichern (Erinnern, Zeitzonen-Liste, Diktatsprache); Passwort in `auth.passwort_aendern` |
+| `bindung/einstellungen.py` | Einstellungen des Nutzers: lesen, pruefen und speichern (Erinnern, Zeitzonen-Liste, Diktatsprache, Darstellung); Passwort in `auth.passwort_aendern` |
 | `bindung/tagesmeldung.py` | die Tagesmeldung als reine Regeln: `bauen(con, nutzer_id, heute)` gibt Titel, Zeilen, Ziel (`/?karte=...`) und Nutzlast oder `None`; `hinweis` und `hinweis_wegklicken` (einmal am Tag, `digest_protokoll`) |
 | `bindung/push.py` | VAPID-Schluessel (erzeugt beim ersten Bedarf, `pfade.VAPID_PATH` = `vapid.json` im Datenordner, Modus 0600; `BINDUNG_PUSH_KONTAKT` setzt den `sub`), Abos (`abo_speichern`, `abo_loeschen`, nur https-Endpunkte mit Namen) und `senden` ueber `pywebpush.webpush` (404/410 loescht das Abo, sonst nur Protokoll) |
 | `bindung/tagesaufgabe.py` | `tick(con, jetzt)` (je Nutzer: Uhrzeit erreicht, Tag in `digest_protokoll` beansprucht, senden) und die Schleife im Server (`laufen()`, jede Minute); `BINDUNG_TAGESAUFGABE=0` schaltet sie aus, die Tests tun das |
@@ -72,7 +78,7 @@ Sache (Person, Kontakt, Zustand, Stichtag ...).
 | `bindung/web/ansicht.py` | die Ansicht in der Adresse (`?tag=&filter=&karte=&suche=&person=`), Kontext fuer Seitenleiste, Karten und Liste, die Teile-Helfer (`antwort`, `aktualisierung`, `spalte_bauen`); `stichtag_personen` (Personen mit Stichtag im Vorlauf, die Karte "Diese Woche"), `familie_teile` (Angehoerige und Stichtage zusammen neu zeichnen) |
 | `bindung/web/routen/` | je Seitengruppe ein Router (`anwendung.py`: `/healthz`, `/manifest.webmanifest`, `POST /api/beenden` nur in der Mac-App; `personen.py`: Seite, Liste, Personenseite, Tags; `kontakte.py`: Blatt Kontakt eintragen, Zuletzt besprochen; `angehoerige.py`: Abschnitt Angehoerige und die Auswahl beim Verknuepfen; `stichtage.py`: Abschnitt Stichtage; `kalender.py`: `/kalender/<geheimnis>.ics` offen, `/kalender/herunterladen` mit Anmeldung; `einstellungen.py`: Seite `/einstellungen`, je Abschnitt ein Formular; `push.py`: `/push/schluessel`, `/push/abo`, `/push/test`, `/sw.js` offen, `/hinweis/weggeklickt`) |
 | `bindung/web/vorlagen/` | Jinja-Vorlagen: `basis`, `anmeldung`, `start` (Huelle); Teile mit `_` (`_seitenleiste`, `_liste`, `_listenkoerper`, `_zeile`, `_karten`, `_pane`, `_personenseite`, `_person_form`, `_mehrere`, `_personentags`, `_hinweis`, `_einstellung_benachrichtigungen`, `_kontaktlinks`, `_verlauf`, `_kontakt_blatt`, `_faelligkeit`, `_angehoerige`, `_angehoeriger`, `_stichtage`, `_stichtag`, `_kandidaten`, `einstellungen` und `_einstellung_<abschnitt>` ...) |
-| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen, Adresse kopieren, Push anmelden, Mikrofonknopf und Anzeige des Diktats, Beenden), `symbol.svg` und `symbol-*.png` (nur von `werkzeuge/symbole/erzeugen.py` geschrieben), `diktat.js` (Diktat: `Diktat.verfuegbar/starten/stoppen`, ein austauschbares `backend`, Ereignisse `diktat:*` am Feld), `sw.js` (Service Worker, nur Push) |
+| `bindung/web/statisch/` | `stil.css` (Palette als Variablen, hell und dunkel), `htmx.min.js`, `bindung.js` (Spalte auf dem Telefon, Blatt schliessen, Adresse kopieren, Push anmelden, Mikrofonknopf und Anzeige des Diktats, Darstellung live tauschen, Beenden), `symbol.svg` und `symbol-*.png` (nur von `werkzeuge/symbole/erzeugen.py` geschrieben), `diktat.js` (Diktat: `Diktat.verfuegbar/starten/stoppen`, ein austauschbares `backend`, Ereignisse `diktat:*` am Feld), `sw.js` (Service Worker, nur Push) |
 | `werkzeuge/symbole/erzeugen.py` | die PNGs und das `.iconset` aus `symbol.svg` und der Palette, ohne Abhaengigkeit (`--iconset DIR` fuer die Mac-App) |
 | `werkzeuge/paket/` | die Mac-App: `bauen.sh` (Symbol, PyInstaller, Rauchtest, `dist/Bindung-<Version>-mac.dmg`), `bindung.spec`, `start.py`, `rauchtest.py` |
 | `werkzeuge/release_notes.py` | druckt den Abschnitt einer Version aus `CHANGELOG.md` fuer `gh release create --notes-file` |

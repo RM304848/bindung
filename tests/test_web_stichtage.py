@@ -83,7 +83,7 @@ def test_die_personenseite_hat_beide_abschnitte_unter_zuletzt_besprochen(angemel
     text = angemeldet.get(f"/?person={anna}").text
     reihe = [text.index(f'id="{name}"') for name in ("verlauf", "angehoerige", "stichtage")]
     assert reihe == sorted(reihe)
-    assert text.index('id="stichtage"') < text.index('id="telefon"')
+    assert text.index('id="stichtage"') < text.index('id="intervall_tage"')
     assert ">Angehörige<" in text and ">Stichtage<" in text
     assert "Noch niemand eingetragen." in speicher(text, "angehoerige")
     assert "Noch kein Stichtag." in speicher(text, "stichtage")
@@ -280,6 +280,36 @@ def test_die_auswahl_nimmt_nur_saubere_zielnamen(angemeldet, anna):
 def test_die_auswahl_ohne_htmx_leitet_auf_die_seite(angemeldet, anna):
     antwort = angemeldet.get(f"/personen/{anna}/kandidaten?suche=x")
     assert antwort.status_code == 303 and antwort.headers["location"] == f"/?person={anna}"
+
+
+def test_verknuepfen_oeffnet_mit_dem_namen_und_den_treffern(angemeldet, con, nid, anna, ben):
+    """Die Suche in „Verknüpfen“ trägt den Namen des Angehörigen und zeigt die Treffer."""
+    personen.anlegen(con, nid, "Ben Muster-Zwei")
+    aid = angehoerige.anlegen(con, nid, anna, name="Ben Muster", rolle="partner")
+    seite = speicher(angemeldet.get(f"/?person={anna}").text, "angehoerige")
+    formular = re.search(rf'id="verknuepfen-suche-{aid}".*?</form>', seite).group(0)
+    assert 'name="suche" value="Ben Muster"' in formular      # vorbelegt, bleibt editierbar
+    assert f'id="kandidaten-{aid}"' in formular
+    assert f'name="verknuepfte_person_id" value="{ben}"' in formular   # ohne zu tippen
+    assert "Ben Muster-Zwei" in formular
+    assert "Tippe einen Namen" not in formular
+    # Wie Tippen: dieselbe Suche, dieselbe Auswahl.
+    teil = angemeldet.get(f"/personen/{anna}/kandidaten?ziel={aid}&suche=Ben+Muster", headers=hx())
+    assert f'value="{ben}"' in teil.text
+
+
+def test_verknuepfen_ohne_treffer_sagt_es_und_laesst_die_suche_offen(angemeldet, con, nid, anna):
+    aid = angehoerige.anlegen(con, nid, anna, name="Mama", rolle="elternteil")
+    formular = speicher(angemeldet.get(f"/?person={anna}").text, "angehoerige")
+    assert 'name="suche" value="Mama"' in formular
+    assert "Niemand gefunden für „Mama“." in formular and f'id="kandidaten-{aid}"' in formular
+
+
+def test_verknuepfen_bietet_nur_unverknuepfte_eintraege_an(angemeldet, con, nid, anna, ben):
+    angehoerige.anlegen(con, nid, anna, name="Ben Muster", rolle="partner",
+                        verknuepfte_person_id=ben)
+    formular = speicher(angemeldet.get(f"/?person={anna}").text, "angehoerige")
+    assert "verknuepfen-suche-" not in formular
 
 
 def test_verknuepfen_legt_das_gegenstueck_an_und_zeigt_es_bei_der_anderen_person(
@@ -509,7 +539,7 @@ def test_ein_stichtag_im_vorlauf_gibt_der_zeile_die_zweite_plakette(angemeldet, 
     text = zeile(angemeldet.get("/").text, "Anna Beispiel")
     assert re.search(r'<span class="plakette plakette-stichtag">Geburtstag in 4 Tagen</span>',
                      text)
-    assert "noch kein Kontakt" in text           # die Plakette des Zustands bleibt daneben
+    assert "noch kein Touchpoint" in text           # die Plakette des Zustands bleibt daneben
 
 
 def test_jahrestag_heute_und_benannter_tag(angemeldet, con, nid, anna, ben):
@@ -575,7 +605,7 @@ def test_ein_stichtag_ohne_kontakt_macht_die_person_nicht_faellig(angemeldet, co
     stichtage.anlegen(con, nid, anna, bezeichnung="", art="geburtstag", datum="--11-13")
     text = angemeldet.get("/").text
     assert karten(text) == {"Braucht Aufmerksamkeit": 0, "Erkaltet": 0, "Diese Woche": 1}
-    assert "noch kein Kontakt" in zeile(text, "Anna Beispiel")
+    assert "noch kein Touchpoint" in zeile(text, "Anna Beispiel")
 
 
 def test_die_plakette_zieht_in_jeder_antwort_mit(angemeldet, con, nid, anna):

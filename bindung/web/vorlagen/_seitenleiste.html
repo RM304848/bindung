@@ -1,11 +1,11 @@
-{# Seitenleiste: Alle, Noch kein Kontakt, Archiv, je Tag ein Eintrag. Wird bei Aenderungen per hx-swap-oob neu gezeichnet. #}
+{# Seitenleiste: Alle, Noch kein Touchpoint, Archiv, je Tag ein Eintrag. Wird bei Aenderungen per hx-swap-oob neu gezeichnet. #}
 {% macro eintrag(name, ziel, anzahl, aktiv) %}
 <li><a class="eintrag{% if aktiv %} eintrag-aktiv{% endif %}" href="{{ ziel.url() }}" hx-get="{{ ziel.url('/liste') }}" hx-target="#liste" hx-swap="outerHTML"{% if aktiv %} aria-current="page"{% endif %}><span class="eintrag-name">{{ name }}</span><span class="zahl">{{ anzahl }}</span></a></li>
 {% endmacro %}
 <nav id="seitenleiste" class="seitenleiste" aria-label="Seitenleiste"{% if oob_seitenleiste %} hx-swap-oob="true"{% endif %}>
   <ul class="eintraege">
     {{ eintrag("Alle", neue_ansicht(), zaehler.alle, not ansicht.tag and not ansicht.filter) }}
-    {{ eintrag("Noch kein Kontakt", neue_ansicht(filter="ohne_kontakt"), zaehler.ohne_kontakt, ansicht.filter == "ohne_kontakt") }}
+    {{ eintrag("Noch kein Touchpoint", neue_ansicht(filter="ohne_kontakt"), zaehler.ohne_kontakt, ansicht.filter == "ohne_kontakt") }}
     {{ eintrag("Archiv", neue_ansicht(filter="archiv"), zaehler.archiv, ansicht.filter == "archiv") }}
   </ul>
 

@@ -1,6 +1,6 @@
-"""Die Einstellungen (PLAN.md, Abschnitt 4): Passwort, Erinnern, Kalender, Diktat.
+"""Die Einstellungen (PLAN.md, Abschnitt 4): Passwort, Erinnern, Kalender, Diktat, Darstellung.
 
-Eine Seite, vier Abschnitte, jeder mit eigenem Formular. Ein Formular schickt per
+Eine Seite, sechs Abschnitte, jeder mit eigenem Formular. Ein Formular schickt per
 HTMX nur seine Felder und tauscht nur seinen Abschnitt aus; eine abgelehnte
 Eingabe kommt als 422 mit Meldung und den eingegebenen Werten. Ohne HTMX (kein
 Skript) antworten dieselben Routen mit der ganzen Seite.
@@ -10,6 +10,8 @@ getipptes Passwort soll nie abgeschickt werden.
 """
 
 from __future__ import annotations
+
+import json
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -21,7 +23,7 @@ from bindung.web.ansicht import formular_lesen, teil_rendern
 
 router = APIRouter()
 
-ABSCHNITTE = ("passwort", "erinnern", "benachrichtigungen", "kalender", "diktat")
+ABSCHNITTE = ("passwort", "erinnern", "benachrichtigungen", "kalender", "diktat", "darstellung")
 
 
 def kontext(request: Request, **abweichend: dict) -> dict:
@@ -42,6 +44,7 @@ def kontext(request: Request, **abweichend: dict) -> dict:
         "kalender": {"webcal": f"webcal://{host}{pfad}", "adresse": f"{schema}://{host}{pfad}",
                      "schema": schema},
         "diktat": {"sprache": e["diktat_sprache"], "sprachen": einstellungen.DIKTAT_SPRACHEN},
+        "darstellung": {"wert": e["darstellung"], "werte": einstellungen.DARSTELLUNGEN},
     }
     kontext = {f"s_{name}": {**standard[name], **abweichend.get(name, {})} for name in ABSCHNITTE}
     kontext["grenzen"] = {"intervall": (einstellungen.INTERVALL_VON, einstellungen.INTERVALL_BIS),
@@ -111,3 +114,19 @@ def diktat(request: Request, formular: dict = Depends(formular_lesen)):
     except EingabeFehler as fehler:
         return abschnitt_antwort(request, "diktat", 422, meldung=str(fehler))
     return abschnitt_antwort(request, "diktat", gespeichert=True)
+
+
+@router.post("/einstellungen/darstellung")
+def darstellung(request: Request, formular: dict = Depends(formular_lesen)):
+    try:
+        wert = einstellungen.darstellung_speichern(
+            basis.con(request), basis.nutzer(request)["id"], formular.get("darstellung", ""))
+    except EingabeFehler as fehler:
+        return abschnitt_antwort(request, "darstellung", 422, meldung=str(fehler))
+    if not request.headers.get("hx-request"):
+        # Ohne HTMX: die Seite neu laden, damit sie mit der neuen Darstellung gezeichnet wird.
+        return RedirectResponse("/einstellungen", status_code=303)
+    antwort = abschnitt_antwort(request, "darstellung", gespeichert=True, wert=wert)
+    # bindung.js tauscht `data-darstellung` auf der offenen Seite aus, ohne Neuladen.
+    antwort.headers["HX-Trigger"] = json.dumps({"darstellung": wert})
+    return antwort

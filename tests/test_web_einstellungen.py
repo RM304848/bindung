@@ -6,6 +6,7 @@ Die Uhr steht auf Mittwoch, 11. November 2026 (Berlin: 13:00).
 from __future__ import annotations
 
 import datetime as dt
+import json
 import re
 from zoneinfo import ZoneInfo
 
@@ -54,7 +55,8 @@ def test_page_needs_login(client):
 
 
 @pytest.mark.parametrize("pfad", ["/einstellungen/passwort", "/einstellungen/erinnern",
-                                  "/einstellungen/diktat", "/einstellungen/kalender/neu"])
+                                  "/einstellungen/diktat", "/einstellungen/darstellung",
+                                  "/einstellungen/kalender/neu"])
 def test_every_save_needs_login(client, pfad):
     antwort = client.post(pfad, data={})
     assert antwort.status_code == 303 and antwort.headers["location"] == "/anmeldung"
@@ -65,7 +67,7 @@ def test_sidebar_links_to_the_page_and_the_page_links_back(angemeldet):
     seite = angemeldet.get("/einstellungen")
     assert seite.status_code == 200
     assert '<a class="knopf knopf-text" href="/">‹ Zurück</a>' in seite.text
-    for abschnitt in ("passwort", "erinnern", "kalender", "diktat"):
+    for abschnitt in ("passwort", "erinnern", "kalender", "diktat", "darstellung"):
         assert f'<section id="einstellung-{abschnitt}"' in seite.text
 
 
@@ -413,3 +415,81 @@ def test_the_page_is_built_for_375_px(angemeldet):
     assert "width: 100%" in regel and "max-width: 640px" in regel
     # Zwei Zahlenfelder nebeneinander, alles andere ueber die ganze Breite.
     assert seite.count('class="feld feld-breit"') == 2
+
+
+# ------------------------------------------------------------------ Darstellung
+
+def _html_kopf(text: str) -> str:
+    return re.search(r"<html[^>]*>", text).group(0)
+
+
+def test_darstellung_ist_vorgabe_system_und_steht_am_html(angemeldet, con, nid):
+    assert zeile(con, nid)["darstellung"] == "system"
+    assert 'data-darstellung="system"' in _html_kopf(angemeldet.get("/").text)
+    seite = angemeldet.get("/einstellungen").text
+    assert "<h2" in seite and ">Darstellung<" in seite
+    # Drei Optionsfelder, „System“ ist gewählt.
+    assert re.findall(r'name="darstellung" value="(\w+)"( checked)?', seite) == [
+        ("system", " checked"), ("hell", ""), ("dunkel", "")]
+    assert ">System<" in seite and ">Hell<" in seite and ">Dunkel<" in seite
+
+
+def test_darstellung_speichern_tauscht_den_abschnitt_und_sagt_der_seite_bescheid(
+        angemeldet, con, nid):
+    antwort = angemeldet.post("/einstellungen/darstellung", data={"darstellung": "hell"},
+                              headers=HX)
+    assert antwort.status_code == 200
+    assert antwort.text.lstrip().startswith('<section id="einstellung-darstellung"')
+    assert gespeichert(antwort.text)
+    assert json.loads(antwort.headers["hx-trigger"]) == {"darstellung": "hell"}
+    assert zeile(con, nid)["darstellung"] == "hell"
+
+
+def test_darstellung_ohne_htmx_leitet_zurueck_auf_die_seite(angemeldet, con, nid):
+    antwort = angemeldet.post("/einstellungen/darstellung", data={"darstellung": "dunkel"},
+                              follow_redirects=False)
+    assert antwort.status_code == 303 and antwort.headers["location"] == "/einstellungen"
+    assert zeile(con, nid)["darstellung"] == "dunkel"
+
+
+def test_darstellung_nach_dem_speichern_steht_in_jeder_seite(angemeldet):
+    angemeldet.post("/einstellungen/darstellung", data={"darstellung": "dunkel"}, headers=HX)
+    for adresse in ("/", "/einstellungen"):
+        kopf = _html_kopf(angemeldet.get(adresse).text)
+        assert 'data-darstellung="dunkel"' in kopf, adresse
+
+
+def test_darstellung_hell_und_dunkel_stellen_color_scheme_und_theme_color_um(angemeldet):
+    angemeldet.post("/einstellungen/darstellung", data={"darstellung": "hell"}, headers=HX)
+    seite = angemeldet.get("/").text
+    assert '<meta name="color-scheme" content="light">' in seite
+    metas = re.findall(r'<meta name="theme-color" content="(#\w+)" media="([^"]+)">', seite)
+    assert [m for _, m in metas] == ["all", "not all"]
+    angemeldet.post("/einstellungen/darstellung", data={"darstellung": "dunkel"}, headers=HX)
+    seite = angemeldet.get("/").text
+    assert '<meta name="color-scheme" content="dark">' in seite
+    assert [m for _, m in re.findall(
+        r'<meta name="theme-color" content="(#\w+)" media="([^"]+)">', seite)] == ["not all", "all"]
+    angemeldet.post("/einstellungen/darstellung", data={"darstellung": "system"}, headers=HX)
+    seite = angemeldet.get("/").text
+    assert '<meta name="color-scheme" content="light dark">' in seite
+
+
+@pytest.mark.parametrize("wert", ["", "bunt", "Hell", "dark"])
+def test_darstellung_lehnt_unbekannte_werte_ab(angemeldet, con, nid, wert):
+    antwort = angemeldet.post("/einstellungen/darstellung", data={"darstellung": wert},
+                              headers=HX)
+    assert antwort.status_code == 422
+    assert "Wähle System, Hell oder Dunkel." in antwort.text
+    assert zeile(con, nid)["darstellung"] == "system"
+
+
+def test_darstellung_gehoert_dem_nutzer(angemeldet, con, nid):
+    anderer = auth.nutzer_anlegen(con, "Anderer", PASSWORT)
+    angemeldet.post("/einstellungen/darstellung", data={"darstellung": "hell"}, headers=HX)
+    assert zeile(con, anderer)["darstellung"] == "system"
+
+
+def test_anmeldung_und_einrichten_folgen_dem_geraet(client):
+    assert 'data-darstellung="system"' in _html_kopf(client.get("/anmeldung").text)
+

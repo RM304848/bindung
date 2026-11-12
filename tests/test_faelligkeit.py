@@ -208,7 +208,7 @@ def _plakette(her, intervall=56, termin=None):
 
 
 @pytest.mark.parametrize(("her", "intervall", "termin", "text", "ton"), [
-    (None, 56, None, "noch kein Kontakt", f.UNBEKANNT),
+    (None, 56, None, "noch kein Touchpoint", f.UNBEKANNT),
     (21, 56, None, "vor 3 Wochen", f.OK),
     (50, 56, None, "fällig in 6 Tagen", f.BALD),
     (56, 56, None, "fällig heute", f.BALD),

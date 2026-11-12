@@ -190,7 +190,7 @@ class Plakette:
 def plakette(bindung: Bindung, heute: dt.date) -> Plakette:
     """Was rechts in der Zeile steht (PLAN.md, Abschnitt 7)."""
     if bindung.zustand == UNBEKANNT:
-        return Plakette("noch kein Kontakt", UNBEKANNT)
+        return Plakette("noch kein Touchpoint", UNBEKANNT)
     if bindung.zustand == ERKALTET:
         return Plakette("erkaltet", ERKALTET)
     if bindung.zustand == UEBERFAELLIG:

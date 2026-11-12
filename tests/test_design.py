@@ -22,7 +22,7 @@ REGELN = yaml.safe_load(KONVENTIONEN.read_text(encoding="utf-8"))["regeln"]
 
 BEKANNT = {"css_farben_nur_in_wurzel", "paletten_gleich", "vorlagen_verbieten",
            "felder_mit_beschriftung", "nur_deutsch", "datei_enthaelt", "beruehrziele",
-           "textarea_mit_attribut"}
+           "textarea_mit_attribut", "darstellung_gleich"}
 
 
 def _mit(art: str) -> list[dict]:
@@ -79,6 +79,10 @@ def test_there_are_templates_and_a_stylesheet_to_check():
 _FARBE = re.compile(r"#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(")
 
 
+#: `:root { ... }` und die beiden Belegungen nach Wahl des Nutzers (`:root[data-darstellung=...]`).
+_WURZEL = re.compile(r':root(?:\[data-darstellung="(?:hell|dunkel)"\])?\s*\{[^{}]*\}')
+
+
 def _wurzelbloecke(css: str) -> list[tuple[str, str]]:
     """Alle `:root { ... }`-Bloecke als ("hell" | "dunkel", Inhalt)."""
     bloecke = []
@@ -92,7 +96,7 @@ def _wurzelbloecke(css: str) -> list[tuple[str, str]]:
 @pytest.mark.parametrize("regel", _mit("css_farben_nur_in_wurzel"), ids=_ids)
 def test_colours_only_live_in_root_variables(regel):
     css = _css_ohne_kommentare()
-    ohne_wurzel = re.sub(r":root\s*\{[^{}]*\}", " ", css)
+    ohne_wurzel = re.sub(_WURZEL, " ", css)
     funde = _FARBE.findall(ohne_wurzel)
     assert not funde, f"{regel['id']}: Farben ausserhalb von :root: {funde}"
     assert _wurzelbloecke(css), "kein :root-Block gefunden"
@@ -117,6 +121,27 @@ def test_light_and_dark_define_the_same_colours(regel):
         f"nur dunkel: {sorted(dunkel - farben_hell)}")
     benutzt = set(re.findall(r"var\((--[\w-]+)", css))
     assert benutzt <= hell, f"{regel['id']}: nie definiert: {sorted(benutzt - hell)}"
+
+
+@pytest.mark.parametrize("regel", _mit("darstellung_gleich"), ids=_ids)
+def test_the_users_choice_repeats_the_device_palettes(regel):
+    """`hell` und `dunkel` am <html> tragen genau die Werte der beiden Geraete-Bloecke."""
+    css = _css_ohne_kommentare()
+    bloecke = {"hell": "", "dunkel": ""}
+    for k, i in _wurzelbloecke(css):
+        bloecke[k] += i
+    gewaehlt = {name: re.search(rf':root\[data-darstellung="{name}"\]\s*\{{([^{{}}]*)\}}', css)
+                for name in ("hell", "dunkel")}
+
+    def werte(inhalt: str) -> dict[str, str]:
+        return dict(re.findall(r"(--[\w-]+)\s*:\s*([^;]+);", inhalt))
+
+    farben = set(werte(bloecke["dunkel"]))
+    for name in ("hell", "dunkel"):
+        assert gewaehlt[name], f"{regel['id']}: kein Block für {name}"
+        erwartet = {k: v for k, v in werte(bloecke[name]).items() if k in farben}
+        assert werte(gewaehlt[name].group(1)) == erwartet, f"{regel['id']}: {name}"
+        assert f"color-scheme: {'light' if name == 'hell' else 'dark'};" in gewaehlt[name].group(1)
 
 
 # ------------------------------------------------------- Vorlagen verbieten

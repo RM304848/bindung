@@ -1,0 +1,20 @@
+{# Einstellungen: Darstellung der App, hell, dunkel oder wie das Gerät. Wirkt sofort (bindung.js, Ereignis „darstellung“). #}
+<section id="einstellung-darstellung" class="einstellung" aria-labelledby="einstellung-darstellung-titel">
+  <h2 id="einstellung-darstellung-titel" class="einstellung-titel">Darstellung</h2>
+  <form class="formular" method="post" action="/einstellungen/darstellung" hx-post="/einstellungen/darstellung" hx-trigger="change, submit" hx-target="#einstellung-darstellung" hx-swap="outerHTML">
+    {% if s_darstellung.meldung %}<p class="meldung meldung-fehler" role="alert">{{ s_darstellung.meldung }}</p>{% endif %}
+    <fieldset class="gruppe">
+      <legend>Farben</legend>
+      <div class="segmente">
+        {% for schluessel, wort in s_darstellung.werte.items() %}
+        <label class="segment"><input type="radio" name="darstellung" value="{{ schluessel }}"{% if schluessel == s_darstellung.wert %} checked{% endif %}><span>{{ wort }}</span></label>
+        {% endfor %}
+      </div>
+      <p class="hilfe">„System“ folgt der Einstellung deines Geräts (Hell oder Dunkel).</p>
+    </fieldset>
+    <div class="einstellung-fuss">
+      <button type="submit" class="knopf knopf-primaer">Speichern</button>
+      <span class="speicherstatus" role="status">{% if s_darstellung.gespeichert %}Gespeichert{% endif %}</span>
+    </div>
+  </form>
+</section>

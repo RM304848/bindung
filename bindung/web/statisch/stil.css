@@ -45,6 +45,52 @@
   }
 }
 
+/* Die Darstellung wählt der Nutzer in den Einstellungen; die Seite trägt sie als
+   data-darstellung am <html>. „system“ (und die Anmeldung) folgt dem Gerät: die beiden
+   Blöcke oben. „hell“ und „dunkel“ legen dieselben Werte noch einmal darüber. Die vier
+   Belegungen müssen gleich bleiben (tests/test_design.py prüft es). */
+:root[data-darstellung="hell"] {
+  --grund: #f2f2f5;
+  --seitenleiste: #e8e8ed;
+  --flaeche: #ffffff;
+  --flaeche-leise: #f7f7fa;
+  --text: #1d1d1f;
+  --text-leise: #6b6b72;
+  --linie: #d6d6dc;
+  --akzent: #3b78c4;
+  --akzent-text: #ffffff;
+  --akzent-leise: #dfe9f6;
+  --aufmerksamkeit: #c0562f;
+  --erkaltet: #4a7fa8;
+  --woche: #5e9a6c;
+  --fehler: #b3372c;
+  --fehler-grund: #fbe9e6;
+  --fokus: #3b78c4;
+  --abdunklung: rgba(20, 20, 24, 0.4);
+  color-scheme: light;
+}
+
+:root[data-darstellung="dunkel"] {
+  --grund: #1b1b1e;
+  --seitenleiste: #232327;
+  --flaeche: #2a2a2e;
+  --flaeche-leise: #242428;
+  --text: #f2f2f6;
+  --text-leise: #9d9da6;
+  --linie: #3b3b41;
+  --akzent: #5d9be3;
+  --akzent-text: #101216;
+  --akzent-leise: #2b3a50;
+  --aufmerksamkeit: #e0825c;
+  --erkaltet: #6fa3c9;
+  --woche: #7bb88a;
+  --fehler: #f08a7f;
+  --fehler-grund: #3d2623;
+  --fokus: #5d9be3;
+  --abdunklung: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
 :root {
   --schrift: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
@@ -406,7 +452,7 @@ input[readonly] { background: var(--flaeche-leise); color: var(--text-leise); }
 .zeile:hover { background: var(--flaeche); }
 .zeile-ausgewaehlt, .zeile-ausgewaehlt:hover { background: var(--akzent-leise); }
 
-/* Der Kreis ist der Knopf „Kontakt eintragen“: das Ziel ist 44 px, der Kreis darin 22 px. */
+/* Der Kreis ist der Knopf „Touchpoint eintragen“: das Ziel ist 44 px, der Kreis darin 22 px. */
 .kreis-knopf {
   flex: none;
   display: grid;
@@ -502,6 +548,10 @@ summary::-webkit-details-marker { display: none; }
 
 .zwischentitel { font-size: 0.875rem; font-weight: 600; color: var(--text-leise); }
 .personentags { display: flex; flex-direction: column; gap: 8px; }
+/* Der neue Tag steht in einer Zeile: die Tags sind jetzt gleich unter dem Kopf, die Felder bis zur
+   Profilnotiz sollen nicht weit nach unten rutschen. */
+.personentags .tag-neu-zeile { flex-direction: row; align-items: flex-end; padding: 0; }
+.personentags .tag-neu-zeile .feld { flex: 1 1 auto; min-width: 0; }
 .person-fuss { padding-top: var(--abstand); border-top: 1px solid var(--linie); }
 
 /* ------------------------------------------------------------ Chips, Blaetter */
@@ -532,7 +582,7 @@ summary::-webkit-details-marker { display: none; }
 .option { display: flex; align-items: center; gap: 10px; min-height: var(--ziel); cursor: pointer; }
 .hilfe { font-size: 0.8125rem; color: var(--text-leise); }
 
-/* ------------------------------------------------- Kontakte: Blatt, Zuletzt besprochen */
+/* ------------------------------------------------- Touchpoints: Blatt, Zuletzt besprochen */
 
 .knopf-gross { min-height: 52px; font-weight: 600; width: 100%; }
 .kontakt-aktion { display: flex; }

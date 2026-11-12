@@ -1,6 +1,6 @@
-"""Kontakt eintragen und Zuletzt besprochen (PLAN.md, Abschnitte 6 und 7).
+"""Touchpoint eintragen und Zuletzt besprochen (PLAN.md, Abschnitte 6 und 7).
 
-Das Blatt „Kontakt eintragen“ liegt ueber der Personenseite; der Kreis in der
+Das Blatt „Touchpoint eintragen“ liegt ueber der Personenseite; der Kreis in der
 Liste oeffnet es fuer diese Person (und waehlt sie dabei aus), der Knopf auf
 der Personenseite fuer die offene. Speichern tauscht die Personenseite und
 zieht Zeile, Zaehler der Seitenleiste und Karten per `hx-swap-oob` nach.
